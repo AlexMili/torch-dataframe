@@ -399,18 +399,28 @@ end
 -- ARGS: - column_name (required) [string] : column to inspect
 -- 
 -- RETURNS : table with unique values in key with the value 1 => {'unique1':1, 'unique2':1, 'unique6':1}
-function Dataframe:unique(column_name)
+function Dataframe:unique(column_name, as_keys)
+	if type(as_keys) ~= 'boolean' then as_keys = true end
 	unique = {}
+	unique_values = {}
 
 	for i = 1,self.n_rows do
 		current_key_value = self.dataset[column_name][i]
 
 		if type(unique[current_key_value]) == 'nil' then
-			unique[current_key_value] = 1
+			unique[current_key_value] = 0
+
+			if as_keys == false then
+				table.insert(unique_values, current_key_value)
+			end
 		end
 	end
 
-	return unique
+	if as_keys == false then
+		return unique_values
+	else
+		return unique
+	end
 end
 
 -- Internal function to convert a table to html (only works for 1D table)
