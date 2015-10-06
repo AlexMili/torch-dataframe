@@ -327,6 +327,20 @@ function Dataframe:save_tensor(filename)
 end
 
 -- 
+-- to_csv() : convert dataset to CSV file
+-- 
+-- ARGS: - filename 	(required) [string] : path where to save CSV file
+-- 		 - separator 	(optional) [string]	: character to split items in one CSV line
+-- 
+-- RETURNS: nothing
+-- 
+function Dataframe:to_csv(filename, sep)
+	sep = sep or ','
+
+	csvigo.save{path=filename,data=self.dataset,separator=sep}
+end
+
+-- 
 -- head() : only display the table's first elements
 -- 
 -- ARGS: - n_items 			(required) [number] 	: items to print
