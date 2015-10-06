@@ -6,8 +6,17 @@ require 'csvigo'
 -- UTILS
 
 function trim(s)
- local from = s:match"^%s*()"
- return s:match"^%s*()" > #s and "" or s:match(".*%S", s:match"^%s*()")
+	local from = s:match"^%s*()"
+	return s:match"^%s*()" > #s and "" or s:match(".*%S", s:match"^%s*()")
+end
+
+function clone(t) -- shallow-copy a table
+	if type(t) ~= "table" then return t end
+	local meta = getmetatable(t)
+	local target = {}
+	for k, v in pairs(t) do target[k] = v end
+	setmetatable(target, meta)
+	return target
 end
 
 -- END UTILS
@@ -425,35 +434,31 @@ end
 
 -- Internal function to convert a table to html (only works for 1D table)
 function Dataframe:_to_html(data, start_at, end_at)
-    start_at = start_at or 1
-    end_at = end_at or 10
-    result = ''
-    n_rows = 0
-    
-    result = result.. '<table>'
-    
-    result = result.. '<tr>'
-    result = result.. '<th></th>'
-    for k,v in pairs(data) do
-        result = result.. '<th>' ..k.. '</th>'
-        if n_rows == 0 then n_rows = #data[k] end
-    end
-    result = result.. '</tr>'
-    
-    for i = start_at, end_at do
-        result = result.. '<tr>'
-        result = result.. '<td>'..i..'</td>'
-        for k,v in pairs(data) do
-            result = result.. '<td>' ..tostring(data[k][i]).. '</td>'
-        end
-        result = result.. '</tr>'
-    end
-    
-    result = result.. '</table>'
-    
-    return result
-end
+	start_at = start_at or 1
+	end_at = end_at or 10
+	result = ''
+	n_rows = 0
 
--- TODO: - _pretty_table
--- 		 - show
--- 		 - unique
+	result = result.. '<table>'
+
+	result = result.. '<tr>'
+	result = result.. '<th></th>'
+	for k,v in pairs(data) do
+		result = result.. '<th>' ..k.. '</th>'
+		if n_rows == 0 then n_rows = #data[k] end
+	end
+	result = result.. '</tr>'
+
+	for i = start_at, end_at do
+		result = result.. '<tr>'
+		result = result.. '<td>'..i..'</td>'
+		for k,v in pairs(data) do
+			result = result.. '<td>' ..tostring(data[k][i]).. '</td>'
+		end
+		result = result.. '</tr>'
+	end
+
+	result = result.. '</table>'
+
+	return result
+end
