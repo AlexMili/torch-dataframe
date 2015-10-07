@@ -260,6 +260,12 @@ function Dataframe:insert(rows)
 	end
 end
 
+function Dataframe:remove_index(index)
+	for i = 1,#self.columns do
+		table.remove(self.dataset[self.columns[i]],index)
+	end
+end
+
 -- 
 -- rename_column('oldname', 'newName') : rename column
 -- 
