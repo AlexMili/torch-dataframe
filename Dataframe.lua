@@ -76,6 +76,38 @@ function Dataframe:load_csv(options)
 	if args.infer_schema then self:_infer_schema() end
 end
 
+-- 
+-- load_table{data=your_table} : load table in Dataframe
+-- 
+-- ARGS: - data 			(required) 					[string]	: table to import
+--		 - infer_schema 	(optional, default=false)	[boolean] 	: automatically detect columns type
+-- 
+-- RETURNS: nothing
+-- 
+function Dataframe:load_table(options)
+	if options == nil then
+		error('Argument missing in Dataframe:load()')
+		options = {}
+	end
+
+	self.dataset = {}
+	self.columns = {}
+	self.n_rows = 0
+
+	if type(options.data) ~= 'table' then
+		error('Provided data must be table type')
+	end
+
+	if type(options.infer_schema) == 'boolean' then options.infer_schema = options.infer_schema else options.infer_schema = false end
+
+	self.dataset = options.data
+
+	self:_clean_columns()
+	self:_refresh_metadata()
+
+	if options.infer_schema then self:_infer_schema() end
+end
+
 -- Internal function to clean columns names
 function Dataframe:_clean_columns()
 	temp_dataset = {}
