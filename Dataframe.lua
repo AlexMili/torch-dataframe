@@ -230,38 +230,32 @@ end
 -- RETURNS: nothing
 -- 
 function Dataframe:insert(rows)
-	previous_size = 0
-	n_columns = 0
+	max_rows_to_insert = 0
 
 	for k,v in pairs(rows) do
-		size = 0
-
-		if type(v) == 'table' then
-			size = #v
-		else
-			size = 1
-		end
-
-		if previous_size == 0 then
-			previous_size = size
-		elseif size ~= previous_size then
-			error('columns must have the same size')
-		end
-
-		n_columns = n_columns + 1
+		max_rows_to_insert = math.max(max_rows_to_insert, #rows[k])
 	end
 
-	if n_columns ~= #self.columns then
-		error('all columns must be present')
-	end
-
-	for k,v in pairs(rows) do
-		if type(v) == 'table' then
-			for i = 1,#v do
-				table.insert(self.dataset[k], v[i])
+	for i = 1,#self.columns do
+		-- If the column is not currently inserted by the user
+		if rows[self.columns[i]] == nil then
+			-- Default rows are inserted
+			for j = 1,max_rows_to_insert do
+				table.insert(self.dataset[self.columns[i]], 0)
 			end
 		else
-			table.insert(self.dataset[k], v)
+			if #rows[self.columns[i]] < max_rows_to_insert then
+				for j = 1,#rows[self.columns[i]] do
+					table.insert(self.dataset[self.columns[i]], rows[self.columns[i]][j])
+				end
+				for i = #rows[self.columns[i]]+1,max_rows_to_insert do
+					table.insert(self.dataset[self.columns[i]], rows[self.columns[i]][j])
+				end
+			else
+				for j = 1,max_rows_to_insert do
+					table.insert(self.dataset[self.columns[i]], rows[self.columns[i]][j])
+				end
+			end
 		end
 	end
 end
