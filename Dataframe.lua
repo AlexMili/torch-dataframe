@@ -469,9 +469,17 @@ function Dataframe:show()
 	tail = self:tail()
 
 	if itorch ~= nil then
-		itorch.html(self:_to_html(head))
-		itorch.html('<span style="font-size:20px;">...</span>')
-		itorch.html(self:_to_html(tail, self.n_rows-10+1, self.n_rows))
+		text = ''
+		text = text..self:_to_html{data=head,split_table='bottom'}
+		text = text..'<tr>'
+		text = text..'<td><span style="font-size:20px;">...</span></td>' -- index cell
+		for k,v in pairs(head) do
+			text = text..'<td><span style="font-size:20px;">...</span></td>'
+		end
+		text = text..'</tr>'
+		text = text..self:_to_html{data=tail, start_at=self.n_rows-10+1, end_at=self.n_rows, split_table='top'}
+
+		itorch.html(text)
 	else
 		print(head)
 		print('...')
@@ -510,32 +518,40 @@ function Dataframe:unique(column_name, as_keys)
 end
 
 -- Internal function to convert a table to html (only works for 1D table)
-function Dataframe:_to_html(data, start_at, end_at)
-	start_at = start_at or 1
-	end_at = end_at or 10
+function Dataframe:_to_html(options)--data, start_at, end_at, split_table)
+	options.split_table = options.split_table or 'none' -- none, top, bottom, all
+	options.start_at = options.start_at or 1
+	options.end_at = options.end_at or 10
+	
 	result = ''
 	n_rows = 0
 
-	result = result.. '<table>'
-
-	result = result.. '<tr>'
-	result = result.. '<th></th>'
-	for k,v in pairs(data) do
-		result = result.. '<th>' ..k.. '</th>'
-		if n_rows == 0 then n_rows = #data[k] end
+	if options.split_table ~= 'top' and options.split_table ~= 'all' then
+		result = result.. '<table>'
 	end
-	result = result.. '</tr>'
 
-	for i = start_at, end_at do
+	if options.split_table ~= 'top' then
 		result = result.. '<tr>'
-		result = result.. '<td>'..i..'</td>'
-		for k,v in pairs(data) do
-			result = result.. '<td>' ..tostring(data[k][i]).. '</td>'
+		result = result.. '<th></th>'
+		for k,v in pairs(options.data) do
+			result = result.. '<th>' ..k.. '</th>'
+			if n_rows == 0 then n_rows = #options.data[k] end
 		end
 		result = result.. '</tr>'
 	end
 
-	result = result.. '</table>'
+	for i = options.start_at, options.end_at do
+		result = result.. '<tr>'
+		result = result.. '<td>'..i..'</td>'
+		for k,v in pairs(options.data) do
+			result = result.. '<td>' ..tostring(options.data[k][i]).. '</td>'
+		end
+		result = result.. '</tr>'
+	end
+
+	if options.split_table ~= 'bottom' and options.split_table ~= 'all' then
+		result = result.. '</table>'
+	end
 
 	return result
 end
