@@ -315,22 +315,10 @@ function Dataframe:to_tensor(filename)
 end
 
 -- 
--- to_tensor() : convert dataset to tensor
--- 
--- ARGS: - filename (optional) [string] : path where save thensor, if missing the tensor is only returned by the function
--- 
--- RETURNS: torch.Tensor
--- 
-function Dataframe:save_tensor(filename)
-	tensor_to_save = self:to_tensor()
-	torch.save(filename, tensor_to_save)
-end
-
--- 
 -- to_csv() : convert dataset to CSV file
 -- 
--- ARGS: - filename 	(required) [string] : path where to save CSV file
--- 		 - separator 	(optional) [string]	: character to split items in one CSV line
+-- ARGS: - filename 	(required) 				[string] : path where to save CSV file
+-- 		 - separator 	(optional, default=',') [string]	: character to split items in one CSV line
 -- 
 -- RETURNS: nothing
 -- 
