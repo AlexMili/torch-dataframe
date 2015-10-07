@@ -222,6 +222,49 @@ function Dataframe:get_column(column_name)
 	return self.dataset[column_name]
 end
 
+-- 
+-- insert({['first_column']={6,7,8,9},['second_column']={6,7,8,9}}) : insert values to dataset
+-- 
+-- ARGS: - rows (required) [table] : data to inset
+-- 
+-- RETURNS: nothing
+-- 
+function Dataframe:insert(rows)
+	previous_size = 0
+	n_columns = 0
+
+	for k,v in pairs(rows) do
+		size = 0
+
+		if type(v) == 'table' then
+			size = #v
+		else
+			size = 1
+		end
+
+		if previous_size == 0 then
+			previous_size = size
+		elseif size ~= previous_size then
+			error('columns must have the same size')
+		end
+
+		n_columns = n_columns + 1
+	end
+
+	if n_columns ~= #self.columns then
+		error('all columns must be present')
+	end
+
+	for k,v in pairs(rows) do
+		if type(v) == 'table' then
+			for i = 1,#v do
+				table.insert(self.dataset[k], v[i])
+			end
+		else
+			table.insert(self.dataset[k], v)
+		end
+	end
+end
 
 -- 
 -- rename_column('oldname', 'newName') : rename column
