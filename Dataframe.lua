@@ -493,6 +493,7 @@ end
 -- ARGS: - column_name (required) [string] : column to inspect
 -- 
 -- RETURNS : table with unique values in key with the value 1 => {'unique1':1, 'unique2':1, 'unique6':1}
+--
 function Dataframe:unique(column_name, as_keys)
 	if type(as_keys) ~= 'boolean' then as_keys = true end
 	unique = {}
@@ -515,6 +516,30 @@ function Dataframe:unique(column_name, as_keys)
 	else
 		return unique
 	end
+end
+
+-- 
+-- where('my_value', 'column_name') : find the first row where the column has the given value
+-- 
+-- ARGS: - item_to_find (required) [string] : value to find
+--		 - column 		(required) [string] : column to browse
+-- 
+-- RETURNS : table
+--
+function Dataframe:where(item_to_find, column)
+    for i = 1, self.n_rows do
+        if self.dataset[column][i] == item_to_find then
+        	return_table = {}
+
+        	for j = 1, #self.columns do
+        		return_table[self.columns[j]] = self.dataset[self.columns[j]][i]
+        	end
+
+            return return_table
+        end
+    end
+
+    return nil
 end
 
 -- Internal function to convert a table to html (only works for 1D table)
