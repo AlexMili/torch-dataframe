@@ -411,20 +411,21 @@ end
 -- 
 -- RETURNS: table
 -- 
-function Dataframe:head(n_items, html)
-	if type(html) ~= 'boolean' then html = false end
-	n_items = n_items or 10
+function Dataframe:head(options)
+	options = options or {}
+	if type(options.html) ~= 'boolean' then options.html = false end
+	options.n_items = options.n_items or 10
 	head = {}
 
-	for i = 1, n_items do
+	for i = 1, options.n_items do
 		for index,key in pairs(self.columns) do
 			if type(head[key]) == 'nil' then head[key] = {} end
 			head[key][i] = self.dataset[key][i]
 		end
 	end
 
-	if html then
-		itorch.html(self:_to_html(head))
+	if options.html then
+		itorch.html(self:_to_html{data=head})
 	else
 		return head
 	end
@@ -438,20 +439,21 @@ end
 -- 
 -- RETURNS: table
 -- 
-function Dataframe:tail(n_items, html)
-	if type(html) ~= 'boolean' then html = false end
-	n_items = n_items or 10
+function Dataframe:tail(options)
+	options = options or {}
+	if type(options.html) ~= 'boolean' then options.html = false end
+	options.n_items = options.n_items or 10
 	tail = {}
 
-	for i = self.n_rows - n_items, self.n_rows do
+	for i = self.n_rows - options.n_items, self.n_rows do
 		for index,key in pairs(self.columns) do
 			if type(tail[key]) == 'nil' then tail[key] = {} end
 			tail[key][i] = self.dataset[key][i]
 		end
 	end
 
-	if html then
-		itorch.html(self:_to_html(tail, self.n_rows-10+1, self.n_rows))
+	if options.html then
+		itorch.html(self:_to_html{data=tail, start_at=self.n_rows-10+1, end_at=self.n_rows})
 	else
 		return tail
 	end
