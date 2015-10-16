@@ -549,19 +549,42 @@ end
 -- RETURNS : table
 --
 function Dataframe:where(item_to_find, column)
-    for i = 1, self.n_rows do
-        if self.dataset[column][i] == item_to_find then
-        	return_table = {}
+	for i = 1, self.n_rows do
+		if self.dataset[column][i] == item_to_find then
+			return_table = {}
 
-        	for j = 1, #self.columns do
-        		return_table[self.columns[j]] = self.dataset[self.columns[j]][i]
-        	end
+			for j = 1, #self.columns do
+				return_table[self.columns[j]] = self.dataset[self.columns[j]][i]
+			end
 
-            return return_table
-        end
-    end
+			return return_table
+		end
+	end
 
-    return nil
+	return nil
+end
+
+-- 
+-- set('my_value', 'column_name', 'new_value') : change value for a line
+-- 
+-- ARGS: - item_to_find 	(required)	[any]		: value to search
+-- 		 - column_name 		(required) 	[string] 	: column where to search
+--		 - new_value 		(required) 	[table]		: new value to set for the line
+-- 
+-- RETURNS: nothing
+-- 
+function Dataframe:set(item_to_find, column_name, new_value)
+	for i = 1, self.n_rows do
+		if self.dataset[column_name][i] == item_to_find then
+			for j = 1,#self.columns do
+				-- If the column is being updated by the user
+				if new_value[self.columns[j]] ~= nil then
+					self.dataset[self.columns[j]][i] = new_value[self.columns[j]]
+				end
+			end
+			break
+		end
+	end
 end
 
 -- Internal function to convert a table to html (only works for 1D table)
