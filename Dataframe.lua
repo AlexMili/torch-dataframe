@@ -260,6 +260,26 @@ function Dataframe:insert(rows)
 	end
 end
 
+-- 
+-- reset_column('column_name', 'new_value') : change value of a whole column
+-- 
+-- ARGS: - column_name 	(required)	[string or table]	: column(s) name to change
+--		 - new_value 	(required) 	[any]				: new value to set
+-- 
+-- RETURNS: nothing
+-- 
+function Dataframe:reset_column(column_name, new_value)
+	if type(column_name) == 'string' then
+		column_name = {column_name}
+	end
+	for k in pairs(column_name) do
+		for i = 1,self.n_rows do
+			self.dataset[column_name[k]][i] = new_value
+		end
+	end
+end
+
+
 function Dataframe:remove_index(index)
 	for i = 1,#self.columns do
 		table.remove(self.dataset[self.columns[i]],index)
