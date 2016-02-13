@@ -541,14 +541,14 @@ function Dataframe:unique(column_name, as_keys)
 end
 
 -- 
--- where('my_value', 'column_name') : find the first row where the column has the given value
+-- where('column_name','my_value') : find the first row where the column has the given value
 -- 
--- ARGS: - item_to_find (required) [string] : value to find
---		 - column 		(required) [string] : column to browse
+-- ARGS: - column 		(required) [string] : column to browse
+--		 - item_to_find (required) [string] : value to find
 -- 
 -- RETURNS : table
 --
-function Dataframe:where(item_to_find, column)
+function Dataframe:where(column, item_to_find)
 	for i = 1, self.n_rows do
 		if self.dataset[column][i] == item_to_find then
 			return_table = {}
