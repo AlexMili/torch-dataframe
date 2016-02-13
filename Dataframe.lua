@@ -625,3 +625,14 @@ function Dataframe:_to_html(options)--data, start_at, end_at, split_table)
 
 	return result
 end
+
+-- Internal function to extract a row from the dataset
+function Dataframe:_extract_row(index_row)
+	row = {}
+
+	for index,key in pairs(self.columns) do
+		row[key] = df.dataset[key][index_row]
+	end
+
+	return row
+end
