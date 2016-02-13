@@ -636,3 +636,14 @@ function Dataframe:_extract_row(index_row)
 
 	return row
 end
+
+-- Internal function to update a single row from data and index
+function Dataframe:_update_single_row(index_row, new_row)
+	for index,key in pairs(self.columns) do
+		df.dataset[key][index_row] = new_row[key]
+	end
+
+	return row
+end
+
+
