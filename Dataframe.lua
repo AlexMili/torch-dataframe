@@ -559,6 +559,26 @@ function Dataframe:where(column, item_to_find)
 end
 
 -- 
+-- update(function(row) row['column'] == 'test' end, function(row) row['other_column'] = 'new_value' return row end) : Update according to condition
+-- 
+-- ARGS: - condition_function 	(required) [func] : function to test if the current row will be updated
+--		 - update_function 		(required) [func] : function to update the row
+-- 
+-- RETURNS : nothing
+--
+function Dataframe:update(condition_function, update_function)
+	for i = 1, self.n_rows do
+		row = self:_extract_row(i)
+
+		if condition_function(row) then
+			new_row = update_function(row)
+
+			self:_update_single_row(i, new_row)
+		end
+	end
+end
+
+-- 
 -- set('my_value', 'column_name', 'new_value') : change value for a line
 -- 
 -- ARGS: - item_to_find 	(required)	[any]		: value to search
