@@ -551,13 +551,7 @@ end
 function Dataframe:where(column, item_to_find)
 	for i = 1, self.n_rows do
 		if self.dataset[column][i] == item_to_find then
-			return_table = {}
-
-			for j = 1, #self.columns do
-				return_table[self.columns[j]] = self.dataset[self.columns[j]][i]
-			end
-
-			return return_table
+			return self:_extract_row(i)
 		end
 	end
 
