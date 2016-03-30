@@ -175,18 +175,27 @@ end
 -- RETURNS: nothing
 --
 function Dataframe:drop(column_name)
+	if (not self:has_column(column_name)) then
+		error("The column " .. column_name .. " doesn't exist")
+	end
 	self.dataset[column_name] = nil
-
 	temp_dataset = {}
-
+	-- Slightly crude method but can't get self.dataset == {} to works
+	--   and #self.dataset is always == 0
+	local empty = true
 	for k,v in pairs(self.dataset) do
 		if k ~= column_name then
 			temp_dataset[k] = v
+			empty = false
 		end
 	end
 
-	self.dataset = temp_dataset
-	self:_refresh_metadata()
+	if (not empty) then
+		self.dataset = temp_dataset
+		self:_refresh_metadata()
+	else
+		self:__init()
+	end
 end
 
 --
@@ -198,16 +207,40 @@ end
 -- RETURNS: nothing
 --
 function Dataframe:add_column(column_name, default_value)
-	default = default_value or 0
-	self.dataset[column_name] = {}
+	if (self:has_column('column_name')) then
+		error("The column " .. column_name .. " already exists in the dataset")
+	end
 
+  if (default_value ~= 0) then
+		if (type(default_value) == 'table') then
+			assert(#default_value == self.n_rows,
+			       'The default values don\'t match the number of rows')
+		end
+		default_value = default_value
+	else
+		default_value =  0
+	end
+
+	self.dataset[column_name] = {}
 	for i = 1, self.n_rows do
-		self.dataset[column_name][i] = default
+		if (type(default_value) == 'table') then
+			self.dataset[column_name][i] = default_value[i]
+		else
+			self.dataset[column_name][i] = default_value
+		end
 	end
 
 	self:_refresh_metadata()
 end
 
+function Dataframe:has_column(column_name)
+	for k,v in pairs(self.columns) do
+    if (v == column_name) then
+			return true
+		end
+  end
+	return false
+end
 --
 -- get_column('columnName') : get column content
 --
@@ -216,7 +249,11 @@ end
 -- RETURNS: column in table format
 --
 function Dataframe:get_column(column_name)
-	return self.dataset[column_name]
+	if (self:has_column(column_name)) then
+		return self.dataset[column_name]
+	else
+		return nil
+	end
 end
 
 --
