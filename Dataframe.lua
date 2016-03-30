@@ -421,7 +421,7 @@ end
 --
 -- to_tensor() : convert dataset to tensor
 --
--- ARGS: - filename (optional) [string] : path where save thensor, if missing the tensor is only returned by the function
+-- ARGS: - filename (optional) [string] : path where save tensor, if missing the tensor is only returned by the function
 --
 -- RETURNS: torch.tensor
 --

@@ -142,5 +142,162 @@ function df_tests.insert()
     "The simple_short.csv is 4x3 after insert should be 5x3")
 end
 
+function df_tests.reset_column()
+  local a = Dataframe()
+  a:load_csv{path = "simple_short.csv",
+             verbose = false}
+  a:reset_column('Col C', 555)
+  tester:eq(a:shape(), {rows=4, cols=3},
+    "The simple_short.csv is 4x3")
+  tester:eq(a:get_column('Col C'), {555, 555, 555, 555})
+
+  a:reset_column({'Col A', 'Col B'}, 555)
+  tester:eq(a:get_column('Col A'), {555, 555, 555, 555})
+  tester:eq(a:get_column('Col B'), {555, 555, 555, 555})
+end
+
+function df_tests.remove_index()
+  local a = Dataframe()
+  a:load_csv{path = "simple_short.csv",
+             verbose = false}
+
+  a:remove_index(1)
+  tester:eq(a:shape(), {rows=3, cols=3},
+    "The simple_short.csv is 4x3")
+  tester:eq(a:get_column('Col A'), {2,3,4})
+
+  a:remove_index(1)
+  a:remove_index(1)
+  a:remove_index(1)
+  tester:eq(a:shape(), {rows=0, cols=3})
+end
+
+function df_tests.rename_column()
+  local a = Dataframe()
+  a:load_csv{path = "simple_short.csv",
+             verbose = false}
+  a:rename_column("Col A", "Col D")
+  tester:assert(a:has_column("Col D"))
+  tester:assert(not a:has_column("Col A"))
+end
+
+function df_tests.count_na_and_fill_na()
+  local a = Dataframe()
+  a:load_csv{path = "advanced_short.csv",
+             verbose = false}
+  tester:eq(a:count_na(), {["Col A"]= 0, ["Col B"]= 0, ["Col C"]=1})
+  a:fill_na("Col A", 1)
+  tester:eq(a:count_na(), {["Col A"]= 0, ["Col B"]= 0, ["Col C"]=1})
+  a:fill_na("Col C", 1)
+  tester:eq(a:count_na(), {["Col A"]= 0, ["Col B"]= 0, ["Col C"]=0})
+  tester:eq(a:get_column("Col C"), {8, 1, 9})
+end
+
+function df_tests.fill_all_na()
+  local a = Dataframe()
+  a:load_csv{path = "advanced_short.csv",
+             verbose = false}
+  a.dataset['Col A'][3] = nil
+  tester:eq(a:count_na(), {["Col A"]= 1, ["Col B"]= 0, ["Col C"]=1})
+  a:fill_all_na(-1)
+  tester:eq(a:count_na(), {["Col A"]= 0, ["Col B"]= 0, ["Col C"]=0})
+  tester:eq(a:get_column('Col A'), {1,2,-1})
+end
+
+function df_tests._get_numerics()
+  local a = Dataframe()
+  a:load_csv{path = "advanced_short.csv",
+             verbose = false}
+  tester:assert(a:_get_numerics()['Col B'] == nil)
+  tester:assert(a:_get_numerics()['Col A'] ~= nil)
+  tester:assert(a:_get_numerics()['Col C'] ~= nil)
+end
+
+function df_tests.to_tensor()
+  local a = Dataframe()
+  a:load_csv{path = "simple_short.csv",
+             verbose = false}
+
+  print(a:to_tensor())
+end
+
+function df_tests.to_csv()
+  local a = Dataframe()
+  a:load_csv{path = "simple_short.csv",
+             verbose = false}
+
+end
+
+function df_tests.head()
+  local a = Dataframe()
+  a:load_csv{path = "simple_short.csv",
+             verbose = false}
+
+end
+
+function df_tests.tail()
+  local a = Dataframe()
+  a:load_csv{path = "simple_short.csv",
+             verbose = false}
+
+end
+
+function df_tests.show()
+  local a = Dataframe()
+  a:load_csv{path = "simple_short.csv",
+             verbose = false}
+
+end
+
+function df_tests.unique()
+  local a = Dataframe()
+  a:load_csv{path = "simple_short.csv",
+             verbose = false}
+
+end
+
+function df_tests.where()
+  local a = Dataframe()
+  a:load_csv{path = "simple_short.csv",
+             verbose = false}
+
+end
+
+function df_tests.update()
+  local a = Dataframe()
+  a:load_csv{path = "simple_short.csv",
+             verbose = false}
+
+end
+
+function df_tests.set()
+  local a = Dataframe()
+  a:load_csv{path = "simple_short.csv",
+             verbose = false}
+
+end
+
+function df_tests._to_html()
+  local a = Dataframe()
+  a:load_csv{path = "simple_short.csv",
+             verbose = false}
+
+end
+
+function df_tests._extract_row()
+  local a = Dataframe()
+  a:load_csv{path = "simple_short.csv",
+             verbose = false}
+
+end
+
+function Dataframe:_update_single_row(index_row, new_row)
+	for index,key in pairs(self.columns) do
+		df.dataset[key][index_row] = new_row[key]
+	end
+
+	return row
+end
+
 tester:add(df_tests)
 tester:run()
