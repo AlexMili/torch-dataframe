@@ -251,7 +251,33 @@ function df_tests.head()
   local a = Dataframe()
   a:load_csv{path = "simple_short.csv",
              verbose = false}
+  no_elmnts = 0
+  head = a:head(2)
+  for k,v in pairs(head) do
+    if (#v > no_elmnts) then
+      no_elmnts = #v
+    end
+  end
+  tester:eq(no_elmnts, 2)
 
+  -- Only 4 rows and thus all should be included
+  no_elmnts = 0
+  head = a:head(20)
+  for k,v in pairs(head) do
+    if (#v > no_elmnts) then
+      no_elmnts = #v
+    end
+  end
+  tester:eq(no_elmnts, a:shape()["rows"])
+
+  no_elmnts = 0
+  head = a:head()
+  for k,v in pairs(head) do
+    if (#v > no_elmnts) then
+      no_elmnts = #v
+    end
+  end
+  tester:eq(no_elmnts, a:shape()["rows"])
 end
 
 function df_tests.tail()

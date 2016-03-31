@@ -486,20 +486,23 @@ end
 --
 -- RETURNS: table
 --
-function Dataframe:head(options)
-	options = options or {}
-	if type(options.html) ~= 'boolean' then options.html = false end
-	options.n_items = options.n_items or 10
+function Dataframe:head(...)
+	local args = dok.unpack(
+		{...},
+		'Dataframe.head',
+		'Retrieves the first elements of a table',
+		{arg='n_items', type='integer', help='The number of items to display', default=10},
+		{arg='html', type='boolean', help='Display as html', default=false}
+	)
 	head = {}
-
-	for i = 1, options.n_items do
+	for i = 1, args.n_items do
 		for index,key in pairs(self.columns) do
 			if type(head[key]) == 'nil' then head[key] = {} end
 			head[key][i] = self.dataset[key][i]
 		end
 	end
 
-	if options.html then
+	if args.html then
 		itorch.html(self:_to_html{data=head})
 	else
 		return head
