@@ -439,7 +439,6 @@ function Dataframe:to_tensor(filename)
 	numeric_dataset = self:_get_numerics()
 	tensor_data = nil
 	i = 1
-
 	for k,v in pairs(numeric_dataset) do
 		next_col =  torch.Tensor(numeric_dataset[k])
 		if (torch.isTensor(tensor_data)) then
@@ -465,10 +464,18 @@ end
 --
 -- RETURNS: nothing
 --
-function Dataframe:to_csv(filename, sep)
-	sep = sep or ','
+function Dataframe:to_csv(...)
+	local args = dok.unpack(
+		{...},
+		'Dataframe.to_csv',
+		'Saves a Dataframe into a CSV using csvigo as backend',
+		{arg='path', type='string', help='path to file', req=true},
+		{arg='separator', type='string', help='separator (one character)', default=','},
+		{arg='verbose', type='boolean', help='verbose load', default=true}
+	)
 
-	csvigo.save{path=filename,data=self.dataset,separator=sep}
+	csvigo.save{path=args.path,data=self.dataset,
+	            separator=args.separator,verbose=args.verbose}
 end
 
 --
