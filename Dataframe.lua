@@ -578,28 +578,39 @@ end
 --
 -- unique() : get unique elements given a column name
 --
--- ARGS: - column_name (required) [string] : column to inspect
+-- ARGS: - column_name (required) [string] :
 --
 -- RETURNS : table with unique values in key with the value 1 => {'unique1':1, 'unique2':1, 'unique6':1}
 --
-function Dataframe:unique(column_name, as_keys)
-	if type(as_keys) ~= 'boolean' then as_keys = true end
+function Dataframe:unique(...)
+	local args = dok.unpack(
+		{...},
+		'Dataframe.unique',
+		'get unique elements given a column name',
+		{arg='column_name', type='string', help='column to inspect', req=true},
+		{arg='as_keys', type='boolean',
+		 help='return table with unique as keys and a count for frequency',
+		 default=false}
+	)
 	unique = {}
 	unique_values = {}
 
 	for i = 1,self.n_rows do
-		current_key_value = self.dataset[column_name][i]
+		current_key_value = self.dataset[args.column_name][i]
+		if (current_key_value ~= nil) then
+			if type(unique[current_key_value]) == 'nil' then
+				unique[current_key_value] = 1
 
-		if type(unique[current_key_value]) == 'nil' then
-			unique[current_key_value] = 0
-
-			if as_keys == false then
-				table.insert(unique_values, current_key_value)
+				if args.as_keys == false then
+					table.insert(unique_values, current_key_value)
+				end
+			else
+				unique[current_key_value] = unique[current_key_value] + 1
 			end
 		end
 	end
 
-	if as_keys == false then
+	if args.as_keys == false then
 		return unique_values
 	else
 		return unique
