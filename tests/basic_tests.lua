@@ -348,7 +348,15 @@ function df_tests.where()
   local a = Dataframe()
   a:load_csv{path = "simple_short.csv",
              verbose = false}
-
+  tester:eq(a:where('Col A', 2)["Col A"], 2)
+  tester:eq(a:where('Col A', 2)["Col C"], .1)
+  a:__init()
+  a:load_csv{path = "advanced_short.csv",
+             verbose = false}
+  tester:eq(a:where('Col B', 'B')['Col B'], 'B')
+  tester:eq(a:where('Col B', 'B')['Col C'], nil)
+  tester:eq(a:where('Col B', 'B')['Col A'], 2)
+  -- TODO: Should the where B not return two rows or just the first row?
 end
 
 function df_tests.update()

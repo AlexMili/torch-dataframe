@@ -722,7 +722,7 @@ function Dataframe:_extract_row(index_row)
 	row = {}
 
 	for index,key in pairs(self.columns) do
-		row[key] = df.dataset[key][index_row]
+		row[key] = self.dataset[key][index_row]
 	end
 
 	return row
