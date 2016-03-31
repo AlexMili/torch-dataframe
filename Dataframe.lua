@@ -517,20 +517,28 @@ end
 --
 -- RETURNS: table
 --
-function Dataframe:tail(options)
-	options = options or {}
-	if type(options.html) ~= 'boolean' then options.html = false end
-	options.n_items = options.n_items or 10
+function Dataframe:tail(...)
+	local args = dok.unpack(
+		{...},
+		'Dataframe.tail',
+		'Retrieves the last elements of a table',
+		{arg='n_items', type='integer', help='The number of items to display', default=10},
+		{arg='html', type='boolean', help='Display as html', default=false}
+	)
 	tail = {}
 
-	for i = self.n_rows - options.n_items, self.n_rows do
+	start_pos = self.n_rows - args.n_items + 1
+	if (start_pos < 1) then
+		start_pos = 1
+	end
+	for i = start_pos, self.n_rows do
 		for index,key in pairs(self.columns) do
 			if type(tail[key]) == 'nil' then tail[key] = {} end
 			tail[key][i] = self.dataset[key][i]
 		end
 	end
 
-	if options.html then
+	if args.html then
 		itorch.html(self:_to_html{data=tail, start_at=self.n_rows-10+1, end_at=self.n_rows})
 	else
 		return tail
