@@ -363,36 +363,47 @@ function df_tests.update()
   local a = Dataframe()
   a:load_csv{path = "simple_short.csv",
              verbose = false}
-
+  -- TODO: add test. Not sure how to apply function
 end
 
 function df_tests.set()
   local a = Dataframe()
   a:load_csv{path = "simple_short.csv",
              verbose = false}
-
+  a:set(1, 'Col A', {['Col A']=99})
+  tester:eq(a:get_column('Col A')[1], 99)
 end
 
 function df_tests._to_html()
   local a = Dataframe()
   a:load_csv{path = "simple_short.csv",
              verbose = false}
-
+  -- TODO: not sure this is worth the effort
 end
 
 function df_tests._extract_row()
   local a = Dataframe()
   a:load_csv{path = "simple_short.csv",
              verbose = false}
-
+  tester:assertTableEq(a:_extract_row(1),{
+    ['Col A']=1,
+    ['Col B']=.2,
+    ['Col C']=1000
+  })
 end
 
-function Dataframe:_update_single_row(index_row, new_row)
-	for index,key in pairs(self.columns) do
-		df.dataset[key][index_row] = new_row[key]
-	end
+function Dataframe:_update_single_row()
+  local a = Dataframe()
+  a:load_csv{path = "simple_short.csv",
+             verbose = false}
 
-	return row
+  new = {
+    ['Col A']=4,
+    ['Col B']=4,
+    ['Col C']=4
+  }
+	a:_update_single_row(1, new)
+  tester:assertTableEq(a:_extract_row(1, new))
 end
 
 tester:add(df_tests)
