@@ -13,6 +13,13 @@ table.reduce = function (list, fn)
     end
     return acc
 end
+table.exact_length = function(tbl)
+  i = 0
+  for k,v in pairs(tbl) do
+    i = i + 1
+  end
+  return i
+end
 
 function df_tests.csv_test_correct_size()
    local a = Dataframe()
@@ -285,6 +292,39 @@ function df_tests.tail()
   a:load_csv{path = "simple_short.csv",
              verbose = false}
 
+  local a = Dataframe()
+  a:load_csv{path = "simple_short.csv",
+            verbose = false}
+  no_elmnts = 0
+  tail = a:tail(2)
+  for k,v in pairs(tail) do
+    local l = table.exact_length(v)
+    if (l > no_elmnts) then
+      no_elmnts = l
+    end
+  end
+  tester:eq(no_elmnts, 2)
+
+  -- Only 4 rows and thus all should be included
+  no_elmnts = 0
+  tail = a:tail(20)
+  for k,v in pairs(tail) do
+    local l = table.exact_length(v)
+    if (l > no_elmnts) then
+      no_elmnts = l
+    end
+  end
+  tester:eq(no_elmnts, a:shape()["rows"])
+
+  no_elmnts = 0
+  tail = a:tail()
+  for k,v in pairs(tail) do
+    local l = table.exact_length(v)
+    if (l > no_elmnts) then
+      no_elmnts = l
+    end
+  end
+  tester:eq(no_elmnts, a:shape()["rows"])
 end
 
 function df_tests.show()
