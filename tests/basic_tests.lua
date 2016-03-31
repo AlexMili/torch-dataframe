@@ -331,14 +331,17 @@ function df_tests.show()
   local a = Dataframe()
   a:load_csv{path = "simple_short.csv",
              verbose = false}
-
+  -- skip test due to inability to redirect output
+  -- http://stackoverflow.com/questions/27008723/how-to-redirect-stdout-to-file-in-lua
 end
 
 function df_tests.unique()
   local a = Dataframe()
-  a:load_csv{path = "simple_short.csv",
+  a:load_csv{path = "advanced_short.csv",
              verbose = false}
-
+  tester:assertTableEq(a:unique('Col A'), {1,2,3})
+  tester:assertTableEq(a:unique('Col B', true), {A=1, B=2})
+  tester:assertTableEq(a:unique('Col C', true), {[8]=1, [9]=1})
 end
 
 function df_tests.where()
