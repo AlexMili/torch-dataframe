@@ -226,7 +226,6 @@ function df_tests.to_tensor()
   sum = 0
   col_no = a:get_column_no('Col A')
   for i=1,tnsr:size(1) do
-    print(tnsr[i][col_no] .. " - " ..a:get_column('Col A')[i])
     sum = math.abs(tnsr[i][col_no] - a:get_column('Col A')[i])
   end
   tester:assert(sum < 10^-5)
@@ -236,7 +235,16 @@ function df_tests.to_csv()
   local a = Dataframe()
   a:load_csv{path = "simple_short.csv",
              verbose = false}
-
+  a:to_csv{path = "copy_of_short.csv",
+           verbose = false}
+  local b = Dataframe()
+  b:load_csv{path = "copy_of_short.csv",
+             verbose = false}
+  for k,v in pairs(a.dataset) do
+    tester:eq(a:get_column(k),
+              b:get_column(k))
+  end
+  os.remove("copy_of_short.csv")
 end
 
 function df_tests.head()
