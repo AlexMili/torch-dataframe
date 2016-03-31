@@ -218,7 +218,18 @@ function df_tests.to_tensor()
   a:load_csv{path = "simple_short.csv",
              verbose = false}
 
-  print(a:to_tensor())
+  tnsr = a:to_tensor()
+  tester:eq(tnsr:size(1),
+            a:shape()["rows"])
+  tester:eq(tnsr:size(2),
+            a:shape()["cols"])
+  sum = 0
+  col_no = a:get_column_no('Col A')
+  for i=1,tnsr:size(1) do
+    print(tnsr[i][col_no] .. " - " ..a:get_column('Col A')[i])
+    sum = math.abs(tnsr[i][col_no] - a:get_column('Col A')[i])
+  end
+  tester:assert(sum < 10^-5)
 end
 
 function df_tests.to_csv()
