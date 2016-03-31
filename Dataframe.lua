@@ -418,6 +418,16 @@ function Dataframe:_get_numerics()
 	return new_dataset
 end
 
+function Dataframe:get_column_no(column_name)
+	i = 0
+	for k,v in pairs(self.dataset) do
+		i = i + 1
+		if (column_name == k) then
+			return i
+		end
+	end
+	return nil
+end
 --
 -- to_tensor() : convert dataset to tensor
 --
@@ -427,12 +437,16 @@ end
 --
 function Dataframe:to_tensor(filename)
 	numeric_dataset = self:_get_numerics()
-	tensor_data = torch.Tensor(self.n_rows,#numeric_dataset)
+	tensor_data = nil
 	i = 1
 
-	for k,v in ipairs(numeric_dataset) do
+	for k,v in pairs(numeric_dataset) do
 		next_col =  torch.Tensor(numeric_dataset[k])
-		tensor_data[{{},i}] = next_col
+		if (torch.isTensor(tensor_data)) then
+			tensor_data = torch.cat(tensor_data, next_col, 2)
+		else
+			tensor_data = next_col
+		end
 		i=i+1
 	end
 
