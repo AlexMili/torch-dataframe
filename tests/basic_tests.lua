@@ -359,11 +359,37 @@ function df_tests.where()
   -- TODO: Should the where B not return two rows or just the first row?
 end
 
+
+
 function df_tests.update()
   local a = Dataframe()
   a:load_csv{path = "simple_short.csv",
              verbose = false}
-  -- TODO: add test. Not sure how to apply function
+  local start_val = a:get_column('Col B')
+  start_val[1] = start_val[1] * 2
+  a:update(function(s_row)
+             return s_row['Col A'] == 1
+           end,
+           function(upd_row)
+             upd_row['Col B'] = upd_row['Col B'] * 2
+             return upd_row
+           end)
+  tester:assertTableEq(a:get_column('Col B'), start_val)
+
+  -- Check a double match
+  local b = Dataframe()
+  b:load_csv{path = "advanced_short.csv",
+             verbose = false}
+  start_val = b:get_column('Col A')
+  start_val[2] = start_val[2] * 2
+  start_val[3] = start_val[3] * 2
+  b:update(function(s_row) return s_row['Col B'] == 1 end,
+           function(upd_row)
+             upd_row['Col A'] = upd_row['Col A'] * 2
+             return upd_row
+            end)
+
+  tester:assertTableEq(b:get_column('Col A'), start_val)
 end
 
 function df_tests.set()
@@ -389,10 +415,10 @@ function df_tests._extract_row()
     ['Col A']=1,
     ['Col B']=.2,
     ['Col C']=1000
-  })
+    })
 end
 
-function Dataframe:_update_single_row()
+function df_tests._update_single_row()
   local a = Dataframe()
   a:load_csv{path = "simple_short.csv",
              verbose = false}
@@ -403,7 +429,7 @@ function Dataframe:_update_single_row()
     ['Col C']=4
   }
 	a:_update_single_row(1, new)
-  tester:assertTableEq(a:_extract_row(1, new))
+  tester:assertTableEq(a:_extract_row(1), new)
 end
 
 tester:add(df_tests)
