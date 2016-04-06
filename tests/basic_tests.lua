@@ -120,16 +120,20 @@ function df_tests.add_column()
   local a = Dataframe()
   a:load_csv{path = "simple_short.csv",
              verbose = false}
-  d_col = {0,1,2,3,}
+  d_col = {0,1,2,3}
   a:add_column('Col D', d_col)
   tester:ne(a:get_column('Col A'), nil, "Col A should be present")
   tester:ne(a:get_column('Col B'), nil, "Col B should be present")
   tester:ne(a:get_column('Col C'), nil, "Col C should be present")
-  tester:eq(a:get_column('Col D'), d_col, "Col D isn't the expected value")
-  tester:eq(a:shape(), {rows=4, cols=4},
+  tester:assertTableEq(a:get_column('Col D'), d_col, "Col D isn't the expected value")
+  tester:assertTableEq(a:shape(), {rows=4, cols=4},
     "The simple_short.csv is 4x3 after add should be 4x4")
 
   tester:assertError(a:add_column('Col D'))
+  a:add_column('Col E')
+  tester:assertTableEq(a:get_column('Col E'), {0,0,0,0})
+  a:add_column('Col F', 1)
+  tester:assertTableEq(a:get_column('Col F'), {1,1,1,1})
 end
 
 function df_tests.get_column()

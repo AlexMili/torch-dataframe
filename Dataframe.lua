@@ -211,13 +211,10 @@ function Dataframe:add_column(column_name, default_value)
 		error("The column " .. column_name .. " already exists in the dataset")
 	end
 
-  if (default_value ~= 0) then
-		if (type(default_value) == 'table') then
-			assert(#default_value == self.n_rows,
-			       'The default values don\'t match the number of rows')
-		end
-		default_value = default_value
-	else
+  if (type(default_value) == 'table') then
+		assert(#default_value == self.n_rows,
+		       'The default values don\'t match the number of rows')
+	elseif (default_value == nil) then
 		default_value =  0
 	end
 
