@@ -5,9 +5,20 @@ Dataframe is a Torch7 class to load and manipulate Kaggle-style CSVs inspired fr
 - torch
 - csvigo
 
-## Usage
-First you need to copy `Dataframe.lua` in your current working directory.
+## Installation
+You can clone this repository or directly install it throught luarocks:
+```
+git clone https://github.com/AlexMili/torch-dataframe
+cd torch-dataframe
+luarocks make
+```
+or
+```
+luarocks install torch-dataframe
+```
+or you can copy ```Dataframe.lua``` into your project directory and include it locally.
 
+## Usage
 Initiate the object :
 ```lua
 require 'Dataframe'
