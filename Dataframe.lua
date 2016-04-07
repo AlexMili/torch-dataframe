@@ -2,6 +2,7 @@
 
 require 'torch'
 require 'csvigo'
+require 'dok'
 
 -- UTILS
 
@@ -27,7 +28,7 @@ local Dataframe = torch.class('Dataframe')
 
 -- construct a new Dataframe
 --
--- Returns: a new Dataframe object 
+-- Returns: a new Dataframe object
 function Dataframe:__init()
 	self.dataset = {}
 	self.columns = {}
@@ -35,77 +36,73 @@ function Dataframe:__init()
 	self.n_rows = 0
 end
 
--- 
+--
 -- load_csv{path='path/to/file'} : load csv file
--- 
+--
 -- ARGS: - path 			(required) 					[string]	: Path to the CSV
 --		 - header 			(optional, default=true) 	[boolean]	: if has header on first line
---		 - infer_schema 	(optional, default=true)	[boolean] 	: automatically detect columns type
+--		 - infer_schema 	(optional, default=true)	[boolean] 	:
 --		 - separator 		(optional, default=',')		[string] 	: if has header on first line
---		 - skip			 	(optional, default=0) 		[number] 	: if has header on first line
--- 
+--		 - skip			 	(optional, default=0) 		[number] 	:
+--
 -- RETURNS: nothing
--- 
-function Dataframe:load_csv(options)
-	if options == nil then
-		error('Argument missing in Dataframe:load()')
-		options = {}
-	end
-
+--
+function Dataframe:load_csv(...)
 	self.dataset = {}
 	self.columns = {}
 	self.n_rows = 0
 
-	local args = {}
+	local args = dok.unpack(
+		{...},
+		'Dataframe.load_csv',
+		'Loads a CSV file into Dataframe using csvigo as backend',
+		{arg='path', type='string', help='path to file', req=true},
+		{arg='header', type='boolean', help='if has header on first line', default=true},
+		{arg='infer_schema', type='boolean', help='automatically detect columns\' type', default=true},
+		{arg='separator', type='string', help='separator (one character)', default=','},
+		{arg='skip', type='number', help='skip this many lines at start of file', default=0},
+		{arg='verbose', type='boolean', help='verbose load', default=true}
+	)
 
-	if options.path == nil then
-		error('File name is missing in Dataframe:load()')
-	end
-
-	if type(options.header) == 'boolean' then args.header = options.header else args.header = true end
-	if type(options.infer_schema) == 'boolean' then args.infer_schema = options.infer_schema else args.infer_schema = true end
-
-	args.path = options.path
-	args.separator = options.separator or ","
-	args.skip = options.skip or 0
-
-	self.dataset = csvigo.load{path=args.path,header=args.header,separator=args.separator,skip=args.skip}
+	self.dataset = csvigo.load{path = args.path,
+	                           header = args.header,
+														 separator = args.separator,
+														 skip = args.skip,
+													   verbose = args.verbose}
 	self:_clean_columns()
 	self:_refresh_metadata()
 
 	if args.infer_schema then self:_infer_schema() end
 end
 
--- 
+--
 -- load_table{data=your_table} : load table in Dataframe
--- 
+--
 -- ARGS: - data 			(required) 					[string]	: table to import
 --		 - infer_schema 	(optional, default=false)	[boolean] 	: automatically detect columns type
--- 
+--
 -- RETURNS: nothing
--- 
-function Dataframe:load_table(options)
-	if options == nil then
-		error('Argument missing in Dataframe:load()')
-		options = {}
-	end
+--
+function Dataframe:load_table(...)
 
 	self.dataset = {}
 	self.columns = {}
 	self.n_rows = 0
 
-	if type(options.data) ~= 'table' then
-		error('Provided data must be table type')
-	end
+	local args = dok.unpack(
+		{...},
+		'Dataframe.load_table',
+		'Imports a table directly data into Dataframe',
+		{arg='data', type='table', help='table to import', req=true},
+		{arg='infer_schema', type='boolean', help='automatically detect columns\' type', default=true}
+	)
 
-	if type(options.infer_schema) == 'boolean' then options.infer_schema = options.infer_schema else options.infer_schema = false end
-
-	self.dataset = options.data
+	self.dataset = args.data
 
 	self:_clean_columns()
 	self:_refresh_metadata()
 
-	if options.infer_schema then self:_infer_schema() end
+	if args.infer_schema then self:_infer_schema() end
 end
 
 -- Internal function to clean columns names
@@ -137,7 +134,7 @@ end
 function Dataframe:_infer_schema(explore_factor)
 	factor = explore_factor or 0.5
 	rows_to_explore = math.ceil(self.n_rows * factor)
-	
+
 	for index,key in pairs(self.columns) do
 		is_a_numeric_column = true
 		self.schema[key] = 'string'
@@ -159,76 +156,110 @@ function Dataframe:_infer_schema(explore_factor)
 	end
 end
 
--- 
+--
 -- shape() : give the number of rows and columns
--- 
+--
 -- ARGS: nothing
--- 
+--
 -- RETURNS: {rows=x,cols=y}
--- 
+--
 function Dataframe:shape()
   return {rows=#self.dataset[self.columns[1]],cols=#self.columns}
 end
 
--- 
+--
 -- drop('columnName') : delete column from dataset
--- 
+--
 -- ARGS: - column_name (required) [string]	: column to delete
--- 
+--
 -- RETURNS: nothing
--- 
+--
 function Dataframe:drop(column_name)
+	if (not self:has_column(column_name)) then
+		error("The column " .. column_name .. " doesn't exist")
+	end
 	self.dataset[column_name] = nil
-
 	temp_dataset = {}
-
+	-- Slightly crude method but can't get self.dataset == {} to works
+	--   and #self.dataset is always == 0
+	local empty = true
 	for k,v in pairs(self.dataset) do
 		if k ~= column_name then
 			temp_dataset[k] = v
+			empty = false
 		end
 	end
 
-	self.dataset = temp_dataset
-	self:_refresh_metadata()
+	if (not empty) then
+		self.dataset = temp_dataset
+		self:_refresh_metadata()
+	else
+		self:__init()
+	end
 end
 
--- 
+--
 -- add_column('columnName', 0) : add new column to Dataframe
--- 
+--
 -- ARGS: - column_name 		(required) 				[string]	: column name to add
 --		 - default_value 	(optional, default=0) 	[any]		: column default value
--- 
+--
 -- RETURNS: nothing
--- 
+--
 function Dataframe:add_column(column_name, default_value)
-	default = default_value or 0
-	self.dataset[column_name] = {}
+	if (self:has_column('column_name')) then
+		error("The column " .. column_name .. " already exists in the dataset")
+	end
 
+  if (type(default_value) == 'table') then
+		assert(#default_value == self.n_rows,
+		       'The default values don\'t match the number of rows')
+	elseif (default_value == nil) then
+		default_value =  0
+	end
+
+	self.dataset[column_name] = {}
 	for i = 1, self.n_rows do
-		self.dataset[column_name][i] = default
+		if (type(default_value) == 'table') then
+			self.dataset[column_name][i] = default_value[i]
+		else
+			self.dataset[column_name][i] = default_value
+		end
 	end
 
 	self:_refresh_metadata()
 end
 
--- 
+function Dataframe:has_column(column_name)
+	for k,v in pairs(self.columns) do
+    if (v == column_name) then
+			return true
+		end
+  end
+	return false
+end
+--
 -- get_column('columnName') : get column content
--- 
+--
 -- ARGS: - column_name (required) [string] : column needed
--- 
+--
 -- RETURNS: column in table format
--- 
+--
 function Dataframe:get_column(column_name)
-	return self.dataset[column_name]
+	if (self:has_column(column_name)) then
+		return self.dataset[column_name]
+	else
+		return nil
+	end
 end
 
--- 
+--
 -- insert({['first_column']={6,7,8,9},['second_column']={6,7,8,9}}) : insert values to dataset
--- 
+--
 -- ARGS: - rows (required) [table] : data to inset
--- 
+--
 -- RETURNS: nothing
--- 
+--
 function Dataframe:insert(rows)
 	max_rows_to_insert = 0
 
@@ -260,14 +291,14 @@ function Dataframe:insert(rows)
 	end
 end
 
--- 
+--
 -- reset_column('column_name', 'new_value') : change value of a whole column
--- 
+--
 -- ARGS: - column_name 	(required)	[string or table]	: column(s) name to change
 --		 - new_value 	(required) 	[any]				: new value to set
--- 
+--
 -- RETURNS: nothing
--- 
+--
 function Dataframe:reset_column(column_name, new_value)
 	if type(column_name) == 'string' then
 		column_name = {column_name}
@@ -286,14 +317,14 @@ function Dataframe:remove_index(index)
 	end
 end
 
--- 
+--
 -- rename_column('oldname', 'newName') : rename column
--- 
+--
 -- ARGS: - old_column_name 		(required)	[string]	: current column name
 --		 - new_default_value 	(required) 	[string]	: new column name
--- 
+--
 -- RETURNS: nothing
--- 
+--
 function Dataframe:rename_column(old_column_name, new_column_name)
 	temp_dataset = {}
 
@@ -309,13 +340,13 @@ function Dataframe:rename_column(old_column_name, new_column_name)
 	self:_refresh_metadata()
 end
 
--- 
+--
 -- count_na() : count missing values in dataset
--- 
+--
 -- ARGS: nothing
--- 
+--
 -- RETURNS: table containing missing values per column
--- 
+--
 function Dataframe:count_na()
 	count = {}
 
@@ -332,14 +363,14 @@ function Dataframe:count_na()
 	return count
 end
 
--- 
+--
 -- fill_na('columnName', 0) : replace missing value in a specific column
--- 
+--
 -- ARGS: - column_name 		(required) 				[string]	: column name to fill
 --		 - default_value 	(optional, default=0) 	[any]		: default missing value
--- 
+--
 -- RETURNS: nothing
--- 
+--
 -- Enhancement : detect nil/na value at first reading or _infer_schema
 function Dataframe:fill_na(column_name, default_value)
 	default = default_value or 0
@@ -351,13 +382,13 @@ function Dataframe:fill_na(column_name, default_value)
 	end
 end
 
--- 
+--
 -- fill_all_na(0) : replace missing value in the whole dataset
--- 
+--
 -- ARGS: - default_value (optional, default=0) [any] : default missing value
--- 
+--
 -- RETURNS: nothing
--- 
+--
 -- Enhancement : detect nil/na value at first reading or _infer_schema
 function Dataframe:fill_all_na(default_value)
 	default = default_value or 0
@@ -384,21 +415,34 @@ function Dataframe:_get_numerics()
 	return new_dataset
 end
 
--- 
+function Dataframe:get_column_no(column_name)
+	i = 0
+	for k,v in pairs(self.dataset) do
+		i = i + 1
+		if (column_name == k) then
+			return i
+		end
+	end
+	return nil
+end
+--
 -- to_tensor() : convert dataset to tensor
--- 
--- ARGS: - filename (optional) [string] : path where save thensor, if missing the tensor is only returned by the function
--- 
+--
+-- ARGS: - filename (optional) [string] : path where save tensor, if missing the tensor is only returned by the function
+--
 -- RETURNS: torch.tensor
--- 
+--
 function Dataframe:to_tensor(filename)
 	numeric_dataset = self:_get_numerics()
-	tensor_data = torch.Tensor(self.n_rows,#numeric_dataset)
+	tensor_data = nil
 	i = 1
-
-	for k,v in ipairs(numeric_dataset) do
+	for k,v in pairs(numeric_dataset) do
 		next_col =  torch.Tensor(numeric_dataset[k])
-		tensor_data[{{},i}] = next_col
+		if (torch.isTensor(tensor_data)) then
+			tensor_data = torch.cat(tensor_data, next_col, 2)
+		else
+			tensor_data = next_col
+		end
 		i=i+1
 	end
 
@@ -409,83 +453,102 @@ function Dataframe:to_tensor(filename)
 	return tensor_data
 end
 
--- 
+--
 -- to_csv() : convert dataset to CSV file
--- 
+--
 -- ARGS: - filename 	(required) 				[string] : path where to save CSV file
 -- 		 - separator 	(optional, default=',') [string]	: character to split items in one CSV line
--- 
+--
 -- RETURNS: nothing
--- 
-function Dataframe:to_csv(filename, sep)
-	sep = sep or ','
+--
+function Dataframe:to_csv(...)
+	local args = dok.unpack(
+		{...},
+		'Dataframe.to_csv',
+		'Saves a Dataframe into a CSV using csvigo as backend',
+		{arg='path', type='string', help='path to file', req=true},
+		{arg='separator', type='string', help='separator (one character)', default=','},
+		{arg='verbose', type='boolean', help='verbose load', default=true}
+	)
 
-	csvigo.save{path=filename,data=self.dataset,separator=sep}
+	csvigo.save{path=args.path,data=self.dataset,
+	            separator=args.separator,verbose=args.verbose}
 end
 
--- 
+--
 -- head() : only display the table's first elements
--- 
+--
 -- ARGS: - n_items 			(required) [number] 	: items to print
 -- 		 - html 			(optional) [boolean] 	: display or not in html mode
--- 
+--
 -- RETURNS: table
--- 
-function Dataframe:head(options)
-	options = options or {}
-	if type(options.html) ~= 'boolean' then options.html = false end
-	options.n_items = options.n_items or 10
+--
+function Dataframe:head(...)
+	local args = dok.unpack(
+		{...},
+		'Dataframe.head',
+		'Retrieves the first elements of a table',
+		{arg='n_items', type='integer', help='The number of items to display', default=10},
+		{arg='html', type='boolean', help='Display as html', default=false}
+	)
 	head = {}
-
-	for i = 1, options.n_items do
+	for i = 1, args.n_items do
 		for index,key in pairs(self.columns) do
 			if type(head[key]) == 'nil' then head[key] = {} end
 			head[key][i] = self.dataset[key][i]
 		end
 	end
 
-	if options.html then
+	if args.html then
 		itorch.html(self:_to_html{data=head})
 	else
 		return head
 	end
 end
 
--- 
+--
 -- tail() : only display the table's last elements
--- 
+--
 -- ARGS: - n_items 			(required) [number] 	: items to print
 -- 		 - html 			(optional) [boolean] 	: display or not in html mode
--- 
+--
 -- RETURNS: table
--- 
-function Dataframe:tail(options)
-	options = options or {}
-	if type(options.html) ~= 'boolean' then options.html = false end
-	options.n_items = options.n_items or 10
+--
+function Dataframe:tail(...)
+	local args = dok.unpack(
+		{...},
+		'Dataframe.tail',
+		'Retrieves the last elements of a table',
+		{arg='n_items', type='integer', help='The number of items to display', default=10},
+		{arg='html', type='boolean', help='Display as html', default=false}
+	)
 	tail = {}
 
-	for i = self.n_rows - options.n_items, self.n_rows do
+	start_pos = self.n_rows - args.n_items + 1
+	if (start_pos < 1) then
+		start_pos = 1
+	end
+	for i = start_pos, self.n_rows do
 		for index,key in pairs(self.columns) do
 			if type(tail[key]) == 'nil' then tail[key] = {} end
 			tail[key][i] = self.dataset[key][i]
 		end
 	end
 
-	if options.html then
+	if args.html then
 		itorch.html(self:_to_html{data=tail, start_at=self.n_rows-10+1, end_at=self.n_rows})
 	else
 		return tail
 	end
 end
 
--- 
+--
 -- show() : print dataset
--- 
+--
 -- ARGS: nothing
--- 
+--
 -- RETURNS: nothing
--- 
+--
 function Dataframe:show()
 	head = self:head()
 	tail = self:tail()
@@ -509,43 +572,54 @@ function Dataframe:show()
 	end
 end
 
--- 
+--
 -- unique() : get unique elements given a column name
--- 
--- ARGS: - column_name (required) [string] : column to inspect
--- 
+--
+-- ARGS: - column_name (required) [string] :
+--
 -- RETURNS : table with unique values in key with the value 1 => {'unique1':1, 'unique2':1, 'unique6':1}
 --
-function Dataframe:unique(column_name, as_keys)
-	if type(as_keys) ~= 'boolean' then as_keys = true end
+function Dataframe:unique(...)
+	local args = dok.unpack(
+		{...},
+		'Dataframe.unique',
+		'get unique elements given a column name',
+		{arg='column_name', type='string', help='column to inspect', req=true},
+		{arg='as_keys', type='boolean',
+		 help='return table with unique as keys and a count for frequency',
+		 default=false}
+	)
 	unique = {}
 	unique_values = {}
 
 	for i = 1,self.n_rows do
-		current_key_value = self.dataset[column_name][i]
+		current_key_value = self.dataset[args.column_name][i]
+		if (current_key_value ~= nil) then
+			if type(unique[current_key_value]) == 'nil' then
+				unique[current_key_value] = 1
 
-		if type(unique[current_key_value]) == 'nil' then
-			unique[current_key_value] = 0
-
-			if as_keys == false then
-				table.insert(unique_values, current_key_value)
+				if args.as_keys == false then
+					table.insert(unique_values, current_key_value)
+				end
+			else
+				unique[current_key_value] = unique[current_key_value] + 1
 			end
 		end
 	end
 
-	if as_keys == false then
+	if args.as_keys == false then
 		return unique_values
 	else
 		return unique
 	end
 end
 
--- 
+--
 -- where('column_name','my_value') : find the first row where the column has the given value
--- 
+--
 -- ARGS: - column 		(required) [string] : column to browse
 --		 - item_to_find (required) [string] : value to find
--- 
+--
 -- RETURNS : table
 --
 function Dataframe:where(column, item_to_find)
@@ -558,12 +632,12 @@ function Dataframe:where(column, item_to_find)
 	return nil
 end
 
--- 
+--
 -- update(function(row) row['column'] == 'test' end, function(row) row['other_column'] = 'new_value' return row end) : Update according to condition
--- 
+--
 -- ARGS: - condition_function 	(required) [func] : function to test if the current row will be updated
 --		 - update_function 		(required) [func] : function to update the row
--- 
+--
 -- RETURNS : nothing
 --
 function Dataframe:update(condition_function, update_function)
@@ -578,15 +652,15 @@ function Dataframe:update(condition_function, update_function)
 	end
 end
 
--- 
+--
 -- set('my_value', 'column_name', 'new_value') : change value for a line
--- 
+--
 -- ARGS: - item_to_find 	(required)	[any]		: value to search
 -- 		 - column_name 		(required) 	[string] 	: column where to search
 --		 - new_value 		(required) 	[table]		: new value to set for the line
--- 
+--
 -- RETURNS: nothing
--- 
+--
 function Dataframe:set(item_to_find, column_name, new_value)
 	for i = 1, self.n_rows do
 		if self.dataset[column_name][i] == item_to_find then
@@ -606,7 +680,7 @@ function Dataframe:_to_html(options)--data, start_at, end_at, split_table)
 	options.split_table = options.split_table or 'none' -- none, top, bottom, all
 	options.start_at = options.start_at or 1
 	options.end_at = options.end_at or 10
-	
+
 	result = ''
 	n_rows = 0
 
@@ -645,7 +719,7 @@ function Dataframe:_extract_row(index_row)
 	row = {}
 
 	for index,key in pairs(self.columns) do
-		row[key] = df.dataset[key][index_row]
+		row[key] = self.dataset[key][index_row]
 	end
 
 	return row
@@ -659,5 +733,3 @@ function Dataframe:_update_single_row(index_row, new_row)
 
 	return row
 end
-
-
