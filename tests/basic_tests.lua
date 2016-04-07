@@ -68,6 +68,19 @@ function df_tests.table_schema()
   tester:eq(a.schema["thirdColumn"], 'string')
 end
 
+function df_tests.shape()
+  local a = Dataframe()
+  a:load_csv{path = "simple_short.csv",
+             verbose = false}
+  tester:eq(a:shape(), {rows = 4, cols = 3})
+
+  a:load_csv{path = "advanced_short.csv",
+             verbose = false}
+  tester:eq(a:shape(), {rows = 3, cols = 3})
+
+  a:load_table{data = {test = {1,nil,3}}}
+  tester:eq(a:shape(), {rows = 3, cols = 1})
+end
 
 function df_tests.table_test_two_columns()
   local a = Dataframe()
@@ -173,6 +186,7 @@ function df_tests.remove_index()
              verbose = false}
 
   a:remove_index(1)
+  print()
   tester:eq(a:shape(), {rows=3, cols=3},
     "The simple_short.csv is 4x3")
   tester:eq(a:get_column('Col A'), {2,3,4})
@@ -352,14 +366,22 @@ function df_tests.where()
   local a = Dataframe()
   a:load_csv{path = "simple_short.csv",
              verbose = false}
-  tester:eq(a:where('Col A', 2)["Col A"], 2)
-  tester:eq(a:where('Col A', 2)["Col C"], .1)
+  local ret_val = a:where('Col A', 2)
+  tester:eq(ret_val:get_column("Col A"), {2})
+  tester:eq(ret_val:get_column("Col C"), {.1})
+  tester:eq(torch.type(ret_val), "Dataframe")
+  tester:assertTableEq(ret_val:shape(), {rows = 1, cols = 3})
+
+  local ret_val = a:where('Col A', 222222222)
+  tester:assertTableEq(ret_val:shape(), {rows = 0, cols = 0})
+
   a:__init()
   a:load_csv{path = "advanced_short.csv",
              verbose = false}
-  tester:eq(a:where('Col B', 'B')['Col B'], 'B')
-  tester:eq(a:where('Col B', 'B')['Col C'], nil)
-  tester:eq(a:where('Col B', 'B')['Col A'], 2)
+  ret_val = a:where('Col B', 'B')
+  tester:eq(ret_val:shape(), {rows = 2, cols = 3})
+  tester:eq(ret_val:get_column('Col C'), {nil, 9})
+  tester:eq(ret_val:get_column('Col A'), {2, 3})
   -- TODO: Should the where B not return two rows or just the first row?
 end
 
@@ -411,11 +433,11 @@ function df_tests._to_html()
   -- TODO: not sure this is worth the effort
 end
 
-function df_tests._extract_row()
+function df_tests.get_row()
   local a = Dataframe()
   a:load_csv{path = "simple_short.csv",
              verbose = false}
-  tester:assertTableEq(a:_extract_row(1),{
+  tester:assertTableEq(a:get_row(1),{
     ['Col A']=1,
     ['Col B']=.2,
     ['Col C']=1000
@@ -433,7 +455,7 @@ function df_tests._update_single_row()
     ['Col C']=4
   }
 	a:_update_single_row(1, new)
-  tester:assertTableEq(a:_extract_row(1), new)
+  tester:assertTableEq(a:get_row(1), new)
 end
 
 tester:add(df_tests)
