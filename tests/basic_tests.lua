@@ -13,13 +13,6 @@ table.reduce = function (list, fn)
     end
     return acc
 end
-table.exact_length = function(tbl)
-  i = 0
-  for k,v in pairs(tbl) do
-    i = i + 1
-  end
-  return i
-end
 
 function df_tests.csv_test_correct_size()
    local a = Dataframe()
@@ -393,8 +386,6 @@ function df_tests.where()
   tester:eq(ret_val:get_column('Col A'), {2, 3})
   -- TODO: Should the where B not return two rows or just the first row?
 end
-
-
 
 function df_tests.update()
   local a = Dataframe()
