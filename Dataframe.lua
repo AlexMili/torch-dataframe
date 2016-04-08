@@ -567,16 +567,21 @@ function Dataframe:_get_numerics()
 	return new_dataset
 end
 
+--
+-- get_column_no : Gets the column number of the provided column
+--
+-- ARGS: - column_name (required) [string] : the name of the column
+--
+-- RETURNS: integer
 function Dataframe:get_column_no(column_name)
-	i = 0
-	for k,v in pairs(self.dataset) do
-		i = i + 1
-		if (column_name == k) then
+	for i = 1,#self.column_order do
+		if (column_name == self.column_order[i]) then
 			return i
 		end
 	end
 	return nil
 end
+
 --
 -- to_tensor() : convert dataset to tensor
 --
@@ -587,15 +592,25 @@ end
 function Dataframe:to_tensor(filename)
 	numeric_dataset = self:_get_numerics()
 	tensor_data = nil
-	i = 1
-	for k,v in pairs(numeric_dataset) do
-		next_col =  torch.Tensor(numeric_dataset[k])
-		if (torch.isTensor(tensor_data)) then
-			tensor_data = torch.cat(tensor_data, next_col, 2)
-		else
-			tensor_data = next_col
+	count = 1
+	for col_no = 1,#self.column_order do
+		found = false
+		col_name = self.column_order[col_no]
+		for k,v in pairs(numeric_dataset) do
+			if (k == col_name) then
+				found = true
+				break
+			end
 		end
-		i=i+1
+		if (found) then
+			next_col =  torch.Tensor(numeric_dataset[col_name])
+			if (torch.isTensor(tensor_data)) then
+				tensor_data = torch.cat(tensor_data, next_col, 2)
+			else
+				tensor_data = next_col
+			end
+			count = count + 1
+		end
 	end
 
 	if filename ~= nil then
