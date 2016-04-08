@@ -15,23 +15,56 @@ end
 
 function co_tests.table_check_load_no()
   local a = Dataframe()
-  local first = {1,2,3}
+  local first  = {1,2,3}
   local second = {"2","1","3"}
-  local third = {"2","a","3"}
-  local column_order = {[1] = 'firstColumn',
+  local third  = {"2","a","3"}
+  local column_order =
+    {[1] = 'firstColumn',
                         [2] = 'secondColumn',
                         [3] = 'thirdColumn'}
-  a:load_table{data={['firstColumn']=first,
-                     ['secondColumn']=second,
-                     ['thirdColumn']=third},
+  local data = {['firstColumn']=first,
+                 ['secondColumn']=second,
+                 ['thirdColumn']=third}
+  a:load_table{data=data,
                column_order = column_order}
   tester:eq(a.column_order, column_order)
 
   column_order[2] = nil
-  tester:assertError(a:load_table{data={['firstColumn']=first,
-                                       ['secondColumn']=second,
-                                       ['thirdColumn']=third},
-                                  column_order = column_order} )
+  tester:assertError(function()
+                    a:load_table{data=data,
+                                 column_order = column_order}
+                    end)
+end
+
+function co_tests.sub()
+   local a = Dataframe()
+   a:load_csv{path = "simple_short.csv",
+              verbose = false}
+
+   local org_shape = a:shape()
+   tester:eq(a:sub():shape(),
+             org_shape)
+   org_shape["rows"] = org_shape["rows"] - 1
+   tester:eq(a:sub(1, 3):shape(),
+             org_shape)
+   tester:eq(a:sub(2, 4):shape(),
+             org_shape)
+   tester:eq(a:sub(2, 4):get_column("Col A")[1], 2)
+end
+
+function co_tests.to_csv()
+  local a = Dataframe()
+  local first = {1,2,3}
+  local second = {"Wow this it's tricky","1,2","323."}
+  local third = {"\"","a\"a","3"}
+  data = {['firstColumn']=first,
+          ['secondColumn']=second,
+          ['thirdColumn']=third}
+  a:load_table{data=data}
+  a:to_csv{path = "tricky_csv.csv"}
+  a:load_csv{path = "tricky_csv.csv", verbose = false}
+  tester:assertTableEq(a.dataset, data)
+  os.remove("tricky_csv.csv")
 end
 
 tester:add(co_tests)
