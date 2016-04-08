@@ -20,6 +20,18 @@ function clone(t) -- shallow-copy a table
 	return target
 end
 
+table.exact_length = function(tbl)
+  i = 0
+  for k,v in pairs(tbl) do
+    i = i + 1
+  end
+  return i
+end
+
+function isint(n)
+	return n == math.floor(n)
+end
+
 -- END UTILS
 
 
@@ -30,10 +42,34 @@ local Dataframe = torch.class('Dataframe')
 --
 -- Returns: a new Dataframe object
 function Dataframe:__init()
+	self:_clean{schema = true}
+	self.print = {no_rows = 10,
+								max_col_width = 20}
+end
+
+-- Private function for cleaning all data
+function Dataframe:_clean(...)
+	local args = dok.unpack(
+		{...},
+		'Dataframe._clean',
+		'Cleans and resets all data parameters',
+		{arg='schema', type='boolean', help='Also clean schema', req=false})
 	self.dataset = {}
 	self.columns = {}
-	self.schema = {}
+	self.column_order = {}
 	self.n_rows = 0
+
+  if (args.schema) then
+		self.schema = {}
+	end
+end
+
+-- Private function for copying core settings to new Dataframe
+function Dataframe:_copy_meta(to)
+	to.column_order = clone(self.column_order)
+	to.schema = clone(self.schema)
+	to.print = clone(self.print)
+	return to
 end
 
 --
@@ -48,10 +84,6 @@ end
 -- RETURNS: nothing
 --
 function Dataframe:load_csv(...)
-	self.dataset = {}
-	self.columns = {}
-	self.n_rows = 0
-
 	local args = dok.unpack(
 		{...},
 		'Dataframe.load_csv',
@@ -63,6 +95,8 @@ function Dataframe:load_csv(...)
 		{arg='skip', type='number', help='skip this many lines at start of file', default=0},
 		{arg='verbose', type='boolean', help='verbose load', default=true}
 	)
+	-- Remove previous data
+	self:_clean()
 
 	self.dataset = csvigo.load{path = args.path,
 	                           header = args.header,
@@ -72,7 +106,48 @@ function Dataframe:load_csv(...)
 	self:_clean_columns()
 	self:_refresh_metadata()
 
+	self.column_order = self:_getCsvHeaderOrder(args.path, args.separator)
 	if args.infer_schema then self:_infer_schema() end
+end
+
+-- Returns the order of the original CSV
+function Dataframe:_getCsvHeaderOrder(filepath, separator)
+	file, msg = io.open(filepath, 'r')
+	if not file then error("Could not open file") end
+  local line = file:read()
+	file:close()
+	if not line then error("Could not read line") end
+	line = line:gsub('\r', '')
+
+	line = line .. separator -- end with separator
+	if separator == ' ' then separator = '%s+' end
+	local t = {}
+	count = 0
+	local fieldstart = 1
+	repeat
+		count = count + 1
+		-- next field is quoted? (starts with "?)
+	  if string.find(line, '^"', fieldstart) then
+			local a, c
+	    local i = fieldstart
+	    repeat
+	      -- find closing quote
+	      a, i, c = string.find(line, '"("?)', i+1)
+	    until c ~= '"'  -- quote not followed by quote?
+
+	    if not i then error('unmatched "') end
+			local f = string.sub(line, fieldstart+1, i-1)
+	    t[count] = (string.gsub(f, '""', '"'))
+
+			-- Move along the line to next separator
+	    fieldstart = string.find(line, separator, i) + 1
+	  else
+	     local nexti = string.find(line, separator, fieldstart)
+	     t[count] = string.sub(line, fieldstart, nexti-1)
+	     fieldstart = nexti + 1
+	  end
+	until fieldstart > string.len(line)
+	return t
 end
 
 --
@@ -84,28 +159,49 @@ end
 -- RETURNS: nothing
 --
 function Dataframe:load_table(...)
-
-	self.dataset = {}
-	self.columns = {}
-	self.n_rows = 0
-
 	local args = dok.unpack(
 		{...},
 		'Dataframe.load_table',
 		'Imports a table directly data into Dataframe',
 		{arg='data', type='table', help='table to import', req=true},
-		{arg='infer_schema', type='boolean', help='automatically detect columns\' type', default=true}
+		{arg='infer_schema', type='boolean', help='automatically detect columns\' type', default=true},
+		{arg='column_order', type='table', help='The column order', req=false}
 	)
+	self:_clean()
 
+	count = 0
 	for k,v in pairs(args.data) do
+		count = count + 1
+		self.column_order[count] = k
 		if (type(v) ~= 'table') then
 			self.dataset[k] = {v}
 		else
 			self.dataset[k] = v
 		end
 	end
-
 	self:_clean_columns()
+
+	if (args.column_order) then
+		no_cols = table.exact_length(self.dataset)
+		assert(#args.column_order == no_cols,
+					"The length of the column order " .. #args.column_order ..
+					" should be the same as the data " .. no_cols)
+		for i = 1,no_cols do
+			assert(args.column_order[i] ~= nil, "The column order should be continous." ..
+			       " Could not find column no. " .. i)
+			found = false
+		  for k,v in pairs(self.dataset) do
+				if (k == args.column_order[i]) then
+					found = true
+					break
+				end
+			end
+			assert(found, "Could not find the order column name " .. args.column_order[i] ..
+			              " in the data columns")
+		end
+		self.column_order = args.column_order
+	end
+
 	self:_refresh_metadata()
 
 	if args.infer_schema then self:_infer_schema() end
@@ -116,7 +212,11 @@ function Dataframe:_clean_columns()
 	temp_dataset = {}
 
 	for k,v in pairs(self.dataset) do
-		temp_dataset[trim(k)] = v
+		trimmed_column_name = trim(k)
+		assert(temp_dataset[trimmed_column_name] == nil,
+		       "The column name " .. trimmed_column_name ..
+					 " appears more than once in your data")
+		temp_dataset[trimmed_column_name] = v
 	end
 
 	self.dataset = temp_dataset
@@ -528,12 +628,40 @@ function Dataframe:to_csv(...)
 end
 
 --
+-- sub() : Selects a subset of rows and returns those
+--
+-- ARGS: - start 			(optional) [number] 	: row to start at
+-- 		   - stop 			(optional) [number] 	: last row to include
+--
+-- RETURNS: Dataframe
+--
+function Dataframe:sub(...)
+	local args = dok.unpack(
+		{...},
+		'Dataframe.sub',
+		'Retrieves a subset of elements',
+		{arg='start', type='integer', help='row to start at', default=1},
+		{arg='stop', type='integer', help='row to stop at', default=self.n_rows}
+	)
+	assert(args.start <= args.stop, "Stop argument can't be less than the start argument")
+	assert(args.start > 0, "Start position can't be less than 1")
+	assert(args.stop <= self.n_rows, "Stop position can't be more than available rows")
+
+	ret = Dataframe.new()
+	for i = args.start,args.stop do
+		ret:insert(self:get_row(i))
+	end
+	ret = self:_copy_meta(ret)
+	return ret
+end
+
+--
 -- head() : only display the table's first elements
 --
 -- ARGS: - n_items 			(required) [number] 	: items to print
 -- 		 - html 			(optional) [boolean] 	: display or not in html mode
 --
--- RETURNS: table
+-- RETURNS: Dataframe
 --
 function Dataframe:head(...)
 	local args = dok.unpack(
@@ -543,28 +671,33 @@ function Dataframe:head(...)
 		{arg='n_items', type='integer', help='The number of items to display', default=10},
 		{arg='html', type='boolean', help='Display as html', default=false}
 	)
-	head = {}
-	for i = 1, args.n_items do
-		for index,key in pairs(self.columns) do
-			if type(head[key]) == 'nil' then head[key] = {} end
-			head[key][i] = self.dataset[key][i]
-		end
-	end
+	head = self:sub(1, math.min(args.n_items, self.n_rows))
 
 	if args.html then
-		itorch.html(self:_to_html{data=head})
+		itorch.html(self:_to_html{data=head.dataset})
 	else
 		return head
 	end
 end
 
 --
+-- __pairs() : overload the pairs() function. This helps the tail()/head() to behave
+--             in the same way as previously
+--
+-- ARGS: - t (required) [Dataframe]
+--
+-- RETURNS: k, v as pairs
+function Dataframe:__pairs(...)
+	return pairs(self.dataset, ...)
+end
+
+--
 -- tail() : only display the table's last elements
 --
 -- ARGS: - n_items 			(required) [number] 	: items to print
--- 		 - html 			(optional) [boolean] 	: display or not in html mode
+-- 		   - html 			(optional) [boolean] 	: display or not in html mode
 --
--- RETURNS: table
+-- RETURNS: Dataframe
 --
 function Dataframe:tail(...)
 	local args = dok.unpack(
@@ -574,21 +707,11 @@ function Dataframe:tail(...)
 		{arg='n_items', type='integer', help='The number of items to display', default=10},
 		{arg='html', type='boolean', help='Display as html', default=false}
 	)
-	tail = {}
-
-	start_pos = self.n_rows - args.n_items + 1
-	if (start_pos < 1) then
-		start_pos = 1
-	end
-	for i = start_pos, self.n_rows do
-		for index,key in pairs(self.columns) do
-			if type(tail[key]) == 'nil' then tail[key] = {} end
-			tail[key][i] = self.dataset[key][i]
-		end
-	end
+	start_pos = math.max(1, self.n_rows - args.n_items + 1)
+	tail = self:sub(start_pos)
 
 	if args.html then
-		itorch.html(self:_to_html{data=tail, start_at=self.n_rows-10+1, end_at=self.n_rows})
+		itorch.html(self:_to_html{data=tail.dataset, start_at=self.n_rows-10+1, end_at=self.n_rows})
 	else
 		return tail
 	end
@@ -853,4 +976,99 @@ function Dataframe:_update_single_row(index_row, new_row)
 	end
 
 	return row
+end
+
+function Dataframe:__tostring()
+  local no_rows = math.min(self.print.no_rows, self.n_rows)
+	max_width = self.print.max_col_width
+
+	-- Get the width of each column
+	local lengths = {}
+	for k,v in pairs(self.dataset) do
+		lengths[k] = string.len(k)
+		for i = 1,no_rows do
+			if (v[i] ~= nil) then
+				if (lengths[k] < string.len(v[i])) then
+					lengths[k] = string.len(v[i])
+				end
+			end
+		end
+	end
+
+	add_padding = function(ret, out_len, target_len)
+		if (out_len < target_len) then
+			ret = ret .. string.rep(" ", (target_len - out_len))
+		end
+		return ret
+	end
+
+	table_width = 0
+	for _,l in pairs(lengths) do
+		table_width = table_width + math.min(l, max_width)
+	end
+	table_width = table_width +
+		3 * (table.exact_length(lengths) - 1) + -- All the " | "
+		2 + -- The beginning of each line "| "
+		2 -- The end of each line " |"
+
+	add_separator = function(ret, table_width)
+		ret = ret .. "\n+" .. string.rep("-", table_width - 2) .. "+"
+		return ret
+	end
+
+	ret = add_separator("", table_width)
+	ret = ret .. "\n| "
+	for i = 0,no_rows do
+		if (i == 0) then
+			row = {}
+			for _,k in pairs(self.columns) do
+				row[k] = k
+			end
+		else
+			row = self:get_row(i)
+		end
+
+		if (i > 0) then
+			-- Underline header with ----------------
+			if (i == 1) then
+				ret = add_separator(ret, table_width)
+			end
+			ret = ret .. "\n| "
+		end
+
+		for ii = 1,#self.column_order do
+			column_name = self.column_order[ii]
+			if (ii > 1) then
+				ret = ret .. " | "
+			end
+			if (self.schema[column_name] == "number") then
+				if (row[column_name] == nil) then
+					output = "NA"
+				else
+					output = string.format(row[column_name])
+				end
+				-- Right align numbers by padding to left
+				ret = add_padding(ret, string.len(output), lengths[column_name])
+				ret = ret .. output
+			else
+				if (row[column_name] == nil) then
+					output = "NA"
+				else
+					output = row[column_name]
+				end
+				if (string.len(output) > max_width) then
+					output = string.sub(output, 1, max_width - 3) .. "..."
+				end
+				ret = ret .. output
+				-- Padd left if needed
+				ret = add_padding(ret, string.len(output), math.min(max_width, lengths[column_name]))
+			end
+		end
+		ret = ret .. " |"
+	end
+	if (self.n_rows > no_rows) then
+		ret = ret .. "\n| ..." .. string.rep(" ", table_width - 5 - 1) .. "|"
+	end
+	ret = add_separator(ret, table_width) .. "\n"
+	return ret
 end
