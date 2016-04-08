@@ -32,6 +32,24 @@ function isint(n)
 	return n == math.floor(n)
 end
 
+local function escapeCsv(s, separator)
+   if string.find(s, '["' .. separator .. ']') then
+   --if string.find(s, '[,"]') then
+      s = '"' .. string.gsub(s, '"', '""') .. '"'
+   end
+   return s
+end
+
+-- convert an array of strings or numbers into a row in a csv file
+local function tocsv(t, separator, column_order)
+   local s = ""
+	 for i=1,#column_order do
+		 p = t[column_order[i]]
+     s = s .. separator .. escapeCsv(p, separator)
+   end
+   return string.sub(s, 2) -- remove first comma
+end
+
 -- END UTILS
 
 
@@ -638,8 +656,21 @@ function Dataframe:to_csv(...)
 		{arg='verbose', type='boolean', help='verbose load', default=true}
 	)
 
-	csvigo.save{path=args.path,data=self.dataset,
-	            separator=args.separator,verbose=args.verbose}
+	file, msg = io.open(args.path, 'w')
+	if not file then error("Could not open file") end
+	for i = 0,self.n_rows do
+		if (i == 0) then
+			row = {}
+			for _,k in pairs(self.columns) do
+				row[k] = k
+			end
+		else
+			row = self:get_row(i)
+		end
+		res, msg = file:write(tocsv(row, args.separator, self.column_order), "\n")
+		if (not res) then error(msg) end
+	end
+	file:close()
 end
 
 --

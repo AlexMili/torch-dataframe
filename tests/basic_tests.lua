@@ -53,9 +53,10 @@ function df_tests.table_schema()
   local first = {1,2,3}
   local second = {"2","1","3"}
   local third = {"2","a","3"}
-  a:load_table{data={['firstColumn']=first,
-                     ['secondColumn']=second,
-                     ['thirdColumn']=third}}
+  data = {['firstColumn']=first,
+          ['secondColumn']=second,
+          ['thirdColumn']=third}
+  a:load_table{data=data}
   tester:eq(a.schema["firstColumn"], 'number')
   tester:eq(a.schema["secondColumn"], 'number')
   tester:eq(a.schema["thirdColumn"], 'string')
