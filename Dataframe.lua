@@ -927,7 +927,8 @@ function Dataframe:_to_html(options)--data, start_at, end_at, split_table)
 	if options.split_table ~= 'top' then
 		result = result.. '<tr>'
 		result = result.. '<th></th>'
-		for k,v in pairs(options.data) do
+		for i = 1,#self.column_order do
+			k = self.column_order[i]
 			result = result.. '<th>' ..k.. '</th>'
 			if n_rows == 0 then n_rows = #options.data[k] end
 		end
@@ -937,7 +938,8 @@ function Dataframe:_to_html(options)--data, start_at, end_at, split_table)
 	for i = options.start_at, options.end_at do
 		result = result.. '<tr>'
 		result = result.. '<td>'..i..'</td>'
-		for k,v in pairs(options.data) do
+		for i = 1,#self.column_order do
+			k = self.column_order[i]
 			result = result.. '<td>' ..tostring(options.data[k][i]).. '</td>'
 		end
 		result = result.. '</tr>'
