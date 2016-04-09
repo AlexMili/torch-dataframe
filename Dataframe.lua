@@ -97,7 +97,33 @@ function Dataframe:load_table(...)
 		{arg='infer_schema', type='boolean', help='automatically detect columns\' type', default=true}
 	)
 
-	self.dataset = args.data
+	local length = -1
+	for k,v in pairs(args.data) do
+		if (type(v) == 'table') then
+			if (length > 1) then
+				assert(length == table.maxn(v),
+				       "The length of the provided tables do not match")
+			else
+				length = math.max(length, table.maxn(v))
+			end
+		else
+			length = 1
+		end
+	end
+	assert(length > 0, "Could not find any valid elements")
+
+	for k,v in pairs(args.data) do
+		if (type(v) ~= 'table') then
+			-- Populate the table if single value has been provided
+			tmp = {}
+			for i = 1,length do
+				tmp[i] = v
+			end
+			self.dataset[k] = tmp
+		else
+			self.dataset[k] = v
+		end
+	end
 
 	self:_clean_columns()
 	self:_refresh_metadata()
@@ -119,15 +145,26 @@ end
 -- Internal function to collect columns names
 function Dataframe:_refresh_metadata()
 	keyset={}
-	n=0
-
+  rows = -1
 	for k,v in pairs(self.dataset) do
-		n=n+1
-		keyset[n]=k
+		table.insert(keyset, k)
+
+		local no_rows_in_v = 1
+		if (type(v) == 'table') then
+			no_rows_in_v = table.maxn(v)
+		end
+		if (rows == -1) then
+			rows = no_rows_in_v
+		else
+		 	assert(rows == no_rows_in_v,
+			       "It seems that the number of elements in row " ..
+						 k .. " (# " .. no_rows_in_v .. ")" ..
+						 " don't match the number of elements in other rows #" .. rows)
+		 end
 	end
 
 	self.columns = keyset
-	self.n_rows = #self.dataset[self.columns[1]]
+	self.n_rows = rows
 end
 
 -- Internal function to detect columns types
@@ -164,7 +201,7 @@ end
 -- RETURNS: {rows=x,cols=y}
 --
 function Dataframe:shape()
-  return {rows=#self.dataset[self.columns[1]],cols=#self.columns}
+	return {rows=self.n_rows,cols=#self.columns}
 end
 
 --
@@ -261,33 +298,67 @@ end
 -- RETURNS: nothing
 --
 function Dataframe:insert(rows)
-	max_rows_to_insert = 0
-
+	assert(type(rows) == 'table')
+	no_rows_2_insert = 0
+	new_columns = {}
 	for k,v in pairs(rows) do
-		max_rows_to_insert = math.max(max_rows_to_insert, #rows[k])
-	end
+		-- Force all input into tables
+		if (type(v) ~= 'table') then
+			v = {v}
+			rows[k] = v
+		end
 
-	for i = 1,#self.columns do
-		-- If the column is not currently inserted by the user
-		if rows[self.columns[i]] == nil then
-			-- Default rows are inserted
-			for j = 1,max_rows_to_insert do
-				table.insert(self.dataset[self.columns[i]], 0)
-			end
+		-- Check input size
+		if (no_rows_2_insert == 0) then
+			no_rows_2_insert = table.maxn(v)
 		else
-			if #rows[self.columns[i]] < max_rows_to_insert then
-				for j = 1,#rows[self.columns[i]] do
-					table.insert(self.dataset[self.columns[i]], rows[self.columns[i]][j])
-				end
-				for i = #rows[self.columns[i]]+1,max_rows_to_insert do
-					table.insert(self.dataset[self.columns[i]], rows[self.columns[i]][j])
-				end
-			else
-				for j = 1,max_rows_to_insert do
-					table.insert(self.dataset[self.columns[i]], rows[self.columns[i]][j])
-				end
+			assert(no_rows_2_insert == table.maxn(v),
+			       "The rows aren't the same between the columns." ..
+						 " The " .. k .. " column has " .. " " .. table.maxn(v) .. " rows" ..
+						 " while previous columns had " .. no_rows_2_insert .. " rows")
+		end
+
+		-- Check if we need to add this column to the existing Dataframe
+		found = false
+		for _,column_name in pairs(self.columns) do
+			if (column_name == k) then
+				found = true
+				break
 			end
 		end
+		if (not found) then
+			table.insert(new_columns, k)
+		end
+	end
+
+	if (#self.columns == 0) then
+		self:load_table{data = rows}
+		return nil
+	end
+
+	for _, column_name in pairs(self.columns) do
+		-- If the column is not currently inserted by the user
+		if rows[column_name] == nil then
+			-- Default rows are inserted
+			for j = 1,no_rows_2_insert do
+				table.insert(self.dataset[column_name], 0)
+			end
+		else
+			for j = 1,no_rows_2_insert do
+				self.dataset[column_name][self.n_rows + j] = rows[column_name][j]
+			end
+		end
+	end
+	-- We need to add columns previously not present
+	for _, column_name in pairs(new_columns) do
+		self.dataset[column_name] = {}
+		for j = 1,no_rows_2_insert do
+			self.dataset[column_name][self.n_rows + j] = rows[column_name][j]
+		end
+	end
+	self:_refresh_metadata()
+	if (#new_columns > 0) then
+		self:_infer_schema()
 	end
 end
 
@@ -315,6 +386,7 @@ function Dataframe:remove_index(index)
 	for i = 1,#self.columns do
 		table.remove(self.dataset[self.columns[i]],index)
 	end
+	self:_refresh_metadata()
 end
 
 --
@@ -617,19 +689,48 @@ end
 --
 -- where('column_name','my_value') : find the first row where the column has the given value
 --
--- ARGS: - column 		(required) [string] : column to browse
+-- ARGS: - column 		(required) [string] : column to browse or a condition_function that
+--                                          takes a row and returns true/false depending
+--                                          on the row values
 --		 - item_to_find (required) [string] : value to find
 --
--- RETURNS : table
+-- RETURNS : Dataframe
 --
 function Dataframe:where(column, item_to_find)
+	if (type(column) ~= 'function') then
+		condition_function = function(row)
+			return row[column] == item_to_find
+		end
+	else
+		condition_function = column
+	end
+
+	local matches = self:_where(condition_function)
+	ret = Dataframe.new()
+	for _,i in pairs(matches) do
+		ret:insert(self:get_row(i))
+	end
+
+	return ret
+end
+
+--
+-- _where(column, item_to_find)
+--
+-- ARGS: - condition_function 	(required) [func] : function to test if the current row will be updated
+--
+-- RETURNS : table with the index of all the matches
+--
+function Dataframe:_where(condition_function)
+	local matches = {}
 	for i = 1, self.n_rows do
-		if self.dataset[column][i] == item_to_find then
-			return self:_extract_row(i)
+		local row = self:get_row(i)
+		if condition_function(row) then
+			table.insert(matches, i)
 		end
 	end
 
-	return nil
+	return matches
 end
 
 --
@@ -641,14 +742,11 @@ end
 -- RETURNS : nothing
 --
 function Dataframe:update(condition_function, update_function)
-	for i = 1, self.n_rows do
-		row = self:_extract_row(i)
-
-		if condition_function(row) then
-			new_row = update_function(row)
-
-			self:_update_single_row(i, new_row)
-		end
+	local matches = self:_where(condition_function)
+	for _, i in pairs(matches) do
+		row = self:get_row(i)
+		new_row = update_function(row)
+		self:_update_single_row(i, new_row)
 	end
 end
 
@@ -714,8 +812,16 @@ function Dataframe:_to_html(options)--data, start_at, end_at, split_table)
 	return result
 end
 
--- Internal function to extract a row from the dataset
-function Dataframe:_extract_row(index_row)
+--
+-- get_row(index_row): gets a single row from the Dataframe
+--
+-- ARGS: - index_row (required) (integer) The row to fetch
+--
+-- RETURNS: A table with the row content
+function Dataframe:get_row(index_row)
+	assert(index_row > 0 and
+	      index_row <= self:shape()["rows"],
+				"Cannot fetch rows outside the matrix, i.e. " .. index_row .. " should be <= " .. self:shape()["rows"] .. " and positive")
 	row = {}
 
 	for index,key in pairs(self.columns) do
