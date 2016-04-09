@@ -199,7 +199,6 @@ function df_tests.remove_index()
              verbose = false}
 
   a:remove_index(1)
-  print()
   tester:eq(a:shape(), {rows=3, cols=3},
     "The simple_short.csv is 4x3")
   tester:eq(a:get_column('Col A'), {2,3,4})
