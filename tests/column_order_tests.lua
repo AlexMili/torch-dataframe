@@ -60,12 +60,58 @@ function co_tests.to_csv()
   data = {['firstColumn']=first,
           ['secondColumn']=second,
           ['thirdColumn']=third}
-  a:load_table{data=data}
+  c_order = {[1] = "firstColumn",
+             [4] = "secondColumn",
+             [3] = "thirdColumn"}
+  tester:assertError(function()   a:load_table{data=data, column_order=c_order} end)
+  c_order = {[1] = "firstColumn",
+             [3] = "thirdColumn"}
+  tester:assertError(function()   a:load_table{data=data, column_order=c_order} end)
+  c_order = {[1] = "firstColumn",
+             [2] = "secondColumn",
+             [3] = "thirdColumn"}
+  a:load_table{data=data, column_order=c_order}
   a:to_csv{path = "tricky_csv.csv"}
   a:load_csv{path = "tricky_csv.csv", verbose = false}
   tester:assertTableEq(a.dataset, data)
+  tester:assertTableEq(a.column_order, c_order)
   os.remove("tricky_csv.csv")
 end
+
+function co_tests.to_tensor()
+  local a = Dataframe()
+  local first = {1,2,3}
+  local second = {"A","B","323."}
+  local third = 2.2
+  data = {['1st']=first,
+          ['2nd']=second,
+          ['3rd']=third}
+  c_order = {[1] = "1st",
+             [2] = "2nd",
+             [3] = "3rd"}
+  a:load_table{data=data, column_order=c_order}
+  tnsr = a:to_tensor()
+  tester:eq(tnsr:size(1),
+            a:shape()["rows"])
+  tester:eq(tnsr:size(2),
+            a:shape()["cols"] - 1)
+  sum = 0
+  col_no = a:get_column_no{column_name='1st', as_tensor = true}
+  for i=1,tnsr:size(1) do
+    sum = math.abs(tnsr[i][col_no] - a:get_column('1st')[i])
+  end
+  tester:assert(sum < 10^-5)
+
+  sum = 0
+  col_no = a:get_column_no{column_name='3rd', as_tensor = true}
+  for i=1,tnsr:size(1) do
+    sum = math.abs(tnsr[i][col_no] - a:get_column('3rd')[i])
+  end
+  tester:assert(sum < 10^-5)
+
+  tester:eq(a:get_column_no{'2nd', as_tensor = true}, nil)
+end
+
 
 tester:add(co_tests)
 tester:run()
