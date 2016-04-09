@@ -55,6 +55,19 @@ function df_tests.csv_test_mixed_column()
   tester:eq(a:get_column('Col C')[4], -222)
 end
 
+function df_tests.load_table_single_value()
+  local a = Dataframe()
+  a:load_table{data={['first_column']=3,['second_column']={10,11,12}}}
+  tester:assertTableEq(a:get_column("first_column"), {3,3,3})
+  tester:assertTableEq(a:get_column("second_column"), {10,11,12})
+
+  a:load_table{data={['first_column']={3,4,5},['second_column']={10,11,12}}}
+  tester:assertTableEq(a:get_column("first_column"), {3,4,5})
+  tester:assertTableEq(a:get_column("second_column"), {10,11,12})
+
+  tester:assertError(function() a:load_table{data={['first_column']={3,4,5},['second_column']={10,11}}} end)
+end
+
 function df_tests.table_schema()
   local a = Dataframe()
   local first = {1,2,3}
