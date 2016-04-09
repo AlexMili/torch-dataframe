@@ -97,9 +97,29 @@ function Dataframe:load_table(...)
 		{arg='infer_schema', type='boolean', help='automatically detect columns\' type', default=true}
 	)
 
+	local length = -1
+	for k,v in pairs(args.data) do
+		if (type(v) == 'table') then
+			if (length > 1) then
+				assert(length == table.maxn(v),
+				       "The length of the provided tables do not match")
+			else
+				length = math.max(length, table.maxn(v))
+			end
+		else
+			length = 1
+		end
+	end
+	assert(length > 0, "Could not find any valid elements")
+
 	for k,v in pairs(args.data) do
 		if (type(v) ~= 'table') then
-			self.dataset[k] = {v}
+			-- Populate the table if single value has been provided
+			tmp = {}
+			for i = 1,length do
+				tmp[i] = v
+			end
+			self.dataset[k] = tmp
 		else
 			self.dataset[k] = v
 		end
@@ -709,7 +729,7 @@ end
 --                                          on the row values
 --		 - item_to_find (required) [string] : value to find
 --
--- RETURNS : table
+-- RETURNS : Dataframe
 --
 function Dataframe:where(column, item_to_find)
 	if (type(column) ~= 'function') then
