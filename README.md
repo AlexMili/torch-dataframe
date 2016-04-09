@@ -1,4 +1,5 @@
-# Dataframe
+[![Build Status](https://travis-ci.org/AlexMili/torch-dataframe.svg?branch=master)](https://travis-ci.org/AlexMili/torch-dataframe)
+# Dataframe 
 Dataframe is a Torch7 class to load and manipulate Kaggle-style CSVs inspired from R and pandas Dataframes.
 
 ## Requirements
