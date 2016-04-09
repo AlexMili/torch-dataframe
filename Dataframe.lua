@@ -694,7 +694,7 @@ end
 --                                          on the row values
 --		 - item_to_find (required) [string] : value to find
 --
--- RETURNS : table
+-- RETURNS : Dataframe
 --
 function Dataframe:where(column, item_to_find)
 	if (type(column) ~= 'function') then
