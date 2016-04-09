@@ -197,7 +197,7 @@ function Dataframe:load_table(...)
 				length = math.max(length, table.maxn(v))
 			end
 		else
-			length = 1
+			length = math.max(1, length)
 		end
 	end
 	assert(length > 0, "Could not find any valid elements")
@@ -241,7 +241,6 @@ function Dataframe:load_table(...)
 	end
 
 	self:_refresh_metadata()
-
 	if args.infer_schema then self:_infer_schema() end
 end
 
@@ -609,12 +608,34 @@ end
 -- get_column_no : Gets the column number of the provided column
 --
 -- ARGS: - column_name (required) [string] : the name of the column
+--       - as_tensor (optional) [boolaen] : if return index position in tensor
 --
 -- RETURNS: integer
-function Dataframe:get_column_no(column_name)
+function Dataframe:get_column_no(...)
+	local args = dok.unpack(
+		{...},
+		'Dataframe.get_column_no',
+		'Gets the index number of the column name',
+		{arg='column_name', type='string', help='the name of the column', req=true},
+		{arg='as_tensor', type='boolean', help='if return index position in tensor', default=false}
+	)
+	number_count = 0
 	for i = 1,#self.column_order do
-		if (column_name == self.column_order[i]) then
-			return i
+		col_name = self.column_order[i]
+		if (self.schema[col_name] == "number") then
+			number_count = number_count + 1
+		end
+		if (args.column_name == col_name) then
+			if (args.as_tensor and
+			    self.schema[col_name] == "number") then
+				return number_count
+			elseif (not args.as_tensor) then
+				return i
+			else
+				-- Defaults to nil since the variable isn't in the tensor and therefore
+				-- irrelevant
+				break
+			end
 		end
 	end
 	return nil
