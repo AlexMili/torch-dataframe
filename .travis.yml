@@ -4,7 +4,7 @@ sudo: true
 
 branches:
   only:
-    - travis-integration
+    - master
 env:
   global:
     - LUAROCKS=2.3.0
