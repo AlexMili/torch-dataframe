@@ -351,12 +351,14 @@ function df_tests.tail()
   tester:eq(no_elmnts, a:shape()["rows"])
 end
 
-function df_tests.show()
-  local a = Dataframe()
-  a:load_csv{path = "simple_short.csv",
-             verbose = false}
-  -- skip test due to inability to redirect output
-  -- http://stackoverflow.com/questions/27008723/how-to-redirect-stdout-to-file-in-lua
+if (false) then
+  function df_tests.show()
+    local a = Dataframe()
+    a:load_csv{path = "simple_short.csv",
+               verbose = false}
+    -- skip test due to inability to redirect output
+    -- http://stackoverflow.com/questions/27008723/how-to-redirect-stdout-to-file-in-lua
+  end
 end
 
 function df_tests.unique()
