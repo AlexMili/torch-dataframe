@@ -145,22 +145,25 @@ function df_tests.add_column()
   tester:ne(a:get_column('Col A'), nil, "Col A should be present")
   tester:ne(a:get_column('Col B'), nil, "Col B should be present")
   tester:ne(a:get_column('Col C'), nil, "Col C should be present")
-  tester:assertTableEq(a:get_column('Col D'), d_col, "Col D isn't the expected value")
-  tester:assertTableEq(a:shape(), {rows=4, cols=4},
+  tester:eq(a:get_column('Col D'), d_col, "Col D isn't the expected value")
+  tester:eq(a:shape(), {rows=4, cols=4},
     "The simple_short.csv is 4x3 after add should be 4x4")
 
   tester:assertError(a:add_column('Col D'))
   a:add_column('Col E')
-  tester:assertTableEq(a:get_column('Col E'), {0,0,0,0})
+  col = a:get_column('Col E')
+  for _,v in pairs(col) do
+    tester:assert(isnan(v))
+  end
   a:add_column('Col F', 1)
-  tester:assertTableEq(a:get_column('Col F'), {1,1,1,1})
+  tester:eq(a:get_column('Col F'), {1,1,1,1})
 end
 
 function df_tests.get_column()
   local a = Dataframe()
   a:load_csv{path = "simple_short.csv",
              verbose = false}
-  tester:eq(a:get_column('Col D'), nil)
+  tester:assertError(function() a:get_column('Col D') end)
   tester:ne(a:get_column('Col C'), nil)
 end
 
@@ -387,19 +390,20 @@ function df_tests.where()
   tester:eq(ret_val:get_column("Col A"), {2})
   tester:eq(ret_val:get_column("Col C"), {.1})
   tester:eq(torch.type(ret_val), "Dataframe")
-  tester:assertTableEq(ret_val:shape(), {rows = 1, cols = 3})
+  tester:eq(ret_val:shape(), {rows = 1, cols = 3})
 
   local ret_val = a:where('Col A', 222222222)
-  tester:assertTableEq(ret_val:shape(), {rows = 0, cols = 0})
+  tester:eq(ret_val:shape(), {rows = 0, cols = 0})
 
   a:__init()
   a:load_csv{path = "advanced_short.csv",
              verbose = false}
   ret_val = a:where('Col B', 'B')
   tester:eq(ret_val:shape(), {rows = 2, cols = 3})
-  tester:eq(ret_val:get_column('Col C'), {nil, 9})
+  col_c = ret_val:get_column('Col C')
+  tester:assert(isnan(col_c[1]))
+  tester:eq(col_c[2], 9)
   tester:eq(ret_val:get_column('Col A'), {2, 3})
-  -- TODO: Should the where B not return two rows or just the first row?
 end
 
 function df_tests.update()

@@ -3,6 +3,7 @@
 require 'torch'
 require 'csvigo'
 require 'dok'
+class = require 'class'
 
 -- UTILS
 
@@ -32,6 +33,10 @@ function isint(n)
 	return n == math.floor(n)
 end
 
+function isnan(n)
+	return n ~= n
+end
+
 local function escapeCsv(s, separator)
    if string.find(s, '["' .. separator .. ']') then
    --if string.find(s, '[,"]') then
@@ -45,6 +50,9 @@ local function tocsv(t, separator, column_order)
    local s = ""
 	 for i=1,#column_order do
 		 p = t[column_order[i]]
+		 if (isnan(p)) then
+			 p = ''
+		 end
      s = s .. separator .. escapeCsv(p, separator)
    end
    return string.sub(s, 2) -- remove first comma
@@ -76,6 +84,7 @@ function Dataframe:_clean(...)
 	self.columns = {}
 	self.column_order = {}
 	self.n_rows = 0
+	self.categorical = {}
 
   if (args.schema) then
 		self.schema = {}
@@ -87,6 +96,7 @@ function Dataframe:_copy_meta(to)
 	to.column_order = clone(self.column_order)
 	to.schema = clone(self.schema)
 	to.print = clone(self.print)
+	to.categorical = clone(self.categorical)
 	return to
 end
 
@@ -123,6 +133,17 @@ function Dataframe:load_csv(...)
 													   verbose = args.verbose}
 	self:_clean_columns()
 	self:_refresh_metadata()
+
+	-- Change all missing values to nan
+	for k,v in pairs(self.dataset) do
+		for i = 1,self.n_rows do
+			if (v[i] == nil or
+			    v[i] == '') then
+			  v[i] = 0/0
+			end
+		end
+		self.dataset[k] = v
+	end
 
 	self.column_order = self:_getCsvHeaderOrder(args.path, args.separator)
 	if args.infer_schema then self:_infer_schema() end
@@ -289,25 +310,44 @@ function Dataframe:_infer_schema(explore_factor)
 	factor = explore_factor or 0.5
 	rows_to_explore = math.ceil(self.n_rows * factor)
 
-	for index,key in pairs(self.columns) do
+	for _,key in pairs(self.columns) do
 		is_a_numeric_column = true
 		self.schema[key] = 'string'
-
-		for i = 1, rows_to_explore do
-			-- If the current cell is not a number and not nil (in case of empty cell, type inference is not compromised)
-			if tonumber(self.dataset[key][i]) == nil and self.dataset[key][i] ~= nil and self.dataset[key][i] ~= '' then
-				is_a_numeric_column = false
-				break
-			end
-		end
-
-		if is_a_numeric_column then
+		if (self:is_categorical(key)) then
 			self.schema[key] = 'number'
-			for i = 1, self.n_rows do
-				self.dataset[key][i] = tonumber(self.dataset[key][i])
+		else
+			for i = 1, rows_to_explore do
+				-- If the current cell is not a number and not nil (in case of empty cell, type inference is not compromised)
+				local val = self.dataset[key][i]
+				if tonumber(val) == nil and
+				  val ~= nil and
+					val ~= '' and
+					not isnan(val)
+					then
+					is_a_numeric_column = false
+					break
+				end
+			end
+
+			if is_a_numeric_column then
+				self.schema[key] = 'number'
+				for i = 1, self.n_rows do
+					self.dataset[key][i] = tonumber(self.dataset[key][i])
+				end
 			end
 		end
 	end
+end
+
+--
+-- is_numerical(column_name) : checks if column is numerical
+--
+-- ARGS: - column_name (required) [string]: the column to check
+--
+-- RETURNS: boolean
+function Dataframe:is_numerical(column_name)
+	assert(self:has_column(column_name), "Could not find column: " .. tostring(column_name))
+	return self.schema[column_name] == "number"
 end
 
 --
@@ -322,16 +362,14 @@ function Dataframe:shape()
 end
 
 --
--- drop('columnName') : delete column from dataset
+-- drop('column_name') : delete column from dataset
 --
 -- ARGS: - column_name (required) [string]	: column to delete
 --
 -- RETURNS: nothing
 --
 function Dataframe:drop(column_name)
-	if (not self:has_column(column_name)) then
-		error("The column " .. column_name .. " doesn't exist")
-	end
+	assert(self:has_column(column_name), "The column " .. column_name .. " doesn't exist")
 	self.dataset[column_name] = nil
 	temp_dataset = {}
 	-- Slightly crude method but can't get self.dataset == {} to works
@@ -346,6 +384,7 @@ function Dataframe:drop(column_name)
 
 	if (not empty) then
 		self.dataset = temp_dataset
+		self.categorical[column_name] = nil
 		self:_refresh_metadata()
 	else
 		self:__init()
@@ -353,7 +392,7 @@ function Dataframe:drop(column_name)
 end
 
 --
--- add_column('columnName', 0) : add new column to Dataframe
+-- add_column('column_name', 0) : add new column to Dataframe
 --
 -- ARGS: - column_name 		(required) 				[string]	: column name to add
 --		 - default_value 	(optional, default=0) 	[any]		: column default value
@@ -361,21 +400,23 @@ end
 -- RETURNS: nothing
 --
 function Dataframe:add_column(column_name, default_value)
-	if (self:has_column('column_name')) then
-		error("The column " .. column_name .. " already exists in the dataset")
-	end
+	assert(not self:has_column('column_name'), "The column " .. column_name .. " already exists in the dataset")
 
   if (type(default_value) == 'table') then
-		assert(#default_value == self.n_rows,
+		assert(table.maxn(default_value) == self.n_rows,
 		       'The default values don\'t match the number of rows')
 	elseif (default_value == nil) then
-		default_value =  0
+		default_value =  0/0
 	end
 
 	self.dataset[column_name] = {}
 	for i = 1, self.n_rows do
 		if (type(default_value) == 'table') then
-			self.dataset[column_name][i] = default_value[i]
+			val = default_value[i]
+			if (val == nil) then
+				val = 0/0
+			end
+			self.dataset[column_name][i] = val
 		else
 			self.dataset[column_name][i] = default_value
 		end
@@ -385,7 +426,7 @@ function Dataframe:add_column(column_name, default_value)
 end
 
 function Dataframe:has_column(column_name)
-	for k,v in pairs(self.columns) do
+	for _,v in pairs(self.columns) do
     if (v == column_name) then
 			return true
 		end
@@ -393,15 +434,41 @@ function Dataframe:has_column(column_name)
 	return false
 end
 --
--- get_column('columnName') : get column content
+-- get_column('column_name') : get column content
 --
--- ARGS: - column_name (required) [string] : column needed
+-- ARGS: - column_name (required) [string] : column requested
+--       - as_raw      (optional) [boolean]: if data should be converted to actual values
 --
 -- RETURNS: column in table format
 --
-function Dataframe:get_column(column_name)
-	if (self:has_column(column_name)) then
-		return self.dataset[column_name]
+function Dataframe:get_column(...)
+	local args = dok.unpack(
+		{...},
+		'Dataframe.get_column',
+		'Gets the column data from the self.dataset',
+		{arg='column_name', type='table', help='column requested', req=true},
+		{arg='as_raw', type='boolean', help='convert categorical values to original', default=false},
+		{arg='as_tensor', type='boolean', help='convert to tensor', default=false}
+	)
+	assert(self:has_column(args.column_name), "Could not find column: " .. tostring(args.column_name))
+	assert(not args.as_tensor or
+	       self:is_numerical(args.column_name),
+				 "Converting to tensor requires a numerical/categorical variable." ..
+				 " The column " .. tostring(args.column_name) ..
+				 " is of type " .. tostring(self.schema[args.column_name]))
+	if (self:has_column(args.column_name)) then
+		column_data = self.dataset[args.column_name]
+		if (not args.as_tensor and
+		    not args.as_raw and
+		    self:is_categorical(args.column_name)) then
+			return self:to_categorical(column_data, args.column_name)
+		else
+			if (args.as_tensor) then
+				return torch.Tensor(column_data)
+			else
+				return column_data
+			end
+		end
 	else
 		return nil
 	end
@@ -456,27 +523,32 @@ function Dataframe:insert(rows)
 	for _, column_name in pairs(self.columns) do
 		-- If the column is not currently inserted by the user
 		if rows[column_name] == nil then
-			-- Default rows are inserted
+			-- Default rows are inserted with nan values (0/0)
 			for j = 1,no_rows_2_insert do
-				table.insert(self.dataset[column_name], 0)
+				table.insert(self.dataset[column_name], 0/0)
 			end
 		else
 			for j = 1,no_rows_2_insert do
-				self.dataset[column_name][self.n_rows + j] = rows[column_name][j]
+				value = rows[column_name][j]
+				if (self:is_categorical(column_name)) then
+					vale = self:_get_raw_cat_key(column_name, value)
+				end -- TODO: Should we convert string columns with '' to nan?
+				self.dataset[column_name][self.n_rows + j] = value
 			end
 		end
 	end
 	-- We need to add columns previously not present
 	for _, column_name in pairs(new_columns) do
 		self.dataset[column_name] = {}
+		for j = 1,self.n_rows do
+			self.dataset[column_name][j] = 0/0
+		end
 		for j = 1,no_rows_2_insert do
 			self.dataset[column_name][self.n_rows + j] = rows[column_name][j]
 		end
 	end
 	self:_refresh_metadata()
-	if (#new_columns > 0) then
-		self:_infer_schema()
-	end
+	self:_infer_schema()
 end
 
 --
@@ -491,9 +563,10 @@ function Dataframe:reset_column(column_name, new_value)
 	if type(column_name) == 'string' then
 		column_name = {column_name}
 	end
-	for k in pairs(column_name) do
+	for _,k in pairs(column_name) do
+		assert(self:has_column(k), "Could not find column: " .. tostring(k))
 		for i = 1,self.n_rows do
-			self.dataset[column_name[k]][i] = new_value
+			self.dataset[k][i] = new_value
 		end
 	end
 end
@@ -515,6 +588,12 @@ end
 -- RETURNS: nothing
 --
 function Dataframe:rename_column(old_column_name, new_column_name)
+	assert(self:has_column(old_column_name), "Could not find column: " .. tostring(old_column_name))
+	assert(not self:has_column(new_column_name), "There is already a column named: " .. tostring(new_column_name))
+	assert(type(new_column_name) == "string" or
+	       type(new_column_name) == "number",
+				 "The column name can only be a number or a string value, yours is: " .. type(new_column_name))
+
 	temp_dataset = {}
 
 	for k,v in pairs(self.dataset) do
@@ -526,7 +605,12 @@ function Dataframe:rename_column(old_column_name, new_column_name)
 	end
 
 	self.dataset = temp_dataset
+	if (self:is_categorical(old_column_name)) then
+		self.categorical[new_column_name] = self.categorical[old_column_name]
+		self.categorical[old_column_name] = nil
+	end
 	self:_refresh_metadata()
+	self:_infer_schema()
 end
 
 --
@@ -539,21 +623,22 @@ end
 function Dataframe:count_na()
 	count = {}
 
-	for index,key in pairs(self.columns) do
+	for _,column_name in pairs(self.columns) do
 		counter = 0
 		for i = 1, self.n_rows do
-			if self.dataset[key][i] == nil or self.dataset[key][i] == '' then
+			local val = self.dataset[column_name][i]
+			if val == nil or val == '' or isnan(val) then
 				counter = counter + 1
 			end
 		end
-		count[key] = counter
+		count[column_name] = counter
 	end
 
 	return count
 end
 
 --
--- fill_na('columnName', 0) : replace missing value in a specific column
+-- fill_na('column_name', 0) : replace missing value in a specific column
 --
 -- ARGS: - column_name 		(required) 				[string]	: column name to fill
 --		 - default_value 	(optional, default=0) 	[any]		: default missing value
@@ -562,10 +647,12 @@ end
 --
 -- Enhancement : detect nil/na value at first reading or _infer_schema
 function Dataframe:fill_na(column_name, default_value)
+	assert(self:has_column(column_name), "Could not find column: " .. tostring(column_name))
 	default = default_value or 0
 
 	for i = 1, self.n_rows do
-		if self.dataset[column_name][i] == nil or self.dataset[column_name][i] == '' then
+		local val = self.dataset[column_name][i]
+		if val == nil or val == '' or isnan(val) then
 			self.dataset[column_name][i] = default
 		end
 	end
@@ -582,12 +669,8 @@ end
 function Dataframe:fill_all_na(default_value)
 	default = default_value or 0
 
-	for index,key in pairs(self.columns) do
-		for i = 1, self.n_rows do
-			if self.dataset[key][i] == nil or self.dataset[key][i] == '' then
-				self.dataset[key][i] = default
-			end
-		end
+	for _,key in pairs(self.columns) do
+		self:fill_na(key, default_value)
 	end
 end
 
@@ -596,7 +679,7 @@ function Dataframe:_get_numerics()
 	new_dataset = {}
 
 	for k,v in pairs(self.dataset) do
-		if self.schema[k] == 'number' then
+		if (self:is_numerical(k)) then
 			new_dataset[k] = v
 		end
 	end
@@ -621,13 +704,13 @@ function Dataframe:get_column_no(...)
 	)
 	number_count = 0
 	for i = 1,#self.column_order do
-		col_name = self.column_order[i]
-		if (self.schema[col_name] == "number") then
+		column_name = self.column_order[i]
+		if (self.schema[column_name] == "number") then
 			number_count = number_count + 1
 		end
-		if (args.column_name == col_name) then
+		if (args.column_name == column_name) then
 			if (args.as_tensor and
-			    self.schema[col_name] == "number") then
+			    self:is_numerical(column_name)) then
 				return number_count
 			elseif (not args.as_tensor) then
 				return i
@@ -654,15 +737,15 @@ function Dataframe:to_tensor(filename)
 	count = 1
 	for col_no = 1,#self.column_order do
 		found = false
-		col_name = self.column_order[col_no]
+		column_name = self.column_order[col_no]
 		for k,v in pairs(numeric_dataset) do
-			if (k == col_name) then
+			if (k == column_name) then
 				found = true
 				break
 			end
 		end
 		if (found) then
-			next_col =  torch.Tensor(numeric_dataset[col_name])
+			next_col =  torch.Tensor(numeric_dataset[column_name])
 			if (torch.isTensor(tensor_data)) then
 				tensor_data = torch.cat(tensor_data, next_col, 2)
 			else
@@ -850,17 +933,23 @@ function Dataframe:unique(...)
 		{arg='column_name', type='string', help='column to inspect', req=true},
 		{arg='as_keys', type='boolean',
 		 help='return table with unique as keys and a count for frequency',
-		 default=false}
+		 default=false},
+		{arg='as_raw', type='boolean',
+ 		 help='return table with raw data without categorical transformation',
+ 		 default=false}
 	)
-	assert(self.dataset[args.column_name] ~= nil,
-	       "Invalid column name: " .. args.column_name)
+	assert(self:has_column(args.column_name),
+	       "Invalid column name: " .. tostring(args.column_name))
 	unique = {}
 	unique_values = {}
 	count = 0
 
+	column_values = self:get_column{column_name = args.column_name,
+																	as_raw = args.as_raw}
 	for i = 1,self.n_rows do
-		current_key_value = self.dataset[args.column_name][i]
-		if (current_key_value ~= nil) then
+		current_key_value = column_values[i]
+		if (current_key_value ~= nil and
+		    not isnan(current_key_value)) then
 			if (unique[current_key_value] == nil) then
 				count = count + 1
 				unique[current_key_value] = count
@@ -893,22 +982,23 @@ function Dataframe:value_counts(...)
 		'get value counts of elements given a column name',
 		{arg='column_name', type='string', help='column to inspect', req=true}
 	)
-	assert(self.dataset[args.column_name] ~= nil,
-	       "Invalid column name: " .. args.column_name)
-	unique = {}
+	assert(self:has_column(args.column_name),
+	       "Invalid column name: " .. tostring(args.column_name))
+	count = {}
 
+	column_data = self:get_column(args.column_name)
 	for i = 1,self.n_rows do
-		current_key_value = self.dataset[args.column_name][i]
-		if (current_key_value ~= nil) then
-			if (unique[current_key_value] == nil) then
-				unique[current_key_value] = 1
+		current_key_value = column_data[i]
+		if (not isnan(current_key_value)) then
+			if (count[current_key_value] == nil) then
+				count[current_key_value] = 1
 			else
-				unique[current_key_value] = unique[current_key_value] + 1
+				count[current_key_value] = count[current_key_value] + 1
 			end
 		end
 	end
 
-  return unique
+  return count
 end
 
 --
@@ -931,11 +1021,13 @@ function Dataframe:where(column, item_to_find)
 	end
 
 	local matches = self:_where(condition_function)
-	ret = Dataframe.new()
+	ret = class.new('Dataframe')
 	for _,i in pairs(matches) do
-		ret:insert(self:get_row(i))
+		val = self:get_row(i)
+		ret:insert(val)
 	end
 
+	ret = self:_copy_meta(ret)
 	return ret
 end
 
@@ -985,17 +1077,33 @@ end
 -- RETURNS: nothing
 --
 function Dataframe:set(item_to_find, column_name, new_value)
+	assert(self:has_column(column_name), "Could not find column: " .. tostring(column_name))
+	temp_converted_cat_cols = {}
+	column_data = self:get_column(column_name)
 	for i = 1, self.n_rows do
-		if self.dataset[column_name][i] == item_to_find then
-			for j = 1,#self.columns do
+		if column_data[i] == item_to_find then
+			for _,k in pairs(self.columns) do
 				-- If the column is being updated by the user
-				if new_value[self.columns[j]] ~= nil then
-					self.dataset[self.columns[j]][i] = new_value[self.columns[j]]
+				if new_value[k] ~= nil then
+					if (self:is_categorical(k)) then
+						new_value[k] = self:_get_raw_cat_key(column_name, new_value[k])
+					end
+					self.dataset[k][i] = new_value[k]
 				end
 			end
 			break
 		end
 	end
+end
+
+-- Internal function for getting raw value for a categorical variable
+function Dataframe:_get_raw_cat_key(column_name, key)
+	keys = self:get_cat_keys(column_name)
+	if (keys[key] ~= nil) then
+		return keys[key]
+	end
+
+	return self:add_cat_key(column_name, key)
 end
 
 -- Internal function to convert a table to html (only works for 1D table)
@@ -1052,7 +1160,12 @@ function Dataframe:get_row(index_row)
 	row = {}
 
 	for index,key in pairs(self.columns) do
-		row[key] = self.dataset[key][index_row]
+		if (self:is_categorical(key)) then
+			row[key] = self:to_categorical(self.dataset[key][index_row],
+			                               key)
+		else
+			row[key] = self.dataset[key][index_row]
+		end
 	end
 
 	return row
@@ -1060,7 +1173,10 @@ end
 
 -- Internal function to update a single row from data and index
 function Dataframe:_update_single_row(index_row, new_row)
-	for index,key in pairs(self.columns) do
+	for _,key in pairs(self.columns) do
+		if (self:is_categorical(key)) then
+			new_row[key] = self:_get_raw_cat_key(key, new_row[key])
+		end
 		self.dataset[key][index_row] = new_row[key]
 	end
 
@@ -1130,21 +1246,12 @@ function Dataframe:__tostring()
 			if (ii > 1) then
 				ret = ret .. " | "
 			end
-			if (self.schema[column_name] == "number") then
-				if (row[column_name] == nil) then
-					output = "NA"
-				else
-					output = string.format(row[column_name])
-				end
+			output = tostring(row[column_name])
+			if (self:is_numerical(column_name)) then
 				-- Right align numbers by padding to left
 				ret = add_padding(ret, string.len(output), lengths[column_name])
 				ret = ret .. output
 			else
-				if (row[column_name] == nil) then
-					output = "NA"
-				else
-					output = row[column_name]
-				end
 				if (string.len(output) > max_width) then
 					output = string.sub(output, 1, max_width - 3) .. "..."
 				end
@@ -1160,4 +1267,232 @@ function Dataframe:__tostring()
 	end
 	ret = add_separator(ret, table_width) .. "\n"
 	return ret
+end
+
+--
+-- as_categorical('column_name') : set a column to categorical
+--
+-- ARGS: - column_name 		(required) 	[string] 	: column to set to categorical
+--
+-- RETURNS: nothing
+function Dataframe:as_categorical(column_name)
+	assert(self:has_column(column_name), "Could not find column: " .. column_name)
+	assert(not self:is_categorical(column_name), "Column already categorical")
+	keys = self:unique{column_name = column_name,
+										 as_keys = true,
+										 trim_values = true}
+	-- drop '' as a key
+	keys[''] = nil
+	column_data = self:get_column(column_name)
+	self.categorical[column_name] = keys
+	new_column = {}
+	for i,v in ipairs(column_data) do
+		numerical_val = keys[v]
+		new_column[i] = numerical_val
+	end
+	self.dataset[column_name] = new_column
+	self:_infer_schema()
+end
+
+--
+-- add_cat_key('column_name', 'key') ; adds a key to the keyset of a categorical column
+--
+-- ARGS: -column_name (required) [string] : the column name
+--       -key         (required) [string|number] : the new key
+--
+-- RETURNS: new index value for key
+function Dataframe:add_cat_key(column_name, key)
+	assert(self:has_column(column_name), "Could not find column: " .. tostring(column_name))
+	assert(self:is_categorical(column_name), "The column isn't categorical: " .. tostring(column_name))
+	assert(type(key) == "number" or
+	       type(key) == "string",
+				 "Keys can only be strings or numbers")
+	keys = self:get_cat_keys(column_name)
+	key_index = table.exact_length(keys) + 1
+	keys[key] = key_index
+	self.categorical[column_name] = keys
+	return key_index
+end
+
+--
+-- as_string('column_name') : converts a column to string, reverts the as_categorical
+--
+-- ARGS: - column_name 		(required) 	[string] 	: column to set to string
+--
+-- RETURNS: nothing
+function Dataframe:as_string(column_name)
+	assert(self:has_column(column_name), "Could not find column: " .. column_name)
+	if (self:is_categorical(column_name)) then
+		self.dataset[column_name] = self:get_column{column_name = column_name,
+	                                              as_raw = false}
+		self.categorical[column_name] = nil
+	elseif(self:is_numerical(column_name)) then
+		data = self:get_column(column_name)
+		for i = 1,#self.n_rows do
+			if (not isnan(data[i])) then
+				data[i] = tostring(data[i])
+			end
+		end
+		self.dataset[column_name] = data
+	end
+	self:_refresh_metadata()
+	self:_infer_schema()
+end
+
+--
+-- clean_categorical('column_name') : removes any categories no longer present from the keys
+--
+-- ARGS: see dok.unpack
+--
+-- RETURNS: void
+function Dataframe:clean_categorical(...)
+	local args = dok.unpack(
+		{...},
+		{"Dataframe.clean_categorical"},
+		{"Removes categorical values no longer present in the column"},
+		{arg='column_name', type='string', help='the name of the column', req=true},
+		{arg='reset_keys', type='boolean', help='if all the keys should be reinitialized', default=false})
+	assert(self:has_column(args.column_name), "Couldn't find column: " .. tostring(args.column_name))
+	assert(self:is_categorical(args.column_name), tostring(args.column_name) .. " isn't categorical")
+	if (args.reset_keys) then
+		self:as_string(args.column_name)
+		self:as_categorical(args.column_name)
+	else
+		keys = self:get_cat_keys(args.column_name)
+		vals = self:get_column(args.column_name)
+		found_keys = {}
+		for _,v in pairs(vals) do
+			if (keys[v] ~= nil) then
+				found_keys[v] = v
+			end
+		end
+		for v,_ in pairs(keys) do
+			if (found_keys[v] == nil) then
+				keys[v] = nil
+			end
+		end
+		self.categorical[args.column_name] = keys
+	end
+end
+
+--
+-- is_categorical('column_name') : check if a column is categorical
+--
+-- ARGS: - column_name 		(required) 	[string] 	: column to check
+--
+-- RETURNS: boolean
+function Dataframe:is_categorical(column_name)
+	assert(self:has_column(column_name), "This column doesn't exist")
+	return self.categorical[column_name] ~= nil
+end
+
+--
+-- get_cat_keys('column_name') : get keys for a column
+--
+-- ARGS: - column_name 		(required) 	[string] 	: column to check
+--
+-- RETURNS: table
+function Dataframe:get_cat_keys(column_name)
+	assert(self:has_column(column_name), "Could not find column: " .. tostring(column_name))
+	assert(self:is_categorical(column_name), "The " .. tostring(column_name) .. " isn't a categorical column")
+  return self.categorical[column_name]
+end
+--
+-- to_categorical(...) : Converts values to categorical according to a column's keys
+--
+-- ARGS: - data   (required) [number|table|tensor] : The numerical data to convert
+--       - column_name (required) [string]         : The column name which keys to use
+--
+-- RETURNS: string if single value entered or table if multiple values
+function Dataframe:to_categorical(...)
+	local args = dok.unpack(
+		{...},
+		'Dataframe.to_categorical',
+		'Converts values to categorical according to a column\'s keys',
+		{arg='data', type='number|string|table|tensor', help='The data to be converted', req=true},
+		{arg='column_name', type='string', help='The name of the column', req=true})
+	assert(self:has_column(args.column_name), "Invalid column name: " .. args.column_name)
+	assert(self:is_categorical(args.column_name), "Column isn't categorical")
+	local single_value = false
+	if (torch.isTensor(args.data)) then
+		assert(#args.data:size() == 1,
+		       "The function currently only supports single dimensional tensors")
+		local tmp = {}
+		for i = 1,args.data:size()[1] do
+			table.insert(tmp, args.data[i])
+		end
+		args.data = tmp
+	elseif(type(args.data) ~= 'table') then
+		val = tonumber(args.data)
+		assert(type(val) == 'number', "The data " .. args.data .. " is not a valid number")
+		args.data = val
+		assert(math.floor(args.data) == args.data, "The data is not a valid integer")
+		single_value = true
+		args.data = {args.data}
+	else
+		for k,v in pairs(args.data) do
+			val = tonumber(args.data[k])
+			assert(type(val) == 'number',
+			       "The data ".. tostring(val) .." in position " .. k .. " is not a valid number")
+			args.data[k] = val
+			assert(math.floor(args.data[k]) == args.data[k],
+			       "The data " .. args.data[k] .. " in position " .. k .. " is not a valid integer")
+		end
+	end
+
+	ret = {}
+	for _,v in pairs(args.data) do
+		local val = nil
+		for k,index in pairs(self.categorical[args.column_name]) do
+			if (index == v) then
+				val = k
+				break
+			end
+		end
+		assert(val ~= nil,
+		       v .. " isn't present in the keyset")
+		table.insert(ret, val)
+	end
+	if (single_value) then
+		return ret[1]
+	else
+		return ret
+	end
+end
+
+--
+-- from_categorical(...) : Converts categorical to numerical according to a column's keys
+--
+-- ARGS: - data   (required) [number|table|tensor] : The numerical data to convert
+--       - column_name (required) [string]         : The column name which keys to use
+--       - as_tensor (optional) [boolean]          : If the return value should be a tensor
+--
+-- RETURNS: table or tensor
+function Dataframe:from_categorical(...)
+	local args = dok.unpack(
+		{...},
+		'Dataframe.from_categorical',
+		'Converts categorical to numerical according to a column\'s keys',
+		{arg='data', type='number|string|table', help='The data to be converted', req=true},
+		{arg='column_name', type='string', help='The name of the column', req=true},
+	  {arg='as_tensor', type='boolean', help='If the returned value should be a tensor'})
+	assert(self:has_column(args.column_name), "Can't find the column: " .. args.column_name)
+	assert(self:is_categorical(args.column_name), "Column isn't categorical")
+	if(type(args.data) ~= 'table') then
+		args.data = {args.data}
+	end
+
+	ret = {}
+	for _,v in pairs(args.data) do
+		local val = self.categorical[args.column_name][v]
+		if (val == nil) then
+			val = 0/0
+		end
+		table.insert(ret, val)
+	end
+	if (args.as_tensor) then
+		return torch.Tensor(ret)
+	else
+		return ret
+	end
 end
