@@ -2,14 +2,21 @@ require "../Dataframe"
 local cat_tests = torch.TestSuite()
 local tester = torch.Tester()
 
-function cat_tests.as_categorical()
+function cat_tests.as_is_categorical()
   local a = Dataframe()
   a:load_csv{path = "advanced_short.csv",
              verbose = false}
-  tester:assertError(function() a:as_categorical('Col A') end,
-                     "Numeric columns should not be able to convert to categorical")
+  tester:assert(not a:is_numerical('Col B'), "Column should not be a numerical")
   a:as_categorical('Col B')
-  tester:eq(a:get_catkeys('Col B'), {A=1, B=2})
+  tester:eq(a:get_cat_keys('Col B'), {A=1, B=2})
+  tester:assert(a:is_categorical('Col B'))
+  tester:assert(a:is_numerical('Col B'), "Column not converted properly to numerical")
+
+  a:as_categorical('Col C')
+  tester:eq(a:get_cat_keys('Col C'), {[8] = 1, [9] = 2},
+            "Numerical columns should be translated into a int linspace.")
+  tester:assert(a:is_categorical('Col C'))
+  tester:assert(not a:is_categorical('Col A'))
 end
 
 function cat_tests.to_categorical()
@@ -17,7 +24,7 @@ function cat_tests.to_categorical()
   a:load_csv{path = "advanced_short.csv",
              verbose = false}
   a:as_categorical('Col B')
-  tester:eq(a:to_categorical(1, 'Col B'), 'A')
+  tester:eq(a:to_categorical{data=1, column_name='Col B'}, 'A')
   tester:eq(a:to_categorical(2, 'Col B'), 'B')
   tester:eq(a:to_categorical({2, 1}, 'Col B'), {'B', 'A'},
             "Failed to handle table input")
@@ -34,34 +41,71 @@ function cat_tests.from_categorical()
   a:load_csv{path = "advanced_short.csv",
              verbose = false}
   a:as_categorical('Col B')
-  tester:eq(a:from_categorical('A', 'Col B'), 1)
-  tester:eq(a:from_categorical('B', 'Col B'), 2)
+  tester:eq(a:from_categorical('A', 'Col B'), {1})
+  tester:eq(a:from_categorical('B', 'Col B'), {2})
   tester:eq(a:from_categorical({'A', 'B'}, 'Col B'),
             {1, 2},
             "Can't handle table input")
   tester:eq(a:from_categorical{data = {'A', 'B'},
-                               column = 'Col B',
+                               column_name = 'Col B',
                                as_tensor = true},
             torch.Tensor({1, 2}),
             "Can't handle tensor output")
-  tester:assertError(function() a:from_categorical('C', 'Col B') end,
-                     "Can't convert a string not defined in the schema")
+  tester:assert(isnan(a:from_categorical('C', 'Col B')[1]))
   tester:assertError(function() a:from_categorical('A', 'Col A') end,
                      "The column isn't a categorical")
+end
+
+function cat_tests.get_column()
+  local a = Dataframe()
+  a:load_csv{path = "advanced_short.csv",
+             verbose = false}
+  a:as_categorical('Col B')
+  tester:eq(a:get_column('Col B'), {'A', 'B', 'B'}, "Failed to retrieve categorical representations")
+  tester:eq(a:get_column('Col B', true), {1,2,2}, "Failed to retrieve raw representations")
+  tester:eq(a:get_column{column_name = 'Col B',
+                         as_raw = true},
+            {1, 2, 2},
+            "Failed to return numbers instead of strings for categorical column")
+  tester:eq(a:get_column{column_name = 'Col B',
+                         as_tensor = true},
+            torch.Tensor({1, 2, 2}),
+            "Failed to return a tensor from categorical column")
+
+end
+
+function cat_tests.unique()
+  local a = Dataframe()
+  a:load_csv{path = "advanced_short.csv",
+             verbose = false}
+  a:as_categorical('Col B')
+  tester:eq(a:unique('Col B'), {'A', 'B'}, "Failed to get categorical data")
+  tester:eq(a:unique{column_name = 'Col B',
+                     as_raw = true},
+            {1, 2},
+            "Failed to get raw data")
+  tester:eq(a:unique{column_name ='Col B',
+                     as_keys = true},
+            {['A'] = 1, ['B'] = 2},
+            "Failed to get data as keys")
+   tester:eq(a:unique{column_name ='Col B',
+                      as_keys = true,
+                      as_raw = true},
+             {[1] = 1, [2] = 2},
+             "Failed to get raw data as keys")
 end
 
 function cat_tests.insert()
   local a = Dataframe()
   a:load_csv{path = "advanced_short.csv",
              verbose = false}
+  a:as_categorical('Col B')
   local new_data = {["Col A"] = 1,
                     ["Col B"] = "C",
                     ["Col C"] = 10}
-  a:as_categorical('Col B')
   a:insert(new_data)
-  tester:eq(a:get_catkeys('Col B'), {A=1, B=2, C=3})
+  tester:eq(a:get_cat_keys('Col B'), {A=1, B=2, C=3})
 end
-
 
 function cat_tests.update()
   local a = Dataframe()
@@ -73,7 +117,10 @@ function cat_tests.update()
              row['Col B'] = 'C'
              return row
            end)
-  tester:eq(a:get_catkeys('Col B'), {A=1, B=2, C=3})
+  tester:eq(a:get_column('Col B'), {'A', 'B', 'C'},
+            "Should be A,B,C")
+  tester:eq(a:get_cat_keys('Col B'), {A=1, B=2, C=3},
+            "Expected 3 keys after changing the last key")
 
   a:load_csv{path = "advanced_short.csv",
              verbose = false}
@@ -83,7 +130,27 @@ function cat_tests.update()
              row['Col B'] = 'A'
              return row
            end)
-  tester:eq(a:get_catkeys('Col B'), {A=1})
+  tester:eq(a:get_column('Col B'), {'A', 'A', 'A'},
+            "All should be A's")
+
+  tester:eq(a:get_cat_keys('Col B'), {A=1, B=2},
+            "Keys should not be removed without prompting")
+
+  a:clean_categorical('Col B')
+  tester:eq(a:get_cat_keys('Col B'), {A=1},
+            "Keys should be removed after calling clean_categorical")
+
+  a:load_csv{path = "advanced_short.csv",
+             verbose = false}
+  a:as_categorical('Col B')
+  a:update(function(row) return row['Col B'] == 'B' end,
+           function(row)
+             row['Col B'] = 'A'
+             return row
+           end)
+  a:clean_categorical('Col B', true)
+  tester:eq(a:get_cat_keys('Col B'), {A=1},
+           "Keys should be removed after calling clean_categorical with resetting")
 end
 
 function cat_tests.set()
@@ -91,14 +158,16 @@ function cat_tests.set()
   a:load_csv{path = "advanced_short.csv",
              verbose = false}
   a:as_categorical('Col B')
-  a:set(3, 'Col B', {['Col B'] = 'C'})
-  tester:eq(a:get_catkeys('Col B'), {A=1, B=2, C=3})
+  a:set('A', 'Col B', {['Col B'] = 'C'})
+  tester:eq(a:get_cat_keys('Col B'), {A=1, B=2, C=3})
 
-  a:set(3, 'Col B', {['Col B'] = 'B'})
-  tester:eq(a:get_catkeys('Col B'), {A=1, B=2})
+  a:set('C', 'Col B', {['Col B'] = 'B'})
+  tester:eq(a:get_cat_keys('Col B'), {A=1, B=2, C=3})
+  a:clean_categorical('Col B')
+  tester:eq(a:get_cat_keys('Col B'), {B=2})
 
-  a:set(1, 'Col B', {['Col B'] = 'B'})
-  tester:eq(a:get_catkeys('Col B'), {B=2})
+  a:clean_categorical('Col B', true)
+  tester:eq(a:get_cat_keys('Col B'), {B=1})
 end
 
 function cat_tests.drop_and_refresh_meta()
@@ -114,7 +183,7 @@ function cat_tests.drop_and_refresh_meta()
              verbose = false}
   a:as_categorical('Col B')
   a:drop('Col A')
-  tester:eq(a.categorical['Col B'] ~= nil)
+  tester:assert(a:is_categorical('Col B'))
 end
 
 function cat_tests.load()
@@ -134,23 +203,6 @@ function cat_tests.load()
   tester:assert(a:is_categorical('Col A'))
 end
 
-function cat_tests.get_column()
-  local a = Dataframe()
-  a:load_csv{path = "advanced_short.csv",
-             verbose = false}
-  a:as_categorical('Col B')
-  tester:eq(a:get_column('Col B'), {'A', 'B', 'B'})
-  tester:eq(a:get_column{column = 'Col B',
-                         categorical_as_string = false},
-            {1, 2, 2},
-            "Failed to return numbers instead of strings for categorical column")
-  tester:eq(a:get_column{column = 'Col B',
-                         as_tensor = true},
-            torch.Tensor({1, 2, 2}),
-            "Failed to return a tensor from categorical column")
-
-end
-
 function cat_tests.rename_column()
   local a = Dataframe()
   a:load_csv{path = "advanced_short.csv",
@@ -162,31 +214,28 @@ function cat_tests.rename_column()
   tester:assert(a:is_categorical('Alt col B'))
 end
 
-function cat_tests.unique()
-  local a = Dataframe()
-  a:load_csv{path = "advanced_short.csv",
-             verbose = false}
-  a:as_categorical('Col B')
-  tester:assert(a:unique('Col B'), {'A', 'B'})
-  tester:assert(a:unique{'Col B', categorical_as_string = false},
-                {1, 2})
-  tester:assert(a:unique{'Col B',
-                         as_keys = true,
-                         categorical_as_string = false},
-                {['A'] = 1, ['B'] = 2})
-end
-
 function cat_tests.where()
   local a = Dataframe()
   a:load_csv{path = "advanced_short.csv",
              verbose = false}
   a:as_categorical('Col B')
-  local ret_val = a:where('Col B', 'B')
+  local ret_val = a:where('Col B', 'A')
   tester:eq(ret_val:shape(), {rows = 2, cols = 3})
+  tester:eq(ret_val:from_categorical({'A', 'B'}, 'Col B'),
+            {1, 2},
+            "The categorical values shouldn't change due to subsetting")
+  local new_data = {["Col A"] = 1,
+                    ["Col B"] = "C",
+                    ["Col C"] = 10}
+  ret_val:insert(new_data)
+  tester:eq(ret_val:from_categorical({'A', 'B', 'C'}, 'Col B'),
+            {1, 2, 3},
+            "The categorical should add the new value as the last number")
 
   ret_val = a:where('Col B', 'A')
   tester:eq(ret_val:shape(), {rows = 1, cols = 3})
 end
+
 
 tester:add(cat_tests)
 tester:run()
