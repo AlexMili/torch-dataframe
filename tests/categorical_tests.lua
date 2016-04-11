@@ -220,10 +220,14 @@ function cat_tests.where()
              verbose = false}
   a:as_categorical('Col B')
   local ret_val = a:where('Col B', 'A')
-  tester:eq(ret_val:shape(), {rows = 2, cols = 3})
+  tester:eq(ret_val:shape(), {rows = 1, cols = 3})
   tester:eq(ret_val:from_categorical({'A', 'B'}, 'Col B'),
             {1, 2},
             "The categorical values shouldn't change due to subsetting")
+
+  ret_val = a:where('Col B', 'B')
+  tester:eq(ret_val:shape(), {rows = 2, cols = 3})
+
   local new_data = {["Col A"] = 1,
                     ["Col B"] = "C",
                     ["Col C"] = 10}
@@ -236,6 +240,14 @@ function cat_tests.where()
   tester:eq(ret_val:shape(), {rows = 1, cols = 3})
 end
 
+function cat_tests.sub()
+  local a = Dataframe()
+  a:load_csv{path = "advanced_short.csv",
+             verbose = false}
+  a:as_categorical('Col B')
+  local ret_val = a:sub(1,2)
+  tester:eq(ret_val:shape(), {rows = 2, cols = 3})
+end
 
 tester:add(cat_tests)
 tester:run()
