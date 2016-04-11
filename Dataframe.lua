@@ -1516,3 +1516,6 @@ function Dataframe:from_categorical(...)
 		return ret
 	end
 end
+
+print(Dataframe)
+return Dataframe
