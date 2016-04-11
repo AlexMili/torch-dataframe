@@ -3,7 +3,6 @@
 require 'torch'
 require 'csvigo'
 require 'dok'
-class = require 'class'
 
 -- UTILS
 
@@ -71,6 +70,7 @@ function Dataframe:__init()
 	self:_clean{schema = true}
 	self.print = {no_rows = 10,
 								max_col_width = 20}
+								sadsad = 1
 end
 
 -- Private function for cleaning all data
