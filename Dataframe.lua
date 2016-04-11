@@ -1290,21 +1290,26 @@ end
 --
 -- as_categorical('column_name') : set a column to categorical
 --
--- ARGS: - column_name 		(required) 	[string] 	: column to set to categorical
+-- ARGS: - column_name 		(required) 	[string|table] 	: column to set to categorical
 --
 -- RETURNS: nothing
 function Dataframe:as_categorical(column_name)
-	assert(self:has_column(column_name), "Could not find column: " .. column_name)
-	assert(not self:is_categorical(column_name), "Column already categorical")
-	keys = self:unique{column_name = column_name,
-										 as_keys = true,
-										 trim_values = true}
-	-- drop '' as a key
-	keys[''] = nil
-	column_data = self:get_column(column_name)
-	self.categorical[column_name] = keys
-	for i,v in ipairs(column_data) do
-		self.dataset[column_name][i] = keys[v]
+	if (type(column_name) ~= 'table') then
+		column_name = {column_name}
+	end
+	for _,cn in pairs(column_name) do
+		assert(self:has_column(cn), "Could not find column: " .. cn)
+		assert(not self:is_categorical(cn), "Column already categorical")
+		keys = self:unique{column_name = cn,
+											 as_keys = true,
+											 trim_values = true}
+		-- drop '' as a key
+		keys[''] = nil
+		column_data = self:get_column(cn)
+		self.categorical[cn] = keys
+		for i,v in ipairs(column_data) do
+			self.dataset[cn][i] = keys[v]
+		end
 	end
 	self:_infer_schema()
 end
