@@ -817,12 +817,11 @@ function Dataframe:sub(...)
 	assert(args.start > 0, "Start position can't be less than 1")
 	assert(args.stop <= self.n_rows, "Stop position can't be more than available rows")
 
-	ret = Dataframe.new()
+	indexes = {}
 	for i = args.start,args.stop do
-		ret:insert(self:get_row(i))
+		table.insert(indexes, i)
 	end
-	ret = self:_copy_meta(ret)
-	return ret
+	return self:_create_subset(indexes)
 end
 
 --
@@ -1021,12 +1020,31 @@ function Dataframe:where(column, item_to_find)
 	end
 
 	local matches = self:_where(condition_function)
-	ret = class.new('Dataframe')
-	for _,i in pairs(matches) do
+	return self:_create_subset(matches)
+end
+
+-- Creates a class and returns a subset based on the index items
+function Dataframe:_create_subset(index_items)
+	if (type(index_items) ~= 'table') then
+		index_items = {index_items}
+	end
+	for _,i in pairs(index_items) do
+		assert(isint(i) and
+		 			 i > 0 and
+					 i <= self.n_rows,
+					 "There are values outside the allowed index range 1 to " .. self.n_rows ..
+					 ": " .. tostring(i))
+	end
+
+	-- TODO: for some reason the categorical causes errors in the loop, this strange copy fixes it
+	tmp = clone(self.categorical)
+	self.categorical = {}
+	ret = Dataframe.new()
+	for _,i in pairs(index_items) do
 		val = self:get_row(i)
 		ret:insert(val)
 	end
-
+	self.categorical = tmp
 	ret = self:_copy_meta(ret)
 	return ret
 end
@@ -1200,11 +1218,11 @@ function Dataframe:__tostring()
 		end
 	end
 
-	add_padding = function(ret, out_len, target_len)
+	add_padding = function(df_string, out_len, target_len)
 		if (out_len < target_len) then
-			ret = ret .. string.rep(" ", (target_len - out_len))
+			df_string = df_string .. string.rep(" ", (target_len - out_len))
 		end
-		return ret
+		return df_string
 	end
 
 	table_width = 0
@@ -1216,13 +1234,13 @@ function Dataframe:__tostring()
 		2 + -- The beginning of each line "| "
 		2 -- The end of each line " |"
 
-	add_separator = function(ret, table_width)
-		ret = ret .. "\n+" .. string.rep("-", table_width - 2) .. "+"
-		return ret
+	add_separator = function(df_string, table_width)
+		df_string = df_string .. "\n+" .. string.rep("-", table_width - 2) .. "+"
+		return df_string
 	end
 
-	ret = add_separator("", table_width)
-	ret = ret .. "\n| "
+	df_string = add_separator("", table_width)
+	df_string = df_string .. "\n| "
 	for i = 0,no_rows do
 		if (i == 0) then
 			row = {}
@@ -1236,37 +1254,37 @@ function Dataframe:__tostring()
 		if (i > 0) then
 			-- Underline header with ----------------
 			if (i == 1) then
-				ret = add_separator(ret, table_width)
+				df_string = add_separator(df_string, table_width)
 			end
-			ret = ret .. "\n| "
+			df_string = df_string .. "\n| "
 		end
 
 		for ii = 1,#self.column_order do
 			column_name = self.column_order[ii]
 			if (ii > 1) then
-				ret = ret .. " | "
+				df_string = df_string .. " | "
 			end
 			output = tostring(row[column_name])
 			if (self:is_numerical(column_name)) then
 				-- Right align numbers by padding to left
-				ret = add_padding(ret, string.len(output), lengths[column_name])
-				ret = ret .. output
+				df_string = add_padding(df_string, string.len(output), lengths[column_name])
+				df_string = df_string .. output
 			else
 				if (string.len(output) > max_width) then
 					output = string.sub(output, 1, max_width - 3) .. "..."
 				end
-				ret = ret .. output
+				df_string = df_string .. output
 				-- Padd left if needed
-				ret = add_padding(ret, string.len(output), math.min(max_width, lengths[column_name]))
+				df_string = add_padding(df_string, string.len(output), math.min(max_width, lengths[column_name]))
 			end
 		end
-		ret = ret .. " |"
+		df_string = df_string .. " |"
 	end
 	if (self.n_rows > no_rows) then
-		ret = ret .. "\n| ..." .. string.rep(" ", table_width - 5 - 1) .. "|"
+		df_string = df_string .. "\n| ..." .. string.rep(" ", table_width - 5 - 1) .. "|"
 	end
-	ret = add_separator(ret, table_width) .. "\n"
-	return ret
+	df_string = add_separator(df_string, table_width) .. "\n"
+	return df_string
 end
 
 --
@@ -1285,12 +1303,9 @@ function Dataframe:as_categorical(column_name)
 	keys[''] = nil
 	column_data = self:get_column(column_name)
 	self.categorical[column_name] = keys
-	new_column = {}
 	for i,v in ipairs(column_data) do
-		numerical_val = keys[v]
-		new_column[i] = numerical_val
+		self.dataset[column_name][i] = keys[v]
 	end
-	self.dataset[column_name] = new_column
 	self:_infer_schema()
 end
 
