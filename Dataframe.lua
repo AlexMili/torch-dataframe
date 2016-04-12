@@ -731,8 +731,30 @@ end
 --
 -- RETURNS: torch.tensor
 --
-function Dataframe:to_tensor(filename)
-	numeric_dataset = self:_get_numerics()
+function Dataframe:to_tensor(...)
+	local args = dok.unpack(
+		{...},
+		'Dataframe.to_tensor',
+		'Convert the numeric section or specified columns of the dataset to a tensor',
+		{arg='filename', type='string', help='the name of the column'},
+		{arg='columns', type='string|table', help='the columns to export to labels'}
+	)
+	-- TODO: Change to get_column{as_tensor = true}
+	if (args.columns == nil) then
+		numeric_dataset = self:_get_numerics()
+	else
+		if (type(args.columns) == "string") then
+			args.columns = {args.columns}
+		end
+		assert(type(args.columns) == "table", "Columns to export can either be a single string value or a table with column values")
+		numeric_dataset = {}
+		for _,k in pairs(args.columns) do
+			assert(self:has_column(k), "Could not find column: " .. tostring(k))
+			assert(self:is_numerical(k), "Column " .. tostring(k) .. " is not numerical")
+			numeric_dataset[k] =  self:get_column{column_name = k, as_raw = true}
+		end
+	end
+
 	tensor_data = nil
 	count = 1
 	for col_no = 1,#self.column_order do
@@ -755,8 +777,8 @@ function Dataframe:to_tensor(filename)
 		end
 	end
 
-	if filename ~= nil then
-		torch.save(filename, tensor_data)
+	if args.filename ~= nil then
+		torch.save(args.filename, tensor_data)
 	end
 
 	return tensor_data
@@ -1028,6 +1050,7 @@ function Dataframe:_create_subset(index_items)
 	if (type(index_items) ~= 'table') then
 		index_items = {index_items}
 	end
+
 	for _,i in pairs(index_items) do
 		assert(isint(i) and
 		 			 i > 0 and
@@ -1517,5 +1540,4 @@ function Dataframe:from_categorical(...)
 	end
 end
 
-print(Dataframe)
 return Dataframe
