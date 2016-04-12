@@ -11,11 +11,26 @@ lfs.chdir("tests")
 local batch_tests = torch.TestSuite()
 local tester = torch.Tester()
 
-function batch_tests.csv_check_load_no()
+function batch_tests.load_batch()
   local a = Dataframe()
   a:load_csv{path = "realistic_29_row_data.csv",
             verbose = false}
-  a:load_batch()
+  tester:assertError(function() a:load_batch() end,
+                     "Should force a call to init_batch")
+  a:init_batch()
+  data, label = a:load_batch(5, 0,
+                             function(row) return torch.Tensor({{1, 2}}) end,
+                             'train')
+  tester:eq(data:size()[1], 5, "The data has invalid rows")
+  tester:eq(data:size()[2], 2, "The data has invalid columns")
+  tester:eq(label:size()[1], 5, "The labels have invalid size")
+  a:as_categorical('Gender')
+  data, label = a:load_batch(5, 0,
+                             function(row) return torch.Tensor({{1, 2}}) end,
+                             'train')
+  tester:eq(data:size()[1], 5, "The data with gender has invalid rows")
+  tester:eq(data:size()[2], 2, "The data with gender has invalid columns")
+  tester:eq(label:size()[1], 5, "The labels with gender have invalid size")
 end
 
 tester:add(batch_tests)
