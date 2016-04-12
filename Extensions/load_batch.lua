@@ -10,48 +10,100 @@ table.exact_length = function(tbl)
   return i
 end
 
+--
+-- load_batch('no_files', 'offset', 'load_row_fn',
+--            'label_columns', 'type') : Loads a batch of data from the table. Note that you have to call init_batch before load_batch
+--
+-- ARGS: see dok.unpack
+--
+-- RETURNS: data, label tensors
+--
 function Dataframe:load_batch(...)
+  assert(self.batch.datasets ~= nil, "You must call init_batch before calling load_batch")
   local args = dok.unpack(
     {...},
     'Dataframe.load_batch',
-    'Loads a batch of data from the table',
+    'Loads a batch of data from the table. Note that you have to call init_batch before load_batch',
     {arg='no_files', type='integer', help='The number of lines to include (-1 for all)', req=true},
     {arg='offset', type='integer', help='The number of files to skip before starting load', default=0},
     {arg='load_row_fn', type='function', help='Receives a row and returns a tensor assumed to be the data', req=true},
-    {arg='label_columns', type='table', help='The columns that are to be the label. If omitted defaults to all.'},
     {arg='type', type='function', help='Type of data to load', default="train"},
-    {arg='data_types', type='table',
-     help='Types of data with corresponding proportions to to split to.',
-     default={['train'] = 0.7,
-              ['validate'] = 0.2,
-              ['test'] = 0.1}})
+    {arg='label_columns', type='table', help='The columns that are to be the label. If omitted defaults to all.'})
   -- Check argument integrity
+  assert(self.batch.datasets[args.type] ~= nil, "There is no batch dataset group corresponding to '".. args.type .."'")
+  local batch_set_size = #self.batch.datasets[args.type]
   assert(isint(args.no_files) and
          (args.no_files > 0 or
-          args.no_files == -1),
-         "The number of files to load has to be either -1 for all files or a positive integer." ..
-         " You provided " .. tostring(args.offset))
+          args.no_files == -1) and
+          args.no_files <= batch_set_size,
+         "The number of files to load has to be either -1 for all files or " ..
+         " a positive integer less or equeal to the number of observations in that category " ..
+         batch_set_size .. "." ..
+         " You provided " .. tostring(args.no_files))
+  if (args.no_files == -1) then args.no_files = self.n_rows end
   assert(isint(args.offset) and
          args.offset >= 0,
          "The offset has to be a positive integer, you provided " .. tostring(args.offset))
   assert(type(args.load_row_fn) == 'function',
          "You haven't provided a function that will load the data")
-  assert(type(args.data_types) == 'table', "The data types should be a table")
-  local total = 0
-  for v,p in pairs(args.data_types) do
-    assert(type(v) == 'string', "The data types keys should be strings")
-    assert(type(p) == 'number', "The data types values should be numbers")
-    total = total + p
-  end
   if (args.label_columns == nil) then
-    args.label_columns = self:_get_numerics()
+    args.label_columns = {}
+  	for k,_ in pairs(self.dataset) do
+  		if (self:is_numerical(k)) then
+  			table.insert(args.label_columns, k)
+  		end
+  	end
   else
     if (type(args.label_columns) ~= 'table') then
       args.label_columns = {args.label_columns}
     end
     for _,k in pairs(args.label_columns) do
       assert(args.dataset[k] ~= nil, "Could not find column " .. tostring(k))
+      assert(self:is_numerical(k), "Column " .. tostring(k) .. " is not numerical")
     end
+  end
+
+  local rows = {}
+  for i=(args.offset % batch_set_size),((args.no_files + args.offset) % batch_set_size) do
+    table.insert(rows, self.batch.datasets[args.type][i])
+  end
+  local dataset_2_load = self:_create_subset(rows)
+  tensor_label = dataset_2_load:to_tensor{columns = args.label_columns}
+  tensor_data = args.load_row_fn(dataset_2_load:get_row(1))
+  if (#rows > 1) then
+    for i = 2,#rows do
+      tensor_data = torch.cat(tensor_data, args.load_row_fn(dataset_2_load:get_row(i)), 1)
+    end
+  end
+
+  return tensor_data, tensor_label
+end
+
+--
+-- init_batch('data_types') : a function for initializing metadata needed for batch loading
+--
+-- ARGS: -data_types (table) [optional] : The data types to instantiate and their corresponding proportions
+--
+-- RETURNS: void
+--
+function Dataframe:init_batch(...)
+  local args = dok.unpack(
+    {...},
+    'Dataframe.init_batch',
+    'Initalizes batch meta data. This function must be called prior to load_batch' ..
+      ' as it needs the information for loading correct rows.',
+    {arg='data_types', type='table',
+     help='Types of data with corresponding proportions to to split to.',
+     default={['train'] = 0.7,
+              ['validate'] = 0.2,
+              ['test'] = 0.1}})
+  assert(type(args.data_types) == 'table', "The data types should be a table")
+
+  local total = 0
+  for v,p in pairs(args.data_types) do
+    assert(type(v) == 'string', "The data types keys should be strings")
+    assert(type(p) == 'number', "The data types values should be numbers")
+    total = total + p
   end
 
   -- Adjust to proportions
@@ -61,22 +113,6 @@ function Dataframe:load_batch(...)
     end
   end
 
-  -- initiate base data
-
-
-  print("Not yet implemented")
-end
-
-function Dataframe:_batch_init(...)
-  local args = dok.unpack(
-    {...},
-    'Dataframe._batch_init',
-    'Initalizes batch meta data',
-    {arg='data_types', type='table',
-     help='Types of data with corresponding proportions to to split to.',
-     default={['train'] = 0.7,
-              ['validate'] = 0.2,
-              ['test'] = 0.1}})
   -- Set base batch data
   local reset_batch = false
   if (self.batch == nil) then
@@ -112,42 +148,56 @@ function Dataframe:_batch_init(...)
   end
 
   if (reset_batch) then
-    permutations = torch.randperm(self.n_rows)
-    self.batch_datasets = {}
-    local count = 0
-    local last_key = -1
-    for k,prop in pairs(self.batch) do
-      last_key = k
-      num_observations = math.max(math.ceil(prop * self.n_rows), 1)
-      if (count + num_observations > self.n_rows) then
-        num_observations = self.n_rows - count
-      end
-      self.batch_datasets[k] = {}
-      for i = 1,num_observations do
-        table.insert(self.batch_datasets[k], permutations[count + i])
-        count = count + 1
-      end
+    self.batch.datasets = {}
+    self:_add_permutations{number = self.n_rows}
+  else
+    local n_permutated = 0
+    for _,v in pairs(self.batch.datasets) do
+      n_permutated = n_permutated + #v
     end
-    -- Add any observatinos that weren't included in thre previous loop
-    assert(self.n_rows - count < 2 * table.exact_length(self.batch_datasets),
-           "An error must have occurred during recruitment into the batch datasets" ..
-           " as the difference was larger than expected: " .. self.n_rows - count)
-    if (count < self.n_rows) then
-      for i = (count + 1),self.n_rows do
-        table.insert(self.batch_datasets[last_key], permutations[i])
-      end
+    if (n_permutated < self.n_rows) then
+      self:_add_permutations{number = self.n_rows - n_permutated,
+                             offset = n_permutated}
+    elseif (n_permutated > self.n_rows) then
+      print("Warning resetting the batches due to reduced number of rows")
+      self.batch.datasets = {}
+      self:_add_permutations{number = self.n_rows}
     end
   end
+end
 
+-- Internal function for adding permutations
+function Dataframe:_add_permutations(...)
+  local args = dok.unpack(
+    {...},
+    'Dataframe._add_permutations',
+    'Adds random permutations.',
+    {arg='number', type='integer', help='The number of permutations to add', req=true},
+    {arg='offset', type='integer', help='Set this if you are adding to previous permutations', default=0})
+  assert(self.batch.data_types ~= nil, "You must have basic batch sizes set")
 
-  local n_permutated = 0
-  for _,v in pairs(self.batch_datasets) do
-    n_permutated = n_permutated + #v
+  permutations = torch.randperm(args.number)
+  local count = 0
+  local last_key = -1
+  for k,prop in pairs(self.batch.data_types) do
+    last_key = k
+    num_observations = math.max(math.ceil(prop * args.number), 1)
+    if (count + num_observations > args.number) then
+      num_observations = args.number - count
+    end
+    self.batch.datasets[k] = {}
+    for i = 1,num_observations do
+      table.insert(self.batch.datasets[k], args.offset + permutations[count + i])
+    end
+    count = count + num_observations
   end
-  if (n_permutated < self.n_rows) then
-    -- TODO: handle if n_rows increases
-  elseif (n_permutated > self.n_rows) then
-    print("Warning resetting the batches due to reduced number of rows")
-    -- TODO: handle if n_rows increases
+  -- Add any observatinos that weren't included in thre previous loop
+  assert(args.number + args.offset - count < 2 * table.exact_length(self.batch.datasets),
+         "An error must have occurred during recruitment into the batch datasets" ..
+         " as the difference was larger than expected: " .. args.number + args.offset - count)
+  if (count < args.number) then
+    for i = (count + 1),args.number do
+      table.insert(self.batch.datasets[last_key], args.offset + permutations[i])
+    end
   end
 end
