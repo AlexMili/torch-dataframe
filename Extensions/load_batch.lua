@@ -96,7 +96,8 @@ function Dataframe:init_batch(...)
      help='Types of data with corresponding proportions to to split to.',
      default={['train'] = 0.7,
               ['validate'] = 0.2,
-              ['test'] = 0.1}})
+              ['test'] = 0.1}},
+    {arg='shuffle', type='boolean', help="Whether the rows should be shuffled before laoding", default=true})
   assert(type(args.data_types) == 'table', "The data types should be a table")
 
   local total = 0
@@ -115,7 +116,8 @@ function Dataframe:init_batch(...)
 
   -- Set base batch data
   local reset_batch = false
-  if (self.batch == nil) then
+  if (self.batch == nil or
+      self.batch.shuffle ~= args.shuffle) then
     self.batch = {
       data_types = args.data_types
     }
@@ -148,35 +150,44 @@ function Dataframe:init_batch(...)
   end
 
   if (reset_batch) then
+    self.batch.shuffle = args.shuffle
     self.batch.datasets = {}
-    self:_add_permutations{number = self.n_rows}
+    self:_add_2_batch_datasets{number = self.n_rows,
+                               shuffle = args.shuffle}
   else
     local n_permutated = 0
     for _,v in pairs(self.batch.datasets) do
       n_permutated = n_permutated + #v
     end
     if (n_permutated < self.n_rows) then
-      self:_add_permutations{number = self.n_rows - n_permutated,
-                             offset = n_permutated}
+      self:_add_2_batch_datasets{number = self.n_rows - n_permutated,
+                                 shuffle = args.shuffle,
+                                 offset = n_permutated}
     elseif (n_permutated > self.n_rows) then
       print("Warning resetting the batches due to reduced number of rows")
       self.batch.datasets = {}
-      self:_add_permutations{number = self.n_rows}
+      self:_add_2_batch_datasets{number = self.n_rows,
+                                 shuffle = args.shuffle}
     end
   end
 end
 
--- Internal function for adding permutations
-function Dataframe:_add_permutations(...)
+-- Internal function for adding rows 2 batch datasets
+function Dataframe:_add_2_batch_datasets(...)
   local args = dok.unpack(
     {...},
-    'Dataframe._add_permutations',
-    'Adds random permutations.',
-    {arg='number', type='integer', help='The number of permutations to add', req=true},
+    'Dataframe._add_2_batch_datasets',
+    'Adds data 2 batch sets.',
+    {arg='number', type='integer', help='The number of rows to add', req=true},
+    {arg='shuffle', type='boolean', help="Whether the rows should be shuffled before laoding", default=true},
     {arg='offset', type='integer', help='Set this if you are adding to previous permutations', default=0})
   assert(self.batch.data_types ~= nil, "You must have basic batch sizes set")
 
-  permutations = torch.randperm(args.number)
+  if (args.shuffle) then
+    row_indexes = torch.randperm(args.number)
+  else
+    row_indexes = torch.linspace(1, args.number, args.number)
+  end
   local count = 0
   local last_key = -1
   for k,prop in pairs(self.batch.data_types) do
@@ -187,7 +198,7 @@ function Dataframe:_add_permutations(...)
     end
     self.batch.datasets[k] = {}
     for i = 1,num_observations do
-      table.insert(self.batch.datasets[k], args.offset + permutations[count + i])
+      table.insert(self.batch.datasets[k], args.offset + row_indexes[count + i])
     end
     count = count + num_observations
   end
@@ -197,7 +208,7 @@ function Dataframe:_add_permutations(...)
          " as the difference was larger than expected: " .. args.number + args.offset - count)
   if (count < args.number) then
     for i = (count + 1),args.number do
-      table.insert(self.batch.datasets[last_key], args.offset + permutations[i])
+      table.insert(self.batch.datasets[last_key], args.offset + row_indexes[i])
     end
   end
 end

@@ -33,5 +33,27 @@ function batch_tests.load_batch()
   tester:eq(label:size()[1], 5, "The labels with gender have invalid size")
 end
 
+function batch_tests.init_batch()
+  local a = Dataframe()
+  a:load_csv{path = "realistic_29_row_data.csv",
+            verbose = false}
+  tester:assertError(function() a:load_batch() end,
+                     "Should force a call to init_batch")
+  torch.manualSeed(0)
+  a:init_batch()
+  order = 0
+  for i = 2,#a.batch.datasets["train"] do
+    order = order + a.batch.datasets["train"][i] - a.batch.datasets["train"][i - 1] - 1
+  end
+  tester:ne(order, 0)
+
+  a:init_batch{shuffle = false}
+  order = 0
+  for i = 2,#a.batch.datasets["train"] do
+    order = order + a.batch.datasets["train"][i] - a.batch.datasets["train"][i - 1] - 1
+  end
+  tester:eq(order, 0)
+end
+
 tester:add(batch_tests)
 tester:run()
