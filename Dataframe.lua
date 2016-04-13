@@ -1244,6 +1244,25 @@ function Dataframe:_update_single_row(index_row, new_row)
 	return row
 end
 
+--
+-- tostring() : A convenience wrapper for __tostring
+--
+-- ARGS: none
+--
+-- RETURNS: string
+--
+function Dataframe:tostring()
+	return self:__tostring()
+end
+
+--
+-- __tostring() : Converts table to a string representation that follows standard
+--                markdown syntax
+--
+-- ARGS: none
+--
+-- RETURNS: string
+--
 function Dataframe:__tostring()
   local no_rows = math.min(self.print.no_rows, self.n_rows)
 	max_width = self.print.max_col_width
