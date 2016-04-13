@@ -69,14 +69,32 @@ function Dataframe:load_batch(...)
   end
   local dataset_2_load = self:_create_subset(rows)
   tensor_label = dataset_2_load:to_tensor{columns = args.label_columns}
-  tensor_data = args.load_row_fn(dataset_2_load:get_row(1))
+  single_data = args.load_row_fn(dataset_2_load:get_row(1))
+  single_data = _add_single_first_dim(single_data)
+  tensor_data = single_data
   if (#rows > 1) then
     for i = 2,#rows do
-      tensor_data = torch.cat(tensor_data, args.load_row_fn(dataset_2_load:get_row(i)), 1)
+      single_data = args.load_row_fn(dataset_2_load:get_row(i))
+      single_data = _add_single_first_dim(single_data)
+      tensor_data = torch.cat(tensor_data, single_data, 1)
     end
   end
 
   return tensor_data, tensor_label
+end
+
+-- Helper for adding a single first dimension to help with torch.cat
+function _add_single_first_dim(data)
+  if (data:size(1) ~= 1) then
+    local current_size = data:size()
+    local new_size = {1}
+    for i = 1,#current_size do
+      table.insert(new_size, current_size[i])
+    end
+    new_size = torch.LongStorage(new_size)
+    data = data:reshape(new_size)
+  end
+  return data
 end
 
 --
