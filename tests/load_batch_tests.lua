@@ -1,9 +1,9 @@
 -- Make sure that directory structure is always the same
 require('lfs')
-if (string.match(lfs.currentdir(), "/test$")) then
+if (string.match(lfs.currentdir(), "/test")) then
   lfs.chdir("..")
 end
-require('init')
+require('../torch-dataframe')
 
 -- Go into tests so that the loading of CSV:s is the same as always
 lfs.chdir("tests")
