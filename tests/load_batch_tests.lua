@@ -19,14 +19,14 @@ function batch_tests.load_batch()
                      "Should force a call to init_batch")
   a:init_batch()
   data, label = a:load_batch(5, 0,
-                             function(row) return torch.Tensor({{1, 2}}) end,
+                             function(row) return torch.Tensor({1, 2}) end,
                              'train')
   tester:eq(data:size()[1], 5, "The data has invalid rows")
   tester:eq(data:size()[2], 2, "The data has invalid columns")
   tester:eq(label:size()[1], 5, "The labels have invalid size")
   a:as_categorical('Gender')
   data, label = a:load_batch(5, 0,
-                             function(row) return torch.Tensor({{1, 2}}) end,
+                             function(row) return torch.Tensor({1, 2}) end,
                              'train')
   tester:eq(data:size()[1], 5, "The data with gender has invalid rows")
   tester:eq(data:size()[2], 2, "The data with gender has invalid columns")
