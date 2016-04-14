@@ -3,7 +3,7 @@ require('lfs')
 if (string.match(lfs.currentdir(), "/test")) then
   lfs.chdir("..")
 end
-require('../torch-dataframe')
+paths.dofile('init.lua')
 
 -- Go into tests so that the loading of CSV:s is the same as always
 lfs.chdir("tests")

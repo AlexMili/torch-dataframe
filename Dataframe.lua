@@ -306,9 +306,8 @@ function Dataframe:_refresh_metadata()
 end
 
 -- Internal function to detect columns types
-function Dataframe:_infer_schema(explore_factor)
-	factor = explore_factor or 0.5
-	rows_to_explore = math.ceil(self.n_rows * factor)
+function Dataframe:_infer_schema(max_rows)
+	rows_to_explore = math.min(max_rows or 1e3, self.n_rows)
 
 	for _,key in pairs(self.columns) do
 		is_a_numeric_column = true
@@ -1163,7 +1162,6 @@ end
 
 -- Internal function to convert a table to html (only works for 1D table)
 function Dataframe:_to_html(...)--data, start_at, end_at, split_table)
-
 	local args = dok.unpack(
 		{...},
 		{"Dataframe._to_html"},
@@ -1191,12 +1189,12 @@ function Dataframe:_to_html(...)--data, start_at, end_at, split_table)
 		result = result.. '\n\t</tr>'
 	end
 
-	for i = 1,self.n_rows do
+	for row_no = 1,self.n_rows do
 		result = result.. '\n\t<tr>'
-		result = result.. '\n\t\t<td>'..(i + args.offset)..'</td>'
-		for i = 1,#self.column_order do
-			k = self.column_order[i]
-			result = result.. '<td>' ..tostring(self:get_column(k)[i]).. '</td>'
+		result = result.. '\n\t\t<td>'..(row_no + args.offset)..'</td>'
+		for col_no = 1,#self.column_order do
+			k = self.column_order[col_no]
+			result = result.. '<td>' ..tostring(self:get_column(k)[row_no]).. '</td>'
 		end
 		result = result.. '\n\t</tr>'
 	end
