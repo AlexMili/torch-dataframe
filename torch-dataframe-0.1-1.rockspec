@@ -21,6 +21,6 @@ package = "torch-dataframe"
  build = {
   type = 'builtin',
   modules = {
-      ["Dataframe"] = 'Dataframe.lua',
+      ["Dataframe"] = 'init.lua'
   }
  }
