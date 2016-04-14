@@ -421,7 +421,7 @@ function Dataframe:add_column(column_name, default_value)
 			self.dataset[column_name][i] = default_value
 		end
 	end
-
+	table.insert(self.column_order, column_name)
 	self:_refresh_metadata()
 end
 
@@ -1269,8 +1269,9 @@ function Dataframe:__tostring()
 
 	-- Get the width of each column
 	local lengths = {}
-	for k,v in pairs(self.dataset) do
+	for _,k in pairs(self.column_order) do
 		lengths[k] = string.len(k)
+		v = self:get_column(k)
 		for i = 1,no_rows do
 			if (v[i] ~= nil) then
 				if (lengths[k] < string.len(v[i])) then
