@@ -1,4 +1,4 @@
-local Dataframe = paths.dofile("Dataframe.lua")
+local Dataframe = require "Dataframe.lua"
 
 assert(loadfile("Extensions/load_batch.lua"))(Dataframe)
 
