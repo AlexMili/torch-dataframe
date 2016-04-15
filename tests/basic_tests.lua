@@ -247,13 +247,11 @@ function df_tests.fill_all_na()
   tester:eq(a:get_column('Col A'), {1,2,-1})
 end
 
-function df_tests._get_numerics()
+function df_tests.get_numerical_colnames()
   local a = Dataframe()
   a:load_csv{path = "advanced_short.csv",
              verbose = false}
-  tester:assert(a:_get_numerics()['Col B'] == nil)
-  tester:assert(a:_get_numerics()['Col A'] ~= nil)
-  tester:assert(a:_get_numerics()['Col C'] ~= nil)
+  tester:eq(a:get_numerical_colnames(), {'Col A', 'Col C'})
 end
 
 function df_tests.to_tensor()

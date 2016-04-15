@@ -30,6 +30,31 @@ function Dataframe:sub(...)
 end
 
 --
+-- get_random ('n_items') : Retrieves a random number of rows for exploring
+--
+-- ARGS: - n_items (optional) [integer] : number of rows to get
+--
+-- RETURNS: Dataframe
+function Dataframe:get_random(...)
+	local args = dok.unpack(
+		{...},
+		'Dataframe.get_random',
+		'Retrieves a random number of rows for exploring',
+		{arg='n_items', type='integer', help='The number of items to retreive', default=1}
+	)
+	assert(isint(args.n_items), "The number must be an integer. You've provided " .. tostring(args.n_items))
+	assert(args.n_items > 0 and
+	       args.n_items < self.n_rows, "The number must be an integer between 0 and " ..
+				 self.n_rows .. " - you've provided " .. tostring(args.n_items))
+	local rperm = torch.randperm(self.n_rows)
+	local indexes = {}
+	for i = 1,args.n_items do
+		table.insert(indexes, rperm[i])
+	end
+	return self:_create_subset(indexes)
+end
+
+--
 -- head() : get the table's first elements
 --
 -- ARGS: - n_items 			(required) [number] 	: items to print

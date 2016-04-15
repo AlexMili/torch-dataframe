@@ -28,6 +28,22 @@ function cat_tests.as_is_categorical()
   tester:assert(not a:is_categorical('Col A'))
 end
 
+function cat_tests.get_max_value()
+  local a = Dataframe()
+  a:load_csv{path = "advanced_short.csv",
+             verbose = false}
+  tester:eq(a:get_max_value(), {3, 9})
+  a:as_categorical('Col B')
+  tester:eq(a:get_max_value(), {3, 2, 9})
+
+  a:as_categorical('Col C')
+  tester:eq(a:get_max_value(), {3, 2, 2})
+
+  tester:eq(a:get_max_value('Col A'), {3})
+  tester:eq(a:get_max_value('Col B'), {2})
+  tester:eq(a:get_max_value('Col C'), {2})
+end
+
 function cat_tests.to_categorical()
   local a = Dataframe()
   a:load_csv{path = "advanced_short.csv",
