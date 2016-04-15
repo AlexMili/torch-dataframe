@@ -211,6 +211,7 @@ function Dataframe:has_column(column_name)
   end
 	return false
 end
+
 --
 -- get_column('column_name') : get column content
 --
@@ -398,17 +399,24 @@ function Dataframe:rename_column(old_column_name, new_column_name)
 	self:_infer_schema()
 end
 
--- Internal function to get all numerics columns
-function Dataframe:_get_numerics()
-	new_dataset = {}
+--
+-- get_numerical_colnames() : Gets the names of all the columns that are numerical
+--
+-- ARGS: none
+--
+-- RETURNS: table
+--
+function Dataframe:get_numerical_colnames()
+	columns = {}
 
-	for k,v in pairs(self.dataset) do
+	for i = 1,#self.column_order do
+		k = self.column_order[i]
 		if (self:is_numerical(k)) then
-			new_dataset[k] = v
+			table.insert(columns, k)
 		end
 	end
 
-	return new_dataset
+	return columns
 end
 
 --
@@ -449,6 +457,70 @@ function Dataframe:get_column_no(...)
 end
 
 --
+-- get_max_value(...) : see dok.unpack for details
+---
+function Dataframe:get_max_value(...)
+	local args = dok.unpack(
+		{...},
+		'Dataframe.get_max_value',
+		[[
+		Gets the maximum value for a given column. Returns maximum values for all
+		numerical columns if none is provided. Keeps the order although not if
+		with_named_keys == true as the keys will be sorted in alphabetic order.
+	  ]],
+		{arg='column_name', type='string', help='the name of the column'},
+		{arg='with_named_keys', type='boolean', help='if the index should be named keys', default=false}
+	)
+	if (args.column_name == nil) then
+		args.column_name = self:get_numerical_colnames()
+	elseif (type(args.column_name) == 'string') then
+		args.column_name = {args.column_name}
+	else
+		error("Invalid column_name argument: " .. tostring(args.column_name))
+	end
+
+	for _,k in pairs(args.column_name) do
+		assert(self:has_column(k), "Could not find column: " .. tostring(k))
+	end
+	ret = {}
+	for col_no = 1,#self.column_order do
+		local cn = self.column_order[col_no]
+		local found = false
+		for _,k in pairs(args.column_name) do
+			if (k == cn) then
+				found = true
+				break
+			end
+		end
+		if (found) then
+			local max = 0
+			if (self:is_categorical(cn)) then
+				for k,i in pairs(self:get_cat_keys(cn)) do
+					if (i > max) then
+						max = i
+					end
+				end
+			elseif (self:is_numerical(cn)) then
+				for _,v in pairs(self:get_column{column_name = cn, as_raw = true}) do
+					if (v > max) then
+						max = v
+					end
+				end
+			else
+				-- Non-numerical column has no max
+				max = 0/0
+			end
+			if (args.with_named_keys) then
+				ret[cn] = max
+			else
+				table.insert(ret, max)
+			end
+		end
+	end
+	return ret
+end
+
+--
 -- to_tensor() : convert dataset to tensor
 --
 -- ARGS: - filename (optional) [string] : path where save tensor, if missing the tensor is only returned by the function
@@ -463,9 +535,15 @@ function Dataframe:to_tensor(...)
 		{arg='filename', type='string', help='the name of the column'},
 		{arg='columns', type='string|table', help='the columns to export to labels'}
 	)
-	-- TODO: Change to get_column{as_tensor = true}
+
 	if (args.columns == nil) then
-		numeric_dataset = self:_get_numerics()
+		numeric_dataset = {}
+		for _,k in pairs(self:get_numerical_colnames()) do
+			numeric_dataset[k] = self:get_column{column_name = k,
+		                                       as_tensor = true}
+		end
+		assert(table.exact_length(numeric_dataset) > 0,
+		       "Didn't find any numerical columns to export to tensor")
 	else
 		if (type(args.columns) == "string") then
 			args.columns = {args.columns}
@@ -475,7 +553,8 @@ function Dataframe:to_tensor(...)
 		for _,k in pairs(args.columns) do
 			assert(self:has_column(k), "Could not find column: " .. tostring(k))
 			assert(self:is_numerical(k), "Column " .. tostring(k) .. " is not numerical")
-			numeric_dataset[k] =  self:get_column{column_name = k, as_raw = true}
+			numeric_dataset[k] =  self:get_column{column_name = k,
+			                                      as_tensor = true}
 		end
 	end
 
@@ -491,7 +570,7 @@ function Dataframe:to_tensor(...)
 			end
 		end
 		if (found) then
-			next_col =  torch.Tensor(numeric_dataset[column_name])
+			next_col =  numeric_dataset[column_name]
 			if (torch.isTensor(tensor_data)) then
 				tensor_data = torch.cat(tensor_data, next_col, 2)
 			else

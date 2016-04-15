@@ -38,6 +38,10 @@ end
 function Dataframe:fill_na(column_name, default_value)
 	assert(self:has_column(column_name), "Could not find column: " .. tostring(column_name))
 	default = default_value or 0
+  if (self:is_categorical(column_name) and
+      self.categorical[column_name][default] == nil) then
+    self.categorical[column_name]["__nan__"] = default_value
+  end
 
 	for i = 1, self.n_rows do
 		local val = self.dataset[column_name][i]
