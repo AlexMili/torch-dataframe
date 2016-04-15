@@ -1,4 +1,12 @@
-require "../Dataframe"
+-- Make sure that directory structure is always the same
+require('lfs')
+if (string.match(lfs.currentdir(), "/tests$")) then
+  lfs.chdir("..")
+end
+paths.dofile('init.lua')
+
+-- Go into tests so that the loading of CSV:s is the same as always
+lfs.chdir("tests")
 
 -- A quick way to get a feeling for how the __tostring method works
 local a = Dataframe()

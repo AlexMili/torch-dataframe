@@ -1,76 +1,35 @@
--- Dataframe.lua
-
+-- Main Dataframe file
 require 'torch'
 require 'csvigo'
 require 'dok'
-
--- UTILS
-
-function trim(s)
-	local from = s:match"^%s*()"
-	return s:match"^%s*()" > #s and "" or s:match(".*%S", s:match"^%s*()")
-end
-
-function clone(t) -- shallow-copy a table
-	if type(t) ~= "table" then return t end
-	local meta = getmetatable(t)
-	local target = {}
-	for k, v in pairs(t) do target[k] = v end
-	setmetatable(target, meta)
-	return target
-end
-
-table.exact_length = function(tbl)
-  i = 0
-  for k,v in pairs(tbl) do
-    i = i + 1
-  end
-  return i
-end
-
-function isint(n)
-	return n == math.floor(n)
-end
-
-function isnan(n)
-	return n ~= n
-end
-
-local function escapeCsv(s, separator)
-   if string.find(s, '["' .. separator .. ']') then
-   --if string.find(s, '[,"]') then
-      s = '"' .. string.gsub(s, '"', '""') .. '"'
-   end
-   return s
-end
-
--- convert an array of strings or numbers into a row in a csv file
-local function tocsv(t, separator, column_order)
-   local s = ""
-	 for i=1,#column_order do
-		 p = t[column_order[i]]
-		 if (isnan(p)) then
-			 p = ''
-		 end
-     s = s .. separator .. escapeCsv(p, separator)
-   end
-   return string.sub(s, 2) -- remove first comma
-end
-
--- END UTILS
-
 
 -- create class object
 local Dataframe = torch.class('Dataframe')
 
 -- construct a new Dataframe
 --
+-- ARGS: -csv_or_data (optional) [string|table] : Path to CSV file or a data table for loading initial data
+--
 -- Returns: a new Dataframe object
-function Dataframe:__init()
+function Dataframe:__init(...)
+	local args = dok.unpack(
+		{...},
+		'Dataframe.__init',
+		'Initializes dataframe object',
+		{arg='csv_or_data', type='string|table', help='Path to CSV file or a data table for loading initial data', req=false})
 	self:_clean{schema = true}
 	self.print = {no_rows = 10,
 								max_col_width = 20}
 								sadsad = 1
+	if (args.csv_or_data) then
+		if (type(args.csv_or_data) == 'string') then
+			self:load_csv(args.csv_or_data)
+		elseif(type(args.csv_or_data) == 'table') then
+			self:load_table(args.csv_or_data)
+		else
+			error("Invalid data field type: " .. type(args.csv_or_data))
+		end
+	end
 end
 
 -- Private function for cleaning all data
@@ -98,186 +57,6 @@ function Dataframe:_copy_meta(to)
 	to.print = clone(self.print)
 	to.categorical = clone(self.categorical)
 	return to
-end
-
---
--- load_csv{path='path/to/file'} : load csv file
---
--- ARGS: - path 			(required) 					[string]	: Path to the CSV
---		 - header 			(optional, default=true) 	[boolean]	: if has header on first line
---		 - infer_schema 	(optional, default=true)	[boolean] 	:
---		 - separator 		(optional, default=',')		[string] 	: if has header on first line
---		 - skip			 	(optional, default=0) 		[number] 	:
---
--- RETURNS: nothing
---
-function Dataframe:load_csv(...)
-	local args = dok.unpack(
-		{...},
-		'Dataframe.load_csv',
-		'Loads a CSV file into Dataframe using csvigo as backend',
-		{arg='path', type='string', help='path to file', req=true},
-		{arg='header', type='boolean', help='if has header on first line', default=true},
-		{arg='infer_schema', type='boolean', help='automatically detect columns\' type', default=true},
-		{arg='separator', type='string', help='separator (one character)', default=','},
-		{arg='skip', type='number', help='skip this many lines at start of file', default=0},
-		{arg='verbose', type='boolean', help='verbose load', default=true}
-	)
-	-- Remove previous data
-	self:_clean()
-
-	self.dataset = csvigo.load{path = args.path,
-	                           header = args.header,
-														 separator = args.separator,
-														 skip = args.skip,
-													   verbose = args.verbose}
-	self:_clean_columns()
-	self:_refresh_metadata()
-
-	-- Change all missing values to nan
-	for k,v in pairs(self.dataset) do
-		for i = 1,self.n_rows do
-			if (v[i] == nil or
-			    v[i] == '') then
-			  v[i] = 0/0
-			end
-		end
-		self.dataset[k] = v
-	end
-
-	self.column_order = self:_getCsvHeaderOrder(args.path, args.separator)
-	if args.infer_schema then self:_infer_schema() end
-end
-
--- Returns the order of the original CSV
-function Dataframe:_getCsvHeaderOrder(filepath, separator)
-	file, msg = io.open(filepath, 'r')
-	if not file then error("Could not open file") end
-  local line = file:read()
-	file:close()
-	if not line then error("Could not read line") end
-	line = line:gsub('\r', '')
-
-	line = line .. separator -- end with separator
-	if separator == ' ' then separator = '%s+' end
-	local t = {}
-	count = 0
-	local fieldstart = 1
-	repeat
-		count = count + 1
-		-- next field is quoted? (starts with "?)
-	  if string.find(line, '^"', fieldstart) then
-			local a, c
-	    local i = fieldstart
-	    repeat
-	      -- find closing quote
-	      a, i, c = string.find(line, '"("?)', i+1)
-	    until c ~= '"'  -- quote not followed by quote?
-
-	    if not i then error('unmatched "') end
-			local f = string.sub(line, fieldstart+1, i-1)
-	    t[count] = (string.gsub(f, '""', '"'))
-
-			-- Move along the line to next separator
-	    fieldstart = string.find(line, separator, i) + 1
-	  else
-	     local nexti = string.find(line, separator, fieldstart)
-	     t[count] = string.sub(line, fieldstart, nexti-1)
-	     fieldstart = nexti + 1
-	  end
-	until fieldstart > string.len(line)
-	return t
-end
-
---
--- load_table{data=your_table} : load table in Dataframe
---
--- ARGS: - data 			(required) 					[string]	: table to import
---		 - infer_schema 	(optional, default=false)	[boolean] 	: automatically detect columns type
---
--- RETURNS: nothing
---
-function Dataframe:load_table(...)
-	local args = dok.unpack(
-		{...},
-		'Dataframe.load_table',
-		'Imports a table directly data into Dataframe',
-		{arg='data', type='table', help='table to import', req=true},
-		{arg='infer_schema', type='boolean', help='automatically detect columns\' type', default=true},
-		{arg='column_order', type='table', help='The column order', req=false}
-	)
-	self:_clean()
-
-	local length = -1
-	for k,v in pairs(args.data) do
-		if (type(v) == 'table') then
-			if (length > 1) then
-				assert(length == table.maxn(v),
-				       "The length of the provided tables do not match")
-			else
-				length = math.max(length, table.maxn(v))
-			end
-		else
-			length = math.max(1, length)
-		end
-	end
-	assert(length > 0, "Could not find any valid elements")
-
-	count = 0
-	for k,v in pairs(args.data) do
-		count = count + 1
-		self.column_order[count] = k
-		if (type(v) ~= 'table') then
-			-- Populate the table if single value has been provided
-			tmp = {}
-			for i = 1,length do
-				tmp[i] = v
-			end
-			self.dataset[k] = tmp
-		else
-			self.dataset[k] = v
-		end
-	end
-	self:_clean_columns()
-
-	if (args.column_order) then
-		no_cols = table.exact_length(self.dataset)
-		assert(#args.column_order == no_cols,
-					"The length of the column order " .. #args.column_order ..
-					" should be the same as the data " .. no_cols)
-		for i = 1,no_cols do
-			assert(args.column_order[i] ~= nil, "The column order should be continous." ..
-			       " Could not find column no. " .. i)
-			found = false
-		  for k,v in pairs(self.dataset) do
-				if (k == args.column_order[i]) then
-					found = true
-					break
-				end
-			end
-			assert(found, "Could not find the order column name " .. args.column_order[i] ..
-			              " in the data columns")
-		end
-		self.column_order = args.column_order
-	end
-
-	self:_refresh_metadata()
-	if args.infer_schema then self:_infer_schema() end
-end
-
--- Internal function to clean columns names
-function Dataframe:_clean_columns()
-	temp_dataset = {}
-
-	for k,v in pairs(self.dataset) do
-		trimmed_column_name = trim(k)
-		assert(temp_dataset[trimmed_column_name] == nil,
-		       "The column name " .. trimmed_column_name ..
-					 " appears more than once in your data")
-		temp_dataset[trimmed_column_name] = v
-	end
-
-	self.dataset = temp_dataset
 end
 
 -- Internal function to collect columns names
@@ -570,8 +349,15 @@ function Dataframe:reset_column(column_name, new_value)
 	end
 end
 
-
+--
+-- remove_index('index') : deletes a row
+--
+-- ARGS: - index (required) [integer] : delete a row number
+--
+-- RETURNS: nothing
+--
 function Dataframe:remove_index(index)
+	assert(isint(index), "The index should be an integer, you've provided " .. tostring(index))
 	for i = 1,#self.columns do
 		table.remove(self.dataset[self.columns[i]],index)
 	end
@@ -610,67 +396,6 @@ function Dataframe:rename_column(old_column_name, new_column_name)
 	end
 	self:_refresh_metadata()
 	self:_infer_schema()
-end
-
---
--- count_na() : count missing values in dataset
---
--- ARGS: nothing
---
--- RETURNS: table containing missing values per column
---
-function Dataframe:count_na()
-	count = {}
-
-	for _,column_name in pairs(self.columns) do
-		counter = 0
-		for i = 1, self.n_rows do
-			local val = self.dataset[column_name][i]
-			if val == nil or val == '' or isnan(val) then
-				counter = counter + 1
-			end
-		end
-		count[column_name] = counter
-	end
-
-	return count
-end
-
---
--- fill_na('column_name', 0) : replace missing value in a specific column
---
--- ARGS: - column_name 		(required) 				[string]	: column name to fill
---		 - default_value 	(optional, default=0) 	[any]		: default missing value
---
--- RETURNS: nothing
---
--- Enhancement : detect nil/na value at first reading or _infer_schema
-function Dataframe:fill_na(column_name, default_value)
-	assert(self:has_column(column_name), "Could not find column: " .. tostring(column_name))
-	default = default_value or 0
-
-	for i = 1, self.n_rows do
-		local val = self.dataset[column_name][i]
-		if val == nil or val == '' or isnan(val) then
-			self.dataset[column_name][i] = default
-		end
-	end
-end
-
---
--- fill_all_na(0) : replace missing value in the whole dataset
---
--- ARGS: - default_value (optional, default=0) [any] : default missing value
---
--- RETURNS: nothing
---
--- Enhancement : detect nil/na value at first reading or _infer_schema
-function Dataframe:fill_all_na(default_value)
-	default = default_value or 0
-
-	for _,key in pairs(self.columns) do
-		self:fill_na(key, default_value)
-	end
 end
 
 -- Internal function to get all numerics columns
@@ -784,110 +509,6 @@ function Dataframe:to_tensor(...)
 end
 
 --
--- to_csv() : convert dataset to CSV file
---
--- ARGS: - filename 	(required) 				[string] : path where to save CSV file
--- 		 - separator 	(optional, default=',') [string]	: character to split items in one CSV line
---
--- RETURNS: nothing
---
-function Dataframe:to_csv(...)
-	local args = dok.unpack(
-		{...},
-		'Dataframe.to_csv',
-		'Saves a Dataframe into a CSV using csvigo as backend',
-		{arg='path', type='string', help='path to file', req=true},
-		{arg='separator', type='string', help='separator (one character)', default=','},
-		{arg='verbose', type='boolean', help='verbose load', default=true}
-	)
-
-	file, msg = io.open(args.path, 'w')
-	if not file then error("Could not open file") end
-	for i = 0,self.n_rows do
-		if (i == 0) then
-			row = {}
-			for _,k in pairs(self.columns) do
-				row[k] = k
-			end
-		else
-			row = self:get_row(i)
-		end
-		res, msg = file:write(tocsv(row, args.separator, self.column_order), "\n")
-		if (not res) then error(msg) end
-	end
-	file:close()
-end
-
---
--- sub() : Selects a subset of rows and returns those
---
--- ARGS: - start 			(optional) [number] 	: row to start at
--- 		   - stop 			(optional) [number] 	: last row to include
---
--- RETURNS: Dataframe
---
-function Dataframe:sub(...)
-	local args = dok.unpack(
-		{...},
-		'Dataframe.sub',
-		'Retrieves a subset of elements',
-		{arg='start', type='integer', help='row to start at', default=1},
-		{arg='stop', type='integer', help='row to stop at', default=self.n_rows}
-	)
-	assert(args.start <= args.stop, "Stop argument can't be less than the start argument")
-	assert(args.start > 0, "Start position can't be less than 1")
-	assert(args.stop <= self.n_rows, "Stop position can't be more than available rows")
-
-	indexes = {}
-	for i = args.start,args.stop do
-		table.insert(indexes, i)
-	end
-	return self:_create_subset(indexes)
-end
-
---
--- head() : get the table's first elements
---
--- ARGS: - n_items 			(required) [number] 	: items to print
---
--- RETURNS: Dataframe
---
-function Dataframe:head(...)
-	local args = dok.unpack(
-		{...},
-		'Dataframe.head',
-		'Retrieves the first elements of a table',
-		{arg='n_items', type='integer', help='The number of items to display', default=10}
-	)
-	head = self:sub(1, math.min(args.n_items, self.n_rows))
-	return head
-end
-
-function Dataframe:output(...)
-	local args = dok.unpack(
-		{...},
-		'Dataframe.print',
-		'Prints the table',
-		{arg='html', type='boolean', help='If the output should be in html format', default=itorch ~= nil},
-		{arg='max_rows', type='integer', help='Limit the maximum number of printed rows', default=20}
-	)
-	assert(args.max_rows > 0, "Can't print less than 1 row")
-	args.max_rows = math.min(self.n_rows, args.max_rows)
-
-	data = self:sub(1, args.max_rows)
-	if (args.html) then
-		html_string = data:_to_html()
-		if (itorch ~= nil) then
-			itorch.html(html_string)
-		else
-			print(html_string)
-		end
-	else
-		print(tostring(data))
-	end
-end
-
---
 -- __pairs() : overload the pairs() function. This helps the tail()/head() to behave
 --             in the same way as previously
 --
@@ -896,59 +517,6 @@ end
 -- RETURNS: k, v as pairs
 function Dataframe:__pairs(...)
 	return pairs(self.dataset, ...)
-end
-
---
--- tail() : get the table's last elements
---
--- ARGS: - n_items 			(required) [number] 	: items to print
---
--- RETURNS: Dataframe
---
-function Dataframe:tail(...)
-	local args = dok.unpack(
-		{...},
-		'Dataframe.tail',
-		'Retrieves the last elements of a table',
-		{arg='n_items', type='integer', help='The number of items to display', default=10},
-		{arg='html', type='boolean', help='Display as html', default=false}
-	)
-	start_pos = math.max(1, self.n_rows - args.n_items + 1)
-	tail = self:sub(start_pos)
-	return tail
-end
-
---
--- show() : print dataset
---
--- ARGS: nothing
---
--- RETURNS: nothing
---
-function Dataframe:show()
-	if (self.n_rows <= 20) then
-		-- Print all
-		self:output{max_rows = 20}
-	else
-		head = self:head(10)
-		tail = self:tail(10)
-		-- Print itorch if present otherwise use stndrd output
-		if itorch ~= nil then
-			text = ''
-			text = text..head:_to_html{split_table='bottom'}
-			text = text..'\n\t<tr>'
-			text = text..'<td><span style="font-size:20px;">...</span></td>' -- index cell
-			text = text..'<td colspan="'.. self:shape()["cols"] ..'"><span style="font-size:20px;">...</span></td>' -- the remainder
-			text = text..'\n</tr>'
-			text = text..tail:_to_html{split_table='top', offset=self.n_rows - tail:shape()["rows"]}
-
-			itorch.html(text)
-		else
-			head:output()
-			print('...')
-			tail:output()
-		end
-	end
 end
 
 --
@@ -1035,121 +603,6 @@ function Dataframe:value_counts(...)
   return count
 end
 
---
--- where('column_name','my_value') : find the first row where the column has the given value
---
--- ARGS: - column 		(required) [string] : column to browse or a condition_function that
---                                          takes a row and returns true/false depending
---                                          on the row values
---		 - item_to_find (required) [string] : value to find
---
--- RETURNS : Dataframe
---
-function Dataframe:where(column, item_to_find)
-	if (type(column) ~= 'function') then
-		condition_function = function(row)
-			return row[column] == item_to_find
-		end
-	else
-		condition_function = column
-	end
-
-	local matches = self:_where(condition_function)
-	return self:_create_subset(matches)
-end
-
--- Creates a class and returns a subset based on the index items
-function Dataframe:_create_subset(index_items)
-	if (type(index_items) ~= 'table') then
-		index_items = {index_items}
-	end
-
-	for _,i in pairs(index_items) do
-		assert(isint(i) and
-		 			 i > 0 and
-					 i <= self.n_rows,
-					 "There are values outside the allowed index range 1 to " .. self.n_rows ..
-					 ": " .. tostring(i))
-	end
-
-	-- TODO: for some reason the categorical causes errors in the loop, this strange copy fixes it
-	tmp = clone(self.categorical)
-	self.categorical = {}
-	ret = Dataframe.new()
-	for _,i in pairs(index_items) do
-		val = self:get_row(i)
-		ret:insert(val)
-	end
-	self.categorical = tmp
-	ret = self:_copy_meta(ret)
-	return ret
-end
-
---
--- _where(column, item_to_find)
---
--- ARGS: - condition_function 	(required) [func] : function to test if the current row will be updated
---
--- RETURNS : table with the index of all the matches
---
-function Dataframe:_where(condition_function)
-	local matches = {}
-	for i = 1, self.n_rows do
-		local row = self:get_row(i)
-		if condition_function(row) then
-			table.insert(matches, i)
-		end
-	end
-
-	return matches
-end
-
---
--- update(function(row) row['column'] == 'test' end, function(row) row['other_column'] = 'new_value' return row end) : Update according to condition
---
--- ARGS: - condition_function 	(required) [func] : function to test if the current row will be updated
---		 - update_function 		(required) [func] : function to update the row
---
--- RETURNS : nothing
---
-function Dataframe:update(condition_function, update_function)
-	local matches = self:_where(condition_function)
-	for _, i in pairs(matches) do
-		row = self:get_row(i)
-		new_row = update_function(row)
-		self:_update_single_row(i, new_row)
-	end
-end
-
---
--- set('my_value', 'column_name', 'new_value') : change value for a line
---
--- ARGS: - item_to_find 	(required)	[any]		: value to search
--- 		 - column_name 		(required) 	[string] 	: column where to search
---		 - new_value 		(required) 	[table]		: new value to set for the line
---
--- RETURNS: nothing
---
-function Dataframe:set(item_to_find, column_name, new_value)
-	assert(self:has_column(column_name), "Could not find column: " .. tostring(column_name))
-	temp_converted_cat_cols = {}
-	column_data = self:get_column(column_name)
-	for i = 1, self.n_rows do
-		if column_data[i] == item_to_find then
-			for _,k in pairs(self.columns) do
-				-- If the column is being updated by the user
-				if new_value[k] ~= nil then
-					if (self:is_categorical(k)) then
-						new_value[k] = self:_get_raw_cat_key(column_name, new_value[k])
-					end
-					self.dataset[k][i] = new_value[k]
-				end
-			end
-			break
-		end
-	end
-end
-
 -- Internal function for getting raw value for a categorical variable
 function Dataframe:_get_raw_cat_key(column_name, key)
 	keys = self:get_cat_keys(column_name)
@@ -1158,52 +611,6 @@ function Dataframe:_get_raw_cat_key(column_name, key)
 	end
 
 	return self:add_cat_key(column_name, key)
-end
-
--- Internal function to convert a table to html (only works for 1D table)
-function Dataframe:_to_html(...)--data, start_at, end_at, split_table)
-	local args = dok.unpack(
-		{...},
-		{"Dataframe._to_html"},
-		{"Converts table to a html table string"},
-		{arg='split_table', type='string', help=[[
-			Where the table is split. Valid input is 'none', 'top', 'bottom', 'all'.
-			Note that the 'bottom' removes the trailing </table> while the 'top' removes
-			the initial '<table>'. The 'all' removes both but retains the header while
-			the 'top' has no header.
-		]], default='none'},
-		{arg='offset', type='integer', help="The line index offset", default=0})
-
-	result = ''
-	if args.split_table ~= 'top' and args.split_table ~= 'all' then
-		result = result.. '<table>'
-	end
-
-	if args.split_table ~= 'top' then
-		result = result.. '\n\t<tr>'
-		result = result.. '\n\t\t<th>#</th>'
-		for i = 1,#self.column_order do
-			k = self.column_order[i]
-			result = result.. '<th>' ..k.. '</th>'
-		end
-		result = result.. '\n\t</tr>'
-	end
-
-	for row_no = 1,self.n_rows do
-		result = result.. '\n\t<tr>'
-		result = result.. '\n\t\t<td>'..(row_no + args.offset)..'</td>'
-		for col_no = 1,#self.column_order do
-			k = self.column_order[col_no]
-			result = result.. '<td>' ..tostring(self:get_column(k)[row_no]).. '</td>'
-		end
-		result = result.. '\n\t</tr>'
-	end
-
-	if args.split_table ~= 'bottom' and args.split_table ~= 'all' then
-		result = result.. '\n</table>'
-	end
-
-	return result
 end
 
 --
@@ -1228,124 +635,6 @@ function Dataframe:get_row(index_row)
 	end
 
 	return row
-end
-
--- Internal function to update a single row from data and index
-function Dataframe:_update_single_row(index_row, new_row)
-	for _,key in pairs(self.columns) do
-		if (self:is_categorical(key)) then
-			new_row[key] = self:_get_raw_cat_key(key, new_row[key])
-		end
-		self.dataset[key][index_row] = new_row[key]
-	end
-
-	return row
-end
-
---
--- tostring() : A convenience wrapper for __tostring
---
--- ARGS: none
---
--- RETURNS: string
---
-function Dataframe:tostring()
-	return self:__tostring__()
-end
-
---
--- __tostring__() : Converts table to a string representation that follows standard
---                markdown syntax
---
--- ARGS: none
---
--- RETURNS: string
---
-function Dataframe:__tostring__()
-  local no_rows = math.min(self.print.no_rows, self.n_rows)
-	max_width = self.print.max_col_width
-
-	-- Get the width of each column
-	local lengths = {}
-	for _,k in pairs(self.column_order) do
-		lengths[k] = string.len(k)
-		v = self:get_column(k)
-		for i = 1,no_rows do
-			if (v[i] ~= nil) then
-				if (lengths[k] < string.len(v[i])) then
-					lengths[k] = string.len(v[i])
-				end
-			end
-		end
-	end
-
-	add_padding = function(df_string, out_len, target_len)
-		if (out_len < target_len) then
-			df_string = df_string .. string.rep(" ", (target_len - out_len))
-		end
-		return df_string
-	end
-
-	table_width = 0
-	for _,l in pairs(lengths) do
-		table_width = table_width + math.min(l, max_width)
-	end
-	table_width = table_width +
-		3 * (table.exact_length(lengths) - 1) + -- All the " | "
-		2 + -- The beginning of each line "| "
-		2 -- The end of each line " |"
-
-	add_separator = function(df_string, table_width)
-		df_string = df_string .. "\n+" .. string.rep("-", table_width - 2) .. "+"
-		return df_string
-	end
-
-	df_string = add_separator("", table_width)
-	df_string = df_string .. "\n| "
-	for i = 0,no_rows do
-		if (i == 0) then
-			row = {}
-			for _,k in pairs(self.columns) do
-				row[k] = k
-			end
-		else
-			row = self:get_row(i)
-		end
-
-		if (i > 0) then
-			-- Underline header with ----------------
-			if (i == 1) then
-				df_string = add_separator(df_string, table_width)
-			end
-			df_string = df_string .. "\n| "
-		end
-
-		for ii = 1,#self.column_order do
-			column_name = self.column_order[ii]
-			if (ii > 1) then
-				df_string = df_string .. " | "
-			end
-			output = tostring(row[column_name])
-			if (self:is_numerical(column_name)) then
-				-- Right align numbers by padding to left
-				df_string = add_padding(df_string, string.len(output), lengths[column_name])
-				df_string = df_string .. output
-			else
-				if (string.len(output) > max_width) then
-					output = string.sub(output, 1, max_width - 3) .. "..."
-				end
-				df_string = df_string .. output
-				-- Padd left if needed
-				df_string = add_padding(df_string, string.len(output), math.min(max_width, lengths[column_name]))
-			end
-		end
-		df_string = df_string .. " |"
-	end
-	if (self.n_rows > no_rows) then
-		df_string = df_string .. "\n| ..." .. string.rep(" ", table_width - 5 - 1) .. "|"
-	end
-	df_string = add_separator(df_string, table_width) .. "\n"
-	return df_string
 end
 
 --

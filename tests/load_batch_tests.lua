@@ -1,6 +1,6 @@
 -- Make sure that directory structure is always the same
-require('lfs')
-if (string.match(lfs.currentdir(), "/test")) then
+require 'lfs'
+if (string.match(lfs.currentdir(), "/tests$")) then
   lfs.chdir("..")
 end
 paths.dofile('init.lua')
