@@ -22,7 +22,13 @@ package = "torch-dataframe"
   type = 'builtin',
   modules = {
       ["Dataframe.init"] = 'init.lua',
-      ["Dataframe.Dataframe"] = 'Dataframe.lua',
-      ["Dataframe.Extensions.load_batch"] = 'Extensions/load_batch.lua'
+      ["Dataframe.utils"] = 'utils.lua',
+      ["Dataframe.main"] = 'main.lua',
+      ["Dataframe.Extensions.load_batch"] = 'Extensions/load_batch.lua',
+      ["Dataframe.Extensions.load_data"] = 'Extensions/load_data.lua',
+      ["Dataframe.Extensions.save_data"] = 'Extensions/save_data.lua',
+      ["Dataframe.Extensions.select_set_update"] = 'Extensions/select_set_update.lua',
+      ["Dataframe.Extensions.missing_data"] = 'Extensions/missing_data.lua',
+      ["Dataframe.Extensions.output"] = 'Extensions/output.lua'
   }
  }
