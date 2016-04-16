@@ -81,6 +81,11 @@ function cat_tests.get_column()
             torch.Tensor({1, 2, 2}),
             "Failed to return a tensor from categorical column")
 
+
+  true_vals = {"TRUE", "FALSE", "TRUE"}
+  a:load_table{data={['Col A']=true_vals,['Col B']={10,11,12}}}
+  a:as_categorical('Col A')
+  tester:eq(a:get_column('Col A'), true_vals)
 end
 
 function cat_tests.unique()
