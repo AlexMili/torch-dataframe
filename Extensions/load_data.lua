@@ -140,6 +140,17 @@ function Dataframe:load_table(...)
 			self.dataset[k] = clone(v)
 		end
 	end
+
+	-- Change all missing values to nan
+	for k,v in pairs(self.dataset) do
+		for i = 1,self.n_rows do
+			if (v[i] == nil) then
+			  v[i] = 0/0
+			end
+		end
+		self.dataset[k] = v
+	end
+
 	self:_clean_columns()
 
 	if (args.column_order) then

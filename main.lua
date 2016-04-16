@@ -641,7 +641,11 @@ function Dataframe:as_categorical(column_name)
 		column_data = self:get_column(cn)
 		self.categorical[cn] = keys
 		for i,v in ipairs(column_data) do
-			self.dataset[cn][i] = keys[v]
+			if (keys[v] == nil) then
+				self.dataset[cn][i] = 0/0
+			else
+				self.dataset[cn][i] = keys[v]
+			end
 		end
 	end
 	self:_infer_schema()
@@ -776,34 +780,42 @@ function Dataframe:to_categorical(...)
 		end
 		args.data = tmp
 	elseif(type(args.data) ~= 'table') then
-		val = tonumber(args.data)
-		assert(type(val) == 'number', "The data " .. args.data .. " is not a valid number")
-		args.data = val
-		assert(math.floor(args.data) == args.data, "The data is not a valid integer")
+		if (not isnan(args.data)) then
+			val = tonumber(args.data)
+			assert(type(val) == 'number', "The data " .. args.data .. " is not a valid number")
+			args.data = val
+			assert(math.floor(args.data) == args.data, "The data is not a valid integer")
+		end
 		single_value = true
 		args.data = {args.data}
 	else
 		for k,v in pairs(args.data) do
-			val = tonumber(args.data[k])
-			assert(type(val) == 'number',
-			       "The data ".. tostring(val) .." in position " .. k .. " is not a valid number")
-			args.data[k] = val
-			assert(math.floor(args.data[k]) == args.data[k],
-			       "The data " .. args.data[k] .. " in position " .. k .. " is not a valid integer")
+			if (not isnan(args.data[k])) then
+				val = tonumber(args.data[k])
+				assert(type(val) == 'number',
+				       "The data ".. tostring(val) .." in position " .. k .. " is not a valid number")
+				args.data[k] = val
+				assert(math.floor(args.data[k]) == args.data[k],
+				       "The data " .. args.data[k] .. " in position " .. k .. " is not a valid integer")
+			end
 		end
 	end
 
 	ret = {}
 	for _,v in pairs(args.data) do
 		local val = nil
-		for k,index in pairs(self.categorical[args.column_name]) do
-			if (index == v) then
-				val = k
-				break
+		if (isnan(v)) then
+			val = 0/0
+		else
+			for k,index in pairs(self.categorical[args.column_name]) do
+				if (index == v) then
+					val = k
+					break
+				end
 			end
+			assert(val ~= nil,
+			       v .. " isn't present in the keyset")
 		end
-		assert(val ~= nil,
-		       v .. " isn't present in the keyset")
 		table.insert(ret, val)
 	end
 	if (single_value) then
