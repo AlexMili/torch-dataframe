@@ -586,39 +586,6 @@ function Dataframe:unique(...)
 	end
 end
 
---
--- value_counts() : count number of occurences for each unique element (frequency/histogram)
---
--- ARGS: - see dok.unpack
---
--- RETURNS : table with the unique value as key and count as value
---
-function Dataframe:value_counts(...)
-	local args = dok.unpack(
-		{...},
-		'Dataframe.value_counts',
-		'get value counts of elements given a column name',
-		{arg='column_name', type='string', help='column to inspect', req=true}
-	)
-	assert(self:has_column(args.column_name),
-	       "Invalid column name: " .. tostring(args.column_name))
-	count = {}
-
-	column_data = self:get_column(args.column_name)
-	for i = 1,self.n_rows do
-		current_key_value = column_data[i]
-		if (not isnan(current_key_value)) then
-			if (count[current_key_value] == nil) then
-				count[current_key_value] = 1
-			else
-				count[current_key_value] = count[current_key_value] + 1
-			end
-		end
-	end
-
-  return count
-end
-
 -- Internal function for getting raw value for a categorical variable
 function Dataframe:_get_raw_cat_key(column_name, key)
 	keys = self:get_cat_keys(column_name)
