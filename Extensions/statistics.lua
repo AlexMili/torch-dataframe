@@ -20,7 +20,10 @@ function Dataframe:value_counts(...)
 	       "Invalid column name: " .. tostring(args.column_name))
 	count = {}
 
-	column_data = self:get_column(args.column_name)
+  -- Experiencing odd behavior with large data > 254459 rows
+  --  better to use raw data and then convert the names at the end
+	column_data = self:get_column{column_name = args.column_name,
+                                as_raw = true}
 	for i = 1,self.n_rows do
 		current_key_value = column_data[i]
     if (not isnan(current_key_value)) then
@@ -32,7 +35,14 @@ function Dataframe:value_counts(...)
 			end
 		end
 	end
-
+  if (self:is_categorical(args.column_name)) then
+    tmp = {}
+    for key,no_found in pairs(count) do
+      name = self:to_categorical(key, args.column_name)
+      tmp[name] = no_found
+    end
+    count = tmp
+  end
   return count
 end
 

@@ -35,6 +35,7 @@ function cat_tests.to_categorical()
   a:as_categorical('Col B')
   tester:eq(a:to_categorical{data=1, column_name='Col B'}, 'A')
   tester:eq(a:to_categorical(2, 'Col B'), 'B')
+  tester:assert(isnan(a:to_categorical(0/0, 'Col B')))
   tester:eq(a:to_categorical({2, 1}, 'Col B'), {'B', 'A'},
             "Failed to handle table input")
   tester:eq(a:to_categorical(torch.Tensor({1,2}), 'Col B'), {'A', 'B'},
@@ -43,6 +44,7 @@ function cat_tests.to_categorical()
                      "Can't convert to a categorical value outside range")
   tester:assertError(function() a:to_categorical(1, 'Col A') end,
                      "Can't convert a non-categorical value")
+
 end
 
 function cat_tests.from_categorical()
@@ -266,6 +268,32 @@ function cat_tests.sub()
   ret_val = a:sub(1,2)
   tester:assert(isnan(ret_val:get_column('Col D')[1]), "Should retain nan value")
   tester:eq(ret_val:get_column('Col D')[2], 'B', "Should retain string value")
+end
+
+function cat_tests.value_counts()
+  local a = Dataframe()
+  a:load_csv{path = "advanced_short.csv",
+             verbose = false}
+  a:as_categorical('Col B')
+  local ret = a:value_counts('Col B')
+  tester:eq(ret["B"],2)
+  tester:eq(ret["A"],1)
+  local ret = a:value_counts('Col A')
+  tester:eq(ret, {[1] = 1,
+                  [2] = 1,
+                  [3] = 1})
+  a:as_categorical('Col A')
+  local ret = a:value_counts('Col A')
+  tester:eq(ret, {[1] = 1,
+                  [2] = 1,
+                  [3] = 1})
+  local ret = a:value_counts('Col C')
+  tester:eq(ret, {[8] = 1,
+                  [9] = 1})
+  a:as_categorical('Col C')
+  local ret = a:value_counts('Col C')
+  tester:eq(ret, {[8] = 1,
+                  [9] = 1})
 end
 
 tester:add(cat_tests)
