@@ -24,6 +24,7 @@ package = "torch-dataframe"
       ["Dataframe.init"] = 'init.lua',
       ["Dataframe.utils"] = 'utils.lua',
       ["Dataframe.main"] = 'main.lua',
+      ["Dataframe.Extensions.statistics"] = 'Extensions/statistics.lua',
       ["Dataframe.Extensions.load_batch"] = 'Extensions/load_batch.lua',
       ["Dataframe.Extensions.load_data"] = 'Extensions/load_data.lua',
       ["Dataframe.Extensions.save_data"] = 'Extensions/save_data.lua',
