@@ -137,7 +137,7 @@ function Dataframe:load_table(...)
 			end
 			self.dataset[k] = tmp
 		else
-			self.dataset[k] = v
+			self.dataset[k] = clone(v)
 		end
 	end
 	self:_clean_columns()
