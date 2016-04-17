@@ -44,7 +44,7 @@ function Dataframe:load_batch(...)
          " a positive integer less or equeal to the number of observations in that category " ..
          self:batch_size(args.type) .. "." ..
          " You provided " .. tostring(args.no_files))
-  if (args.no_files == -1) then args.no_files = self.n_rows end
+  if (args.no_files == -1) then args.no_files = self:batch_size(args.type) end
   assert(isint(args.offset) and
          args.offset >= 0,
          "The offset has to be a positive integer, you provided " .. tostring(args.offset))
