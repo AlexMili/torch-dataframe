@@ -19,7 +19,9 @@ end
 -- RETURNS: data, label tensors, table with tensor column names
 --
 function Dataframe:load_batch(...)
-  assert(self.batch.datasets ~= nil, "You must call init_batch before calling load_batch")
+  assert(self.batch ~= nil and
+         self.batch.datasets ~= nil,
+         "You must call init_batch before calling load_batch")
   local args = dok.unpack(
     {...},
     'Dataframe.load_batch',
