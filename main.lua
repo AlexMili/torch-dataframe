@@ -533,7 +533,7 @@ end
 -- ARGS: - t (required) [Dataframe]
 --
 -- RETURNS: k, v as pairs
-function Dataframe:__pairs(...)
+function Dataframe:__pairs__(...)
 	return pairs(self.dataset, ...)
 end
 
@@ -756,6 +756,7 @@ function Dataframe:get_cat_keys(column_name)
 	assert(self:is_categorical(column_name), "The " .. tostring(column_name) .. " isn't a categorical column")
   return self.categorical[column_name]
 end
+
 --
 -- to_categorical(...) : Converts values to categorical according to a column's keys
 --
