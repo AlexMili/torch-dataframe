@@ -30,4 +30,28 @@ function isnan(n)
 	return n ~= n
 end
 
+table.collapse_to_string = function(tbl)
+	assert(type(tbl) == "table")
+	if(tbl == nil) then
+		ret = "No table provided"
+	elseif(table.exact_length(tbl) == 0) then
+		ret = "Empty table"
+	elseif (tbl[1] ~=  nil) then
+		for _,v in pairs(tbl) do
+			if (ret ~= "") then
+				ret = ret .. ", "
+			end
+			ret = ret .. "'" .. v .."'"
+		end
+	else
+		for k,v in pairs(tbl) do
+			if (ret ~= "") then
+				ret = ret .. ", "
+			end
+			ret = ret .. "'" .. k .. "'=>'" .. v .. "'"
+		end
+	end
+	return ret
+end
+
 -- END UTILS
