@@ -16,19 +16,22 @@ end
 --
 -- ARGS: see dok.unpack
 --
--- RETURNS: data, label tensors
+-- RETURNS: data, label tensors, table with tensor column names
 --
 function Dataframe:load_batch(...)
   assert(self.batch.datasets ~= nil, "You must call init_batch before calling load_batch")
   local args = dok.unpack(
     {...},
     'Dataframe.load_batch',
-    'Loads a batch of data from the table. Note that you have to call init_batch before load_batch',
+    [[
+    Loads a batch of data from the table. Note that you have to call init_batch before load_batch
+    in order to split the dataset into train/test/validations.
+    ]],
     {arg='no_files', type='integer', help='The number of lines to include (-1 for all)', req=true},
     {arg='offset', type='integer', help='The number of files to skip before starting load', default=0},
     {arg='load_row_fn', type='function', help='Receives a row and returns a tensor assumed to be the data', req=true},
     {arg='type', type='function', help='Type of data to load', default="train"},
-    {arg='label_columns', type='table', help='The columns that are to be the label. If omitted defaults to all.'})
+    {arg='label_columns', type='table', help='The columns that are to be the label. If omitted defaults to all numerical.'})
   -- Check argument integrity
   assert(self.batch.datasets[args.type] ~= nil, "There is no batch dataset group corresponding to '".. args.type .."'")
   local batch_set_size = #self.batch.datasets[args.type]
@@ -68,7 +71,7 @@ function Dataframe:load_batch(...)
     table.insert(rows, self.batch.datasets[args.type][i])
   end
   local dataset_2_load = self:_create_subset(rows)
-  tensor_label = dataset_2_load:to_tensor{columns = args.label_columns}
+  tensor_label, tensor_col_names = dataset_2_load:to_tensor{columns = args.label_columns}
   single_data = args.load_row_fn(dataset_2_load:get_row(1))
   single_data = _add_single_first_dim(single_data)
   tensor_data = single_data
@@ -80,7 +83,7 @@ function Dataframe:load_batch(...)
     end
   end
 
-  return tensor_data, tensor_label
+  return tensor_data, tensor_label, tensor_col_names
 end
 
 -- Helper for adding a single first dimension to help with torch.cat

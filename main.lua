@@ -462,7 +462,7 @@ end
 --
 -- ARGS: - filename (optional) [string] : path where save tensor, if missing the tensor is only returned by the function
 --
--- RETURNS: torch.tensor
+-- RETURNS: torch.tensor, table with label names
 --
 function Dataframe:to_tensor(...)
 	local args = dok.unpack(
@@ -497,6 +497,7 @@ function Dataframe:to_tensor(...)
 
 	tensor_data = nil
 	count = 1
+	tensor_col_names = {}
 	for col_no = 1,#self.column_order do
 		found = false
 		column_name = self.column_order[col_no]
@@ -514,6 +515,7 @@ function Dataframe:to_tensor(...)
 				tensor_data = next_col
 			end
 			count = count + 1
+			table.insert(tensor_col_names, column_name)
 		end
 	end
 
@@ -521,7 +523,7 @@ function Dataframe:to_tensor(...)
 		torch.save(args.filename, tensor_data)
 	end
 
-	return tensor_data
+	return tensor_data, tensor_col_names
 end
 
 --
