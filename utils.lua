@@ -32,6 +32,7 @@ end
 
 table.collapse_to_string = function(tbl)
 	assert(type(tbl) == "table")
+	ret = ""
 	if(tbl == nil) then
 		ret = "No table provided"
 	elseif(table.exact_length(tbl) == 0) then

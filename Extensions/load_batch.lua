@@ -36,14 +36,13 @@ function Dataframe:load_batch(...)
     {arg='label_columns', type='table', help='The columns that are to be the label. If omitted defaults to all numerical.'})
   -- Check argument integrity
   assert(self.batch.datasets[args.type] ~= nil, "There is no batch dataset group corresponding to '".. args.type .."'")
-  local batch_set_size = #self.batch.datasets[args.type]
   assert(isint(args.no_files) and
          (args.no_files > 0 or
           args.no_files == -1) and
-          args.no_files <= batch_set_size,
+          args.no_files <= self:batch_size(args.type),
          "The number of files to load has to be either -1 for all files or " ..
          " a positive integer less or equeal to the number of observations in that category " ..
-         batch_set_size .. "." ..
+         self:batch_size(args.type) .. "." ..
          " You provided " .. tostring(args.no_files))
   if (args.no_files == -1) then args.no_files = self.n_rows end
   assert(isint(args.offset) and
@@ -69,7 +68,27 @@ function Dataframe:load_batch(...)
   end
 
   local rows = {}
-  for i=(args.offset % batch_set_size),((args.no_files + args.offset) % batch_set_size) do
+  local start_position = (args.offset + 1) % self:batch_size(args.type)
+  local stop_position = (args.no_files + args.offset) % self:batch_size(args.type)
+  if (stop_position == 0) then
+    stop_position = self:batch_size(args.type)
+  end
+  assert(stop_position ~= start_position and
+         args.no_files ~= 1,
+         [[
+         It seems that the start and stop positions are identical. This is most
+         likely due to an unintentional loop where the batch is the size of the
+         self:batch_size(args.type) + 1
+         ]])
+  -- If we loop and restart the loading then we need to load the last examples
+  --  and then restart from 1
+  if (start_position > stop_position) then
+    for i=start_position,self:batch_size(args.type) do
+      table.insert(rows, self.batch.datasets[args.type][i])
+    end
+    start_position = 1
+  end
+  for i=start_position,stop_position do
     table.insert(rows, self.batch.datasets[args.type][i])
   end
   local dataset_2_load = self:_create_subset(rows)
@@ -86,6 +105,17 @@ function Dataframe:load_batch(...)
   end
 
   return tensor_data, tensor_label, tensor_col_names
+end
+
+--
+-- batch_size('type') : gets the size of the current batch type
+--
+-- ARGS: -type (required) [string] : the type of batch data
+--
+-- RETURNS: integer
+--
+function Dataframe:batch_size(type)
+  return #self.batch.datasets[type]
 end
 
 -- Helper for adding a single first dimension to help with torch.cat

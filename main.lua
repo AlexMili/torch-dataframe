@@ -489,7 +489,7 @@ function Dataframe:to_tensor(...)
 		numeric_dataset = {}
 		for _,k in pairs(args.columns) do
 			assert(self:has_column(k), "Could not find column: '" .. tostring(k) .. "'"..
-			                           " in " .. table.collapse_to_string(args.columns))
+			                           " in " .. table.collapse_to_string(self.columns))
 			assert(self:is_numerical(k), "Column " .. tostring(k) .. " is not numerical")
 			numeric_dataset[k] =  self:get_column{column_name = k,
 			                                      as_tensor = true}
