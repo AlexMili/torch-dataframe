@@ -25,12 +25,13 @@ function batch_tests.load_batch()
   tester:eq(data:size()[2], 2, "The data has invalid columns")
   tester:eq(label:size()[1], 5, "The labels have invalid size")
   a:as_categorical('Gender')
-  data, label = a:load_batch(5, 0,
-                             function(row) return torch.Tensor({1, 2}) end,
-                             'train')
+  data, label, names = a:load_batch(5, 0,
+                                    function(row) return torch.Tensor({1, 2}) end,
+                                    'train')
   tester:eq(data:size()[1], 5, "The data with gender has invalid rows")
   tester:eq(data:size()[2], 2, "The data with gender has invalid columns")
   tester:eq(label:size()[1], 5, "The labels with gender have invalid size")
+  tester:eq(names, {'Gender', 'Weight'}, "Invalid names returned")
 end
 
 function batch_tests.init_batch()
