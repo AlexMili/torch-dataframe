@@ -21,16 +21,26 @@ function batch_tests.load_batch()
   data, label = a:load_batch(5, 0,
                              function(row) return torch.Tensor({1, 2}) end,
                              'train')
-  tester:eq(data:size()[1], 5, "The data has invalid rows")
-  tester:eq(data:size()[2], 2, "The data has invalid columns")
-  tester:eq(label:size()[1], 5, "The labels have invalid size")
+  tester:eq(data:size(1), 5, "The data has invalid rows")
+  tester:eq(data:size(2), 2, "The data has invalid columns")
+  tester:eq(label:size(1), 5, "The labels have invalid size")
   a:as_categorical('Gender')
   data, label = a:load_batch(5, 0,
                              function(row) return torch.Tensor({1, 2}) end,
                              'train')
-  tester:eq(data:size()[1], 5, "The data with gender has invalid rows")
-  tester:eq(data:size()[2], 2, "The data with gender has invalid columns")
-  tester:eq(label:size()[1], 5, "The labels with gender have invalid size")
+  tester:eq(data:size(1), 5, "The data with gender has invalid rows")
+  tester:eq(data:size(2), 2, "The data with gender has invalid columns")
+  tester:eq(label:size(1), 5, "The labels with gender have invalid size")
+
+  local batch_size = 6
+  for i=1,10 do
+    data, label = a:load_batch(batch_size, (i - 1)*batch_size,
+                               function(row) return torch.Tensor({1, 2}) end,
+                               'train')
+    tester:eq(label:size(1), batch_size, "The labels have invalid size at iteration " .. i)
+    tester:eq(data:size(1), batch_size, "The data has invalid size at iteration " .. i)
+  end
+
 end
 
 function batch_tests.init_batch()
