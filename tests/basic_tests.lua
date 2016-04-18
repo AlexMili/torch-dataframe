@@ -369,9 +369,18 @@ function df_tests.unique()
   local a = Dataframe()
   a:load_csv{path = "advanced_short.csv",
              verbose = false}
-  tester:assertTableEq(a:unique('Col A'), {1,2,3})
-  tester:assertTableEq(a:unique('Col B', true), {A=1, B=2})
-  tester:assertTableEq(a:unique('Col C', true), {[8]=1, [9]=1})
+  tester:assertTableEq(a:unique('Col A'), {1,2,3}, "Failed to match Col A")
+  tester:assertTableEq(a:unique('Col B', true), {A=1, B=2}, "Failed to match Col B")
+  tester:assertTableEq(a:unique('Col C', true), {[8]=1, [9]=2}, "Failed to match Col C")
+end
+
+function df_tests.value_counts()
+  local a = Dataframe()
+  a:load_csv{path = "advanced_short.csv",
+             verbose = false}
+  tester:assertTableEq(a:value_counts('Col A'), {[1] = 1, [2] = 1, [3] = 1}, "Failed to count Col A")
+  tester:assertTableEq(a:value_counts('Col B'), {A=1, B=2}, "Failed to count Col B")
+  tester:assertTableEq(a:value_counts('Col C'), {[8]=1, [9]=1}, "Failed to count Col C")
 end
 
 function df_tests.where()

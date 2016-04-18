@@ -647,9 +647,10 @@ end
 --
 -- unique() : get unique elements given a column name
 --
--- ARGS: - column_name (required) [string] :
+-- ARGS: - see dok.unpack
 --
--- RETURNS : table with unique values in key with the value 1 => {'unique1':1, 'unique2':1, 'unique6':1}
+-- RETURNS : table with unique values or if as_keys == true then the unique value
+--           as key with an incremental integer value => {'unique1':1, 'unique2':2, 'unique6':3}
 --
 function Dataframe:unique(...)
 	local args = dok.unpack(
@@ -661,20 +662,22 @@ function Dataframe:unique(...)
 		 help='return table with unique as keys and a count for frequency',
 		 default=false}
 	)
+	assert(self.dataset[args.column_name] ~= nil,
+	       "Invalid column name: " .. args.column_name)
 	unique = {}
 	unique_values = {}
+	count = 0
 
 	for i = 1,self.n_rows do
 		current_key_value = self.dataset[args.column_name][i]
 		if (current_key_value ~= nil) then
-			if type(unique[current_key_value]) == 'nil' then
-				unique[current_key_value] = 1
+			if (unique[current_key_value] == nil) then
+				count = count + 1
+				unique[current_key_value] = count
 
 				if args.as_keys == false then
 					table.insert(unique_values, current_key_value)
 				end
-			else
-				unique[current_key_value] = unique[current_key_value] + 1
 			end
 		end
 	end
@@ -684,6 +687,38 @@ function Dataframe:unique(...)
 	else
 		return unique
 	end
+end
+
+--
+-- value_counts() : count number of occurences for each unique element (frequency/histogram)
+--
+-- ARGS: - see dok.unpack
+--
+-- RETURNS : table with the unique value as key and count as value
+--
+function Dataframe:value_counts(...)
+	local args = dok.unpack(
+		{...},
+		'Dataframe.value_counts',
+		'get value counts of elements given a column name',
+		{arg='column_name', type='string', help='column to inspect', req=true}
+	)
+	assert(self.dataset[args.column_name] ~= nil,
+	       "Invalid column name: " .. args.column_name)
+	unique = {}
+
+	for i = 1,self.n_rows do
+		current_key_value = self.dataset[args.column_name][i]
+		if (current_key_value ~= nil) then
+			if (unique[current_key_value] == nil) then
+				unique[current_key_value] = 1
+			else
+				unique[current_key_value] = unique[current_key_value] + 1
+			end
+		end
+	end
+
+  return unique
 end
 
 --
