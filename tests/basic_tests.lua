@@ -13,13 +13,6 @@ table.reduce = function (list, fn)
     end
     return acc
 end
-table.exact_length = function(tbl)
-  i = 0
-  for k,v in pairs(tbl) do
-    i = i + 1
-  end
-  return i
-end
 
 function df_tests.csv_test_correct_size()
    local a = Dataframe()
@@ -73,9 +66,10 @@ function df_tests.table_schema()
   local first = {1,2,3}
   local second = {"2","1","3"}
   local third = {"2","a","3"}
-  a:load_table{data={['firstColumn']=first,
-                     ['secondColumn']=second,
-                     ['thirdColumn']=third}}
+  data = {['firstColumn']=first,
+          ['secondColumn']=second,
+          ['thirdColumn']=third}
+  a:load_table{data=data}
   tester:eq(a.schema["firstColumn"], 'number')
   tester:eq(a.schema["secondColumn"], 'number')
   tester:eq(a.schema["thirdColumn"], 'string')
@@ -405,8 +399,6 @@ function df_tests.where()
   tester:eq(ret_val:get_column('Col A'), {2, 3})
   -- TODO: Should the where B not return two rows or just the first row?
 end
-
-
 
 function df_tests.update()
   local a = Dataframe()
