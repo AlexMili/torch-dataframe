@@ -48,7 +48,8 @@ function Dataframe:show(...)
 	)
 	if (self.n_rows <= 20) then
 		-- Print all
-		self:output{max_rows = 20}
+		self:output{max_rows = 20,
+								digits = args.digits}
 	else
 		head = self:head(10)
 		tail = self:tail(10)
@@ -90,7 +91,7 @@ local function _numeric2string(val, digits)
 	if (isint(val)) then
 		return tostring(val)
 	else
-		return ("%." .. digits .. "f"):format(digits)
+		return ("%." .. digits .. "f"):format(val)
 	end
 end
 
