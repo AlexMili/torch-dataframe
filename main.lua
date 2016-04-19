@@ -528,17 +528,6 @@ function Dataframe:to_tensor(...)
 end
 
 --
--- __pairs() : overload the pairs() function. This helps the tail()/head() to behave
---             in the same way as previously
---
--- ARGS: - t (required) [Dataframe]
---
--- RETURNS: k, v as pairs
-function Dataframe:__pairs__(...)
-	return pairs(self.dataset, ...)
-end
-
---
 -- unique() : get unique elements given a column name
 --
 -- ARGS: - see dok.unpack
