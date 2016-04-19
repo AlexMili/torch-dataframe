@@ -294,17 +294,18 @@ function df_tests.head()
              verbose = false}
   no_elmnts = 0
   head = a:head(2)
-  for k,v in pairs(head) do
+  for k,v in pairs(head.dataset) do
     if (#v > no_elmnts) then
       no_elmnts = #v
     end
   end
-  tester:eq(no_elmnts, 2)
+  tester:eq(no_elmnts, 2, "expecting a rown length of 2")
+  tester:eq(head.n_rows, 2, "the n_rows isn't properly updated")
 
   -- Only 4 rows and thus all should be included
   no_elmnts = 0
   head = a:head(20)
-  for k,v in pairs(head) do
+  for k,v in pairs(head.dataset) do
     if (#v > no_elmnts) then
       no_elmnts = #v
     end
@@ -313,7 +314,7 @@ function df_tests.head()
 
   no_elmnts = 0
   head = a:head()
-  for k,v in pairs(head) do
+  for k,v in pairs(head.dataset) do
     if (#v > no_elmnts) then
       no_elmnts = #v
     end
@@ -331,18 +332,19 @@ function df_tests.tail()
             verbose = false}
   no_elmnts = 0
   tail = a:tail(2)
-  for k,v in pairs(tail) do
+  for k,v in pairs(tail.dataset) do
     local l = table.exact_length(v)
     if (l > no_elmnts) then
       no_elmnts = l
     end
   end
   tester:eq(no_elmnts, 2)
+  tester:eq(tail.n_rows, 2)
 
   -- Only 4 rows and thus all should be included
   no_elmnts = 0
   tail = a:tail(20)
-  for k,v in pairs(tail) do
+  for k,v in pairs(tail.dataset) do
     local l = table.exact_length(v)
     if (l > no_elmnts) then
       no_elmnts = l
@@ -352,7 +354,7 @@ function df_tests.tail()
 
   no_elmnts = 0
   tail = a:tail()
-  for k,v in pairs(tail) do
+  for k,v in pairs(tail.dataset) do
     local l = table.exact_length(v)
     if (l > no_elmnts) then
       no_elmnts = l

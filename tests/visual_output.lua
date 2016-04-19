@@ -20,6 +20,10 @@ a:load_csv{path = "advanced_short.csv",
            verbose = false}
 print(a)
 
+print(" - check digits")
+
+a:output{digits = 2}
+
 print("-- Long table --")
 a:load_csv{path = "realistic_29_row_data.csv",
            verbose = false}
