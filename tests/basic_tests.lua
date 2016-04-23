@@ -289,29 +289,33 @@ function df_tests.head()
   head = a:head(2)
   for k,v in pairs(head) do
     if (#v > no_elmnts) then
-      no_elmnts = #v
+      no_elmnts = table.exact_length(v)
     end
   end
-  tester:eq(no_elmnts, 2)
+  tester:eq(no_elmnts, 2, "Expecting 2 elements got " .. no_elmnts .. " elements")
 
   -- Only 4 rows and thus all should be included
   no_elmnts = 0
   head = a:head(20)
   for k,v in pairs(head) do
     if (#v > no_elmnts) then
-      no_elmnts = #v
+      no_elmnts = table.exact_length(v)
     end
   end
-  tester:eq(no_elmnts, a:shape()["rows"])
+  tester:eq(no_elmnts, a:shape()["rows"],
+            "The elements should be identical to the original " .. a:shape()["rows"] ..
+            " got instead " .. no_elmnts .. " elements")
 
   no_elmnts = 0
   head = a:head()
   for k,v in pairs(head) do
     if (#v > no_elmnts) then
-      no_elmnts = #v
+      no_elmnts = table.exact_length(v)
     end
   end
-  tester:eq(no_elmnts, a:shape()["rows"])
+  tester:eq(no_elmnts, a:shape()["rows"],
+            "The elements should be identical to the original " .. a:shape()["rows"] ..
+            " as the default is < original elements. Got instead " .. no_elmnts .. " elements")
 end
 
 function df_tests.tail()
@@ -330,7 +334,7 @@ function df_tests.tail()
       no_elmnts = l
     end
   end
-  tester:eq(no_elmnts, 2)
+  tester:eq(no_elmnts, 2, "Should have selected two last elements but got " .. no_elmnts)
 
   -- Only 4 rows and thus all should be included
   no_elmnts = 0
@@ -341,7 +345,7 @@ function df_tests.tail()
       no_elmnts = l
     end
   end
-  tester:eq(no_elmnts, a:shape()["rows"])
+  tester:eq(no_elmnts, a:shape()["rows"], "Should have selected 20 las elements and returned the original length " .. a:shape()["rows"] .. ", not " .. no_elmnts)
 
   no_elmnts = 0
   tail = a:tail()
@@ -351,7 +355,7 @@ function df_tests.tail()
       no_elmnts = l
     end
   end
-  tester:eq(no_elmnts, a:shape()["rows"])
+  tester:eq(no_elmnts, a:shape()["rows"], "Default selection is bigger than the simple_short, you got " .. no_elmnts .. " instead of " .. a:shape()["rows"])
 end
 
 if (false) then
