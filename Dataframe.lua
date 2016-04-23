@@ -21,6 +21,9 @@ function clone(t) -- shallow-copy a table
 end
 
 table.exact_length = function(tbl)
+	if (type(tbl) ~= 'table') then
+		return 1
+	end
   i = 0
   for k,v in pairs(tbl) do
     i = i + 1
