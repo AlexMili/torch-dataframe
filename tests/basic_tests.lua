@@ -288,25 +288,27 @@ function df_tests.to_csv()
   os.remove("copy_of_short.csv")
 end
 
+
 function df_tests.head()
   local a = Dataframe()
   a:load_csv{path = "simple_short.csv",
              verbose = false}
   no_elmnts = 0
   head = a:head(2)
-  for k,v in pairs(head) do
+  for k,v in pairs(head.dataset) do
     if (#v > no_elmnts) then
-      no_elmnts = table.exact_length(v)
+      no_elmnts = #v
     end
   end
   tester:eq(no_elmnts, 2, "Expecting 2 elements got " .. no_elmnts .. " elements")
+  tester:eq(head.n_rows, 2, "The n_rows isn't properly updated")
 
   -- Only 4 rows and thus all should be included
   no_elmnts = 0
   head = a:head(20)
-  for k,v in pairs(head) do
+  for k,v in pairs(head.dataset) do
     if (#v > no_elmnts) then
-      no_elmnts = table.exact_length(v)
+      no_elmnts = #v
     end
   end
   tester:eq(no_elmnts, a:shape()["rows"],
@@ -315,9 +317,9 @@ function df_tests.head()
 
   no_elmnts = 0
   head = a:head()
-  for k,v in pairs(head) do
+  for k,v in pairs(head.dataset) do
     if (#v > no_elmnts) then
-      no_elmnts = table.exact_length(v)
+      no_elmnts = #v
     end
   end
   tester:eq(no_elmnts, a:shape()["rows"],
@@ -335,18 +337,19 @@ function df_tests.tail()
             verbose = false}
   no_elmnts = 0
   tail = a:tail(2)
-  for k,v in pairs(tail) do
+  for k,v in pairs(tail.dataset) do
     local l = table.exact_length(v)
     if (l > no_elmnts) then
       no_elmnts = l
     end
   end
   tester:eq(no_elmnts, 2, "Should have selected two last elements but got " .. no_elmnts)
+  tester:eq(tail.n_rows, 2, "The n_rows should also be updated to 2 rows, currently is " .. tail.n_rows)
 
   -- Only 4 rows and thus all should be included
   no_elmnts = 0
   tail = a:tail(20)
-  for k,v in pairs(tail) do
+  for k,v in pairs(tail.dataset) do
     local l = table.exact_length(v)
     if (l > no_elmnts) then
       no_elmnts = l
@@ -356,7 +359,7 @@ function df_tests.tail()
 
   no_elmnts = 0
   tail = a:tail()
-  for k,v in pairs(tail) do
+  for k,v in pairs(tail.dataset) do
     local l = table.exact_length(v)
     if (l > no_elmnts) then
       no_elmnts = l
