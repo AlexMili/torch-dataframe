@@ -296,5 +296,44 @@ function cat_tests.value_counts()
                   [9] = 1})
 end
 
+function cat_tests.to_tensor()
+  local a = Dataframe()
+  a:load_csv{path = "advanced_short.csv",
+             verbose = false}
+
+  tnsr = a:to_tensor()
+  tester:eq(tnsr:size(1),
+            a:shape()["rows"],
+            "Incorrect number of rows, expecting " .. a:shape()["rows"] ..
+            " but got " ..tnsr:size(1))
+  tester:eq(tnsr:size(2),
+            a:shape()["cols"] - 1,
+            "Incorrect number of columns, expecting " .. a:shape()["cols"] - 1 ..
+            " but got " .. tnsr:size(2))
+  sum = 0
+  col_no = a:get_column_no('Col A')
+  for i=1,tnsr:size(1) do
+    sum = math.abs(tnsr[i][col_no] - a:get_column('Col A')[i])
+  end
+  tester:assert(sum < 1e-5, "The difference between the columns should be < 10^-5, it is currently " .. sum)
+
+  a:as_categorical('Col B')
+  tnsr = a:to_tensor()
+  tester:eq(tnsr:size(1),
+            a:shape()["rows"],
+            "Incorrect number of rows, expecting " .. a:shape()["rows"] ..
+            " but got " ..tnsr:size(1) )
+  tester:eq(tnsr:size(2),
+            a:shape()["cols"],
+            "Incorrect number of columns, expecting " .. a:shape()["cols"] - 1 ..
+            " but got " .. tnsr:size(2))
+  sum = 0
+  col_no = a:get_column_no('Col A')
+  for i=1,tnsr:size(1) do
+    sum = math.abs(tnsr[i][col_no] - a:get_column('Col A')[i])
+  end
+  tester:assert(sum < 1e-5, "The difference between the columns should be < 10^-5, it is currently " .. sum)
+end
+
 tester:add(cat_tests)
 tester:run()
