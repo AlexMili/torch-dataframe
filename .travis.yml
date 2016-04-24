@@ -19,6 +19,7 @@ before_install:
 install:
   - luarocks make torch-dataframe-0.1-1.rockspec CFLAGS="-O2 -fPIC -fprofile-arcs" LIBFLAG="-shared"
   - luarocks install csvigo
+  - luarocks install luafilesystem
 
 before_script:
   - source $(pwd)/deps/torch/install/bin/torch-activate
