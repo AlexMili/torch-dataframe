@@ -26,10 +26,10 @@ before_script:
 
 script:
   - cd tests
-  - lua basic_tests.lua
-  - lua column_order_tests.lua
-  - lua categorical_tests.lua
-  - lua load_batch_tests.lua
+  - th basic_tests.lua
+  - th column_order_tests.lua
+  - th categorical_tests.lua
+  - th load_batch_tests.lua
 
 after_success:
   - echo "Tests passed"
