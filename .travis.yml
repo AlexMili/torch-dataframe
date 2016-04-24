@@ -28,6 +28,7 @@ script:
   - lua basic_tests.lua
   - lua column_order_tests.lua
   - lua categorical_tests.lua
+  - lua load_batch_tests.lua
 
 after_success:
   - echo "Tests passed"
