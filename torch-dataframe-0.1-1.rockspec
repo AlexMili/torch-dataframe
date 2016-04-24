@@ -15,11 +15,21 @@ package = "torch-dataframe"
  }
  dependencies = {
     "lua ~> 5.1",
-    "torch >= 7.0"
+    "torch >= 7.0",
+    "luafilesystem >= 1.6.3"
  }
  build = {
   type = 'builtin',
   modules = {
-      ["Dataframe"] = 'Dataframe.lua',
+      ["Dataframe.init"] = 'init.lua',
+      ["Dataframe.utils"] = 'utils.lua',
+      ["Dataframe.main"] = 'main.lua',
+      ["Dataframe.Extensions.statistics"] = 'Extensions/statistics.lua',
+      ["Dataframe.Extensions.load_batch"] = 'Extensions/load_batch.lua',
+      ["Dataframe.Extensions.load_data"] = 'Extensions/load_data.lua',
+      ["Dataframe.Extensions.save_data"] = 'Extensions/save_data.lua',
+      ["Dataframe.Extensions.select_set_update"] = 'Extensions/select_set_update.lua',
+      ["Dataframe.Extensions.missing_data"] = 'Extensions/missing_data.lua',
+      ["Dataframe.Extensions.output"] = 'Extensions/output.lua'
   }
  }

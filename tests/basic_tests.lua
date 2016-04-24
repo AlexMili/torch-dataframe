@@ -1,4 +1,13 @@
-require "../Dataframe"
+-- Make sure that directory structure is always the same
+require 'lfs'
+if (string.match(lfs.currentdir(), "/tests$")) then
+  lfs.chdir("..")
+end
+paths.dofile('init.lua')
+
+-- Go into tests so that the loading of CSV:s is the same as always
+lfs.chdir("tests")
+
 local df_tests = torch.TestSuite()
 local tester = torch.Tester()
 
@@ -145,22 +154,25 @@ function df_tests.add_column()
   tester:ne(a:get_column('Col A'), nil, "Col A should be present")
   tester:ne(a:get_column('Col B'), nil, "Col B should be present")
   tester:ne(a:get_column('Col C'), nil, "Col C should be present")
-  tester:assertTableEq(a:get_column('Col D'), d_col, "Col D isn't the expected value")
-  tester:assertTableEq(a:shape(), {rows=4, cols=4},
+  tester:eq(a:get_column('Col D'), d_col, "Col D isn't the expected value")
+  tester:eq(a:shape(), {rows=4, cols=4},
     "The simple_short.csv is 4x3 after add should be 4x4")
 
   tester:assertError(a:add_column('Col D'))
   a:add_column('Col E')
-  tester:assertTableEq(a:get_column('Col E'), {0,0,0,0})
+  col = a:get_column('Col E')
+  for _,v in pairs(col) do
+    tester:assert(isnan(v))
+  end
   a:add_column('Col F', 1)
-  tester:assertTableEq(a:get_column('Col F'), {1,1,1,1})
+  tester:eq(a:get_column('Col F'), {1,1,1,1})
 end
 
 function df_tests.get_column()
   local a = Dataframe()
   a:load_csv{path = "simple_short.csv",
              verbose = false}
-  tester:eq(a:get_column('Col D'), nil)
+  tester:assertError(function() a:get_column('Col D') end)
   tester:ne(a:get_column('Col C'), nil)
 end
 
@@ -235,13 +247,11 @@ function df_tests.fill_all_na()
   tester:eq(a:get_column('Col A'), {1,2,-1})
 end
 
-function df_tests._get_numerics()
+function df_tests.get_numerical_colnames()
   local a = Dataframe()
   a:load_csv{path = "advanced_short.csv",
              verbose = false}
-  tester:assert(a:_get_numerics()['Col B'] == nil)
-  tester:assert(a:_get_numerics()['Col A'] ~= nil)
-  tester:assert(a:_get_numerics()['Col C'] ~= nil)
+  tester:eq(a:get_numerical_colnames(), {'Col A', 'Col C'})
 end
 
 function df_tests.to_tensor()
@@ -277,6 +287,7 @@ function df_tests.to_csv()
   end
   os.remove("copy_of_short.csv")
 end
+
 
 function df_tests.head()
   local a = Dataframe()
@@ -345,12 +356,14 @@ function df_tests.tail()
             " instead of " .. a.n_rows)
 end
 
-function df_tests.show()
-  local a = Dataframe()
-  a:load_csv{path = "simple_short.csv",
-             verbose = false}
-  -- skip test due to inability to redirect output
-  -- http://stackoverflow.com/questions/27008723/how-to-redirect-stdout-to-file-in-lua
+if (false) then
+  function df_tests.show()
+    local a = Dataframe()
+    a:load_csv{path = "simple_short.csv",
+               verbose = false}
+    -- skip test due to inability to redirect output
+    -- http://stackoverflow.com/questions/27008723/how-to-redirect-stdout-to-file-in-lua
+  end
 end
 
 function df_tests.unique()
@@ -362,15 +375,6 @@ function df_tests.unique()
   tester:assertTableEq(a:unique('Col C', true), {[8]=1, [9]=2}, "Failed to match Col C")
 end
 
-function df_tests.value_counts()
-  local a = Dataframe()
-  a:load_csv{path = "advanced_short.csv",
-             verbose = false}
-  tester:assertTableEq(a:value_counts('Col A'), {[1] = 1, [2] = 1, [3] = 1}, "Failed to count Col A")
-  tester:assertTableEq(a:value_counts('Col B'), {A=1, B=2}, "Failed to count Col B")
-  tester:assertTableEq(a:value_counts('Col C'), {[8]=1, [9]=1}, "Failed to count Col C")
-end
-
 function df_tests.where()
   local a = Dataframe()
   a:load_csv{path = "simple_short.csv",
@@ -379,19 +383,20 @@ function df_tests.where()
   tester:eq(ret_val:get_column("Col A"), {2})
   tester:eq(ret_val:get_column("Col C"), {.1})
   tester:eq(torch.type(ret_val), "Dataframe")
-  tester:assertTableEq(ret_val:shape(), {rows = 1, cols = 3})
+  tester:eq(ret_val:shape(), {rows = 1, cols = 3})
 
   local ret_val = a:where('Col A', 222222222)
-  tester:assertTableEq(ret_val:shape(), {rows = 0, cols = 0})
+  tester:eq(ret_val:shape(), {rows = 0, cols = 0})
 
   a:__init()
   a:load_csv{path = "advanced_short.csv",
              verbose = false}
   ret_val = a:where('Col B', 'B')
   tester:eq(ret_val:shape(), {rows = 2, cols = 3})
-  tester:eq(ret_val:get_column('Col C'), {nil, 9})
+  col_c = ret_val:get_column('Col C')
+  tester:assert(isnan(col_c[1]))
+  tester:eq(col_c[2], 9)
   tester:eq(ret_val:get_column('Col A'), {2, 3})
-  -- TODO: Should the where B not return two rows or just the first row?
 end
 
 function df_tests.update()
