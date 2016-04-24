@@ -19,6 +19,7 @@ before_install:
 install:
   - luarocks make torch-dataframe-0.1-1.rockspec CFLAGS="-O2 -fPIC -fprofile-arcs" LIBFLAG="-shared"
   - luarocks install csvigo
+  - luarocks install luafilesystem
 
 before_script:
   - source $(pwd)/deps/torch/install/bin/torch-activate
@@ -26,6 +27,9 @@ before_script:
 script:
   - cd tests
   - lua basic_tests.lua
+  - lua column_order_tests.lua
+  - lua categorical_tests.lua
+  - lua load_batch_tests.lua
 
 after_success:
   - echo "Tests passed"

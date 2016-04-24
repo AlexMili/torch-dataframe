@@ -285,33 +285,30 @@ function df_tests.head()
   local a = Dataframe()
   a:load_csv{path = "simple_short.csv",
              verbose = false}
-  no_elmnts = 0
   head = a:head(2)
-  for k,v in pairs(head) do
-    if (#v > no_elmnts) then
-      no_elmnts = #v
+  tester:eq(head.n_rows, 2,
+           "Self the n_rows isn't updated, is " .. head.n_rows ..
+           " instead of expected 2")
+  -- do a manual count
+  local no_elmnts = 0
+  for k,v in pairs(head.dataset) do
+    local l = table.exact_length(v)
+    if (l > no_elmnts) then
+      no_elmnts = l
     end
   end
-  tester:eq(no_elmnts, 2)
+  tester:eq(no_elmnts, 2, "Expecting 2 elements got " .. no_elmnts .. " elements when counting manually")
 
   -- Only 4 rows and thus all should be included
-  no_elmnts = 0
   head = a:head(20)
-  for k,v in pairs(head) do
-    if (#v > no_elmnts) then
-      no_elmnts = #v
-    end
-  end
-  tester:eq(no_elmnts, a:shape()["rows"])
+  tester:eq(head.n_rows, a.n_rows,
+            "The elements should be identical to the original " .. a.n_rows ..
+            " got instead " .. head.n_rows .. " elements")
 
-  no_elmnts = 0
   head = a:head()
-  for k,v in pairs(head) do
-    if (#v > no_elmnts) then
-      no_elmnts = #v
-    end
-  end
-  tester:eq(no_elmnts, a:shape()["rows"])
+  tester:eq(head.n_rows, a.n_rows,
+            "The elements should be identical to the original " .. a.n_rows ..
+            " as the default is < original elements. Got instead " .. head.n_rows .. " elements")
 end
 
 function df_tests.tail()
@@ -322,36 +319,33 @@ function df_tests.tail()
   local a = Dataframe()
   a:load_csv{path = "simple_short.csv",
             verbose = false}
-  no_elmnts = 0
+
   tail = a:tail(2)
-  for k,v in pairs(tail) do
+  tester:eq(tail.n_rows, 2,
+           "Self the n_rows isn't updated, is " .. tail.n_rows ..
+           " instead of expected 2")
+  -- Do a manual count
+  local no_elmnts = 0
+  for k,v in pairs(tail.dataset) do
     local l = table.exact_length(v)
     if (l > no_elmnts) then
       no_elmnts = l
     end
   end
-  tester:eq(no_elmnts, 2)
+  tester:eq(no_elmnts, 2,
+            "Should have selected 2 last elements but got " .. no_elmnts ..
+            " when doin a manual count")
 
   -- Only 4 rows and thus all should be included
-  no_elmnts = 0
   tail = a:tail(20)
-  for k,v in pairs(tail) do
-    local l = table.exact_length(v)
-    if (l > no_elmnts) then
-      no_elmnts = l
-    end
-  end
-  tester:eq(no_elmnts, a:shape()["rows"])
+  tester:eq(tail.n_rows, a.n_rows,
+            "Should have selected 20 las elements and returned the original length " ..
+            a.n_rows .. " since there are only 4 rows and not " .. tail.n_rows)
 
-  no_elmnts = 0
   tail = a:tail()
-  for k,v in pairs(tail) do
-    local l = table.exact_length(v)
-    if (l > no_elmnts) then
-      no_elmnts = l
-    end
-  end
-  tester:eq(no_elmnts, a:shape()["rows"])
+  tester:eq(tail.n_rows, a.n_rows,
+            "Default selection is bigger than the simple_short, you got " .. tail.n_rows ..
+            " instead of " .. a.n_rows)
 end
 
 if (false) then

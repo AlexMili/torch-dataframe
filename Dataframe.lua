@@ -21,6 +21,9 @@ function clone(t) -- shallow-copy a table
 end
 
 table.exact_length = function(tbl)
+	if (type(tbl) ~= 'table') then
+		return 1
+	end
   i = 0
   for k,v in pairs(tbl) do
     i = i + 1
@@ -306,9 +309,8 @@ function Dataframe:_refresh_metadata()
 end
 
 -- Internal function to detect columns types
-function Dataframe:_infer_schema(explore_factor)
-	factor = explore_factor or 0.5
-	rows_to_explore = math.ceil(self.n_rows * factor)
+function Dataframe:_infer_schema(max_rows)
+	rows_to_explore = math.min(max_rows or 1e3, self.n_rows)
 
 	for _,key in pairs(self.columns) do
 		is_a_numeric_column = true
@@ -421,7 +423,7 @@ function Dataframe:add_column(column_name, default_value)
 			self.dataset[column_name][i] = default_value
 		end
 	end
-
+	table.insert(self.column_order, column_name)
 	self:_refresh_metadata()
 end
 
@@ -847,10 +849,9 @@ function Dataframe:sub(...)
 end
 
 --
--- head() : only display the table's first elements
+-- head() : get the table's first elements
 --
 -- ARGS: - n_items 			(required) [number] 	: items to print
--- 		 - html 			(optional) [boolean] 	: display or not in html mode
 --
 -- RETURNS: Dataframe
 --
@@ -859,15 +860,33 @@ function Dataframe:head(...)
 		{...},
 		'Dataframe.head',
 		'Retrieves the first elements of a table',
-		{arg='n_items', type='integer', help='The number of items to display', default=10},
-		{arg='html', type='boolean', help='Display as html', default=false}
+		{arg='n_items', type='integer', help='The number of items to display', default=10}
 	)
 	head = self:sub(1, math.min(args.n_items, self.n_rows))
+	return head
+end
 
-	if args.html then
-		itorch.html(self:_to_html{data=head.dataset})
+function Dataframe:output(...)
+	local args = dok.unpack(
+		{...},
+		'Dataframe.print',
+		'Prints the table',
+		{arg='html', type='boolean', help='If the output should be in html format', default=itorch ~= nil},
+		{arg='max_rows', type='integer', help='Limit the maximum number of printed rows', default=20}
+	)
+	assert(args.max_rows > 0, "Can't print less than 1 row")
+	args.max_rows = math.min(self.n_rows, args.max_rows)
+
+	data = self:sub(1, args.max_rows)
+	if (args.html) then
+		html_string = data:_to_html()
+		if (itorch ~= nil) then
+			itorch.html(html_string)
+		else
+			print(html_string)
+		end
 	else
-		return head
+		print(tostring(data))
 	end
 end
 
@@ -883,10 +902,9 @@ function Dataframe:__pairs(...)
 end
 
 --
--- tail() : only display the table's last elements
+-- tail() : get the table's last elements
 --
 -- ARGS: - n_items 			(required) [number] 	: items to print
--- 		   - html 			(optional) [boolean] 	: display or not in html mode
 --
 -- RETURNS: Dataframe
 --
@@ -900,12 +918,7 @@ function Dataframe:tail(...)
 	)
 	start_pos = math.max(1, self.n_rows - args.n_items + 1)
 	tail = self:sub(start_pos)
-
-	if args.html then
-		itorch.html(self:_to_html{data=tail.dataset, start_at=self.n_rows-10+1, end_at=self.n_rows})
-	else
-		return tail
-	end
+	return tail
 end
 
 --
@@ -916,25 +929,28 @@ end
 -- RETURNS: nothing
 --
 function Dataframe:show()
-	head = self:head()
-	tail = self:tail()
-
-	if itorch ~= nil then
-		text = ''
-		text = text..self:_to_html{data=head,split_table='bottom'}
-		text = text..'<tr>'
-		text = text..'<td><span style="font-size:20px;">...</span></td>' -- index cell
-		for k,v in pairs(head) do
-			text = text..'<td><span style="font-size:20px;">...</span></td>'
-		end
-		text = text..'</tr>'
-		text = text..self:_to_html{data=tail, start_at=self.n_rows-10+1, end_at=self.n_rows, split_table='top'}
-
-		itorch.html(text)
+	if (self.n_rows <= 20) then
+		-- Print all
+		self:output{max_rows = 20}
 	else
-		print(head)
-		print('...')
-		print(tail)
+		head = self:head(10)
+		tail = self:tail(10)
+		-- Print itorch if present otherwise use stndrd output
+		if itorch ~= nil then
+			text = ''
+			text = text..head:_to_html{split_table='bottom'}
+			text = text..'\n\t<tr>'
+			text = text..'<td><span style="font-size:20px;">...</span></td>' -- index cell
+			text = text..'<td colspan="'.. self:shape()["cols"] ..'"><span style="font-size:20px;">...</span></td>' -- the remainder
+			text = text..'\n</tr>'
+			text = text..tail:_to_html{split_table='top', offset=self.n_rows - tail:shape()["rows"]}
+
+			itorch.html(text)
+		else
+			head:output()
+			print('...')
+			tail:output()
+		end
 	end
 end
 
@@ -1148,41 +1164,46 @@ function Dataframe:_get_raw_cat_key(column_name, key)
 end
 
 -- Internal function to convert a table to html (only works for 1D table)
-function Dataframe:_to_html(options)--data, start_at, end_at, split_table)
-	options.split_table = options.split_table or 'none' -- none, top, bottom, all
-	options.start_at = options.start_at or 1
-	options.end_at = options.end_at or 10
+function Dataframe:_to_html(...)--data, start_at, end_at, split_table)
+	local args = dok.unpack(
+		{...},
+		{"Dataframe._to_html"},
+		{"Converts table to a html table string"},
+		{arg='split_table', type='string', help=[[
+			Where the table is split. Valid input is 'none', 'top', 'bottom', 'all'.
+			Note that the 'bottom' removes the trailing </table> while the 'top' removes
+			the initial '<table>'. The 'all' removes both but retains the header while
+			the 'top' has no header.
+		]], default='none'},
+		{arg='offset', type='integer', help="The line index offset", default=0})
 
 	result = ''
-	n_rows = 0
-
-	if options.split_table ~= 'top' and options.split_table ~= 'all' then
+	if args.split_table ~= 'top' and args.split_table ~= 'all' then
 		result = result.. '<table>'
 	end
 
-	if options.split_table ~= 'top' then
-		result = result.. '<tr>'
-		result = result.. '<th></th>'
+	if args.split_table ~= 'top' then
+		result = result.. '\n\t<tr>'
+		result = result.. '\n\t\t<th>#</th>'
 		for i = 1,#self.column_order do
 			k = self.column_order[i]
 			result = result.. '<th>' ..k.. '</th>'
-			if n_rows == 0 then n_rows = #options.data[k] end
 		end
-		result = result.. '</tr>'
+		result = result.. '\n\t</tr>'
 	end
 
-	for i = options.start_at, options.end_at do
-		result = result.. '<tr>'
-		result = result.. '<td>'..i..'</td>'
-		for i = 1,#self.column_order do
-			k = self.column_order[i]
-			result = result.. '<td>' ..tostring(options.data[k][i]).. '</td>'
+	for row_no = 1,self.n_rows do
+		result = result.. '\n\t<tr>'
+		result = result.. '\n\t\t<td>'..(row_no + args.offset)..'</td>'
+		for col_no = 1,#self.column_order do
+			k = self.column_order[col_no]
+			result = result.. '<td>' ..tostring(self:get_column(k)[row_no]).. '</td>'
 		end
-		result = result.. '</tr>'
+		result = result.. '\n\t</tr>'
 	end
 
-	if options.split_table ~= 'bottom' and options.split_table ~= 'all' then
-		result = result.. '</table>'
+	if args.split_table ~= 'bottom' and args.split_table ~= 'all' then
+		result = result.. '\n</table>'
 	end
 
 	return result
@@ -1224,14 +1245,34 @@ function Dataframe:_update_single_row(index_row, new_row)
 	return row
 end
 
-function Dataframe:__tostring()
+--
+-- tostring() : A convenience wrapper for __tostring
+--
+-- ARGS: none
+--
+-- RETURNS: string
+--
+function Dataframe:tostring()
+	return self:__tostring__()
+end
+
+--
+-- __tostring__() : Converts table to a string representation that follows standard
+--                markdown syntax
+--
+-- ARGS: none
+--
+-- RETURNS: string
+--
+function Dataframe:__tostring__()
   local no_rows = math.min(self.print.no_rows, self.n_rows)
 	max_width = self.print.max_col_width
 
 	-- Get the width of each column
 	local lengths = {}
-	for k,v in pairs(self.dataset) do
+	for _,k in pairs(self.column_order) do
 		lengths[k] = string.len(k)
+		v = self:get_column(k)
 		for i = 1,no_rows do
 			if (v[i] ~= nil) then
 				if (lengths[k] < string.len(v[i])) then
