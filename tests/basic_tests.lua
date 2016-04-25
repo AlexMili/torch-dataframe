@@ -1,4 +1,13 @@
-require "../Dataframe"
+-- Make sure that directory structure is always the same
+require 'lfs'
+if (string.match(lfs.currentdir(), "/tests$")) then
+  lfs.chdir("..")
+end
+paths.dofile('init.lua')
+
+-- Go into tests so that the loading of CSV:s is the same as always
+lfs.chdir("tests")
+
 local df_tests = torch.TestSuite()
 local tester = torch.Tester()
 
@@ -238,13 +247,11 @@ function df_tests.fill_all_na()
   tester:eq(a:get_column('Col A'), {1,2,-1})
 end
 
-function df_tests._get_numerics()
+function df_tests.get_numerical_colnames()
   local a = Dataframe()
   a:load_csv{path = "advanced_short.csv",
              verbose = false}
-  tester:assert(a:_get_numerics()['Col B'] == nil)
-  tester:assert(a:_get_numerics()['Col A'] ~= nil)
-  tester:assert(a:_get_numerics()['Col C'] ~= nil)
+  tester:eq(a:get_numerical_colnames(), {'Col A', 'Col C'})
 end
 
 function df_tests.to_tensor()
@@ -280,6 +287,7 @@ function df_tests.to_csv()
   end
   os.remove("copy_of_short.csv")
 end
+
 
 function df_tests.head()
   local a = Dataframe()
@@ -365,15 +373,6 @@ function df_tests.unique()
   tester:assertTableEq(a:unique('Col A'), {1,2,3}, "Failed to match Col A")
   tester:assertTableEq(a:unique('Col B', true), {A=1, B=2}, "Failed to match Col B")
   tester:assertTableEq(a:unique('Col C', true), {[8]=1, [9]=2}, "Failed to match Col C")
-end
-
-function df_tests.value_counts()
-  local a = Dataframe()
-  a:load_csv{path = "advanced_short.csv",
-             verbose = false}
-  tester:assertTableEq(a:value_counts('Col A'), {[1] = 1, [2] = 1, [3] = 1}, "Failed to count Col A")
-  tester:assertTableEq(a:value_counts('Col B'), {A=1, B=2}, "Failed to count Col B")
-  tester:assertTableEq(a:value_counts('Col C'), {[8]=1, [9]=1}, "Failed to count Col C")
 end
 
 function df_tests.where()
