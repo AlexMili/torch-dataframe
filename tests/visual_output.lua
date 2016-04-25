@@ -22,3 +22,10 @@ print(a)
 
 a.print.no_rows = 20
 print(a)
+
+a:as_categorical('Gender')
+a.print.no_rows = 5
+print(a)
+
+females = a:where('Gender', 'Female')
+print(females)
