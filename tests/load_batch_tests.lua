@@ -1,6 +1,6 @@
 -- Make sure that directory structure is always the same
-require('lfs')
-if (string.match(lfs.currentdir(), "/test")) then
+require 'lfs'
+if (string.match(lfs.currentdir(), "/tests$")) then
   lfs.chdir("..")
 end
 paths.dofile('init.lua')
@@ -25,6 +25,14 @@ function batch_tests.load_batch()
   tester:eq(data:size(2), 2, "The data has invalid columns")
   tester:eq(label:size(1), 5, "The labels have invalid size")
   a:as_categorical('Gender')
+  data, label, names = a:load_batch(5, 0,
+                                    function(row) return torch.Tensor({1, 2}) end,
+                                    'train')
+  tester:eq(data:size(1), 5, "The data with gender has invalid rows")
+  tester:eq(data:size(2), 2, "The data with gender has invalid columns")
+  tester:eq(label:size(1), 5, "The labels with gender have invalid size")
+  tester:eq(names, {'Gender', 'Weight'}, "Invalid names returned")
+
   data, label = a:load_batch(5, 0,
                              function(row) return torch.Tensor({1, 2}) end,
                              'train')
@@ -41,6 +49,31 @@ function batch_tests.load_batch()
     tester:eq(data:size(1), batch_size, "The data has invalid size at iteration " .. i)
   end
 
+  data, label = a:load_batch(-1, 0,
+                             function(row) return torch.Tensor({1, 2}) end,
+                             'train')
+  tester:eq(data:size(1), a:batch_size('train'), "Doesn't load all train cases")
+  data, label = a:load_batch(-1, 0,
+                             function(row) return torch.Tensor({1, 2}) end,
+                             'validate')
+  tester:eq(data:size(1), a:batch_size('validate'), "Doesn't load all validation cases")
+  data, label = a:load_batch(-1, 0,
+                             function(row) return torch.Tensor({1, 2}) end,
+                             'test')
+  tester:eq(data:size(1), a:batch_size('test'), "Doesn't load all test cases")
+
+  data, label = a:load_batch(a:batch_size('train'), 0,
+                             function(row) return torch.Tensor({1, 2}) end,
+                             'train')
+  tester:eq(data:size(1), a:batch_size('train'), "Doesn't load all train cases when max number specified")
+  data, label = a:load_batch(a:batch_size('validate'), 0,
+                             function(row) return torch.Tensor({1, 2}) end,
+                             'validate')
+  tester:eq(data:size(1), a:batch_size('validate'), "Doesn't load all validation cases when max number specified")
+  data, label = a:load_batch(a:batch_size('test'), 0,
+                             function(row) return torch.Tensor({1, 2}) end,
+                             'test')
+  tester:eq(data:size(1), a:batch_size('test'), "Doesn't load all test cases when max number specified")
 end
 
 function batch_tests.init_batch()

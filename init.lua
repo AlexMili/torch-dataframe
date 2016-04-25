@@ -23,7 +23,11 @@ if (not file_exists(string.gsub(dataframe_path, "?", search_4_file))) then
   end
 end
 
-local main_file = string.gsub(dataframe_path,"?", "Dataframe")
+-- Make utils available to all
+local utils_file = string.gsub(dataframe_path,"?", "utils")
+assert(loadfile(utils_file))()
+
+local main_file = string.gsub(dataframe_path,"?", "main")
 local Dataframe = assert(loadfile(main_file))()
 
 -- Load all extensions, i.e. .lua files in Extensions directory
