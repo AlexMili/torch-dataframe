@@ -27,10 +27,7 @@ before_script:
 
 script:
   - cd tests
-  - th basic_tests.lua
-  - th column_order_tests.lua
-  - th categorical_tests.lua
-  - th load_batch_tests.lua
+  - ./run_all.sh
 
 after_success:
   - echo "Tests passed"
