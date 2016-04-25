@@ -15,11 +15,14 @@ package = "torch-dataframe"
  }
  dependencies = {
     "lua ~> 5.1",
-    "torch >= 7.0"
+    "torch >= 7.0",
+    "luafilesystem >= 1.6.3"
  }
  build = {
   type = 'builtin',
   modules = {
-      ["Dataframe"] = 'Dataframe.lua',
+      ["Dataframe.init"] = 'init.lua',
+      ["Dataframe.Dataframe"] = 'Dataframe.lua',
+      ["Dataframe.Extensions.load_batch"] = 'Extensions/load_batch.lua'
   }
  }

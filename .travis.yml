@@ -5,6 +5,7 @@ sudo: true
 branches:
   only:
     - master
+    - travis
 env:
   global:
     - LUAROCKS=2.3.0
@@ -19,13 +20,17 @@ before_install:
 install:
   - luarocks make torch-dataframe-0.1-1.rockspec CFLAGS="-O2 -fPIC -fprofile-arcs" LIBFLAG="-shared"
   - luarocks install csvigo
+  - luarocks install luafilesystem
 
 before_script:
   - source $(pwd)/deps/torch/install/bin/torch-activate
 
 script:
   - cd tests
-  - lua basic_tests.lua
+  - th basic_tests.lua
+  - th column_order_tests.lua
+  - th categorical_tests.lua
+  - th load_batch_tests.lua
 
 after_success:
   - echo "Tests passed"
