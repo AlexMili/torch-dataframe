@@ -15,10 +15,30 @@ print(a)
 print("-- Long table --")
 a:load_csv{path = "realistic_29_row_data.csv",
            verbose = false}
-print(a)
-
 a.print.no_rows = 5
 print(a)
 
 a.print.no_rows = 20
 print(a)
+
+a:as_categorical('Gender')
+a.print.no_rows = 5
+print(a)
+
+females = a:where('Gender', 'Female')
+print(females)
+
+math.randomseed(10)
+left_right = {}
+for i = 1,a:shape()["rows"] do
+  if (math.random() > 0.5) then
+    table.insert(left_right, "left")
+  else
+    table.insert(left_right, "right")
+  end
+end
+a:add_column("Side", left_right)
+print(a:head(4))
+
+a:as_categorical("Side")
+print(a:head(4))
