@@ -47,7 +47,6 @@ function Dataframe:load_csv(...)
 		self.dataset[k] = v
 	end
 
-	self.column_order = self:_getCsvHeaderOrder(args.path, args.separator)
 	if args.infer_schema then self:_infer_schema() end
 end
 
