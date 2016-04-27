@@ -23,7 +23,7 @@ function Dataframe:__init(...)
 								sadsad = 1
 	if (args.csv_or_data) then
 		if (type(args.csv_or_data) == 'string') then
-			self:load_csv(args.csv_or_data)
+			self:load_csv{path=args.csv_or_data,verbose=false}
 		elseif(type(args.csv_or_data) == 'table') then
 			self:load_table(args.csv_or_data)
 		else
