@@ -33,23 +33,23 @@ describe("Main Dataframe functions", function()
 			assert.are.same(df:shape(),{rows=4, cols=3})
 		end)
 
-		-- it("Loads a table if passed in argument",function()
-		-- 	local df = Dataframe({
-		-- 		['first_column']={
-		-- 			3,
-		-- 			4,
-		-- 			5
-		-- 		},
-		-- 		['second_column']={
-		-- 			10,
-		-- 			11,
-		-- 			12
-		-- 		}
-		-- 	})
+		it("Loads a table if passed in argument",function()
+			local df = Dataframe({
+				['first_column']={
+					3,
+					4,
+					5
+				},
+				['second_column']={
+					10,
+					11,
+					12
+				}
+			})
 
-		-- 	assert.are.same(df:get_column("first_column"), {3,4,5})
-		-- 	assert.are.same(df:get_column("second_column"), {10,11,12})
-		-- end)
+			assert.are.same(df:get_column("first_column"), {3,4,5})
+			assert.are.same(df:get_column("second_column"), {10,11,12})
+		end)
 
 		-- it("Deletes previous references in default variables",function()
 		-- 	local df = Dataframe()
