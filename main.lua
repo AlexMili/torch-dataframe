@@ -11,21 +11,23 @@ local Dataframe = torch.class('Dataframe')
 -- ARGS: -csv_or_data (optional) [string|table] : Path to CSV file or a data table for loading initial data
 --
 -- Returns: a new Dataframe object
-function Dataframe:__init(...)
-	local args = dok.unpack(
-		{...},
-		'Dataframe.__init',
-		'Initializes dataframe object',
-		{arg='csv_or_data', type='string|table', help='Path to CSV file or a data table for loading initial data', req=false})
-	self:_clean{schema = true}
-	self.print = {no_rows = 10,
-								max_col_width = 20}
-								sadsad = 1
-	if (args.csv_or_data) then
-		if (type(args.csv_or_data) == 'string') then
-			self:load_csv{path=args.csv_or_data,verbose=false}
-		elseif(type(args.csv_or_data) == 'table') then
-			self:load_table(args.csv_or_data)
+function Dataframe:__init(csv_or_data)
+	-- See https://github.com/torch/dok/issues/13
+	--
+	-- local args = dok.unpack(
+	-- 	{...},
+	-- 	'Dataframe.__init',
+	-- 	'Initializes dataframe object',
+	-- 	{arg='csv_or_data', type='string|table', help='Path to CSV file or a data table for loading initial data', req=false})
+	
+	self:_clean()
+	self.print = {no_rows = 10, max_col_width = 20}
+
+	if (csv_or_data) then
+		if (type(csv_or_data) == 'string') then
+			self:load_csv{path=csv_or_data,verbose=false}
+		elseif(type(csv_or_data) == 'table') then
+			self:load_table{data=csv_or_data}
 		else
 			error("Invalid data field type: " .. type(args.csv_or_data))
 		end
@@ -38,14 +40,15 @@ function Dataframe:_clean(...)
 		{...},
 		'Dataframe._clean',
 		'Cleans and resets all data parameters',
-		{arg='schema', type='boolean', help='Also clean schema', req=false})
+		{arg='schema', type='boolean', help='Also clean schema', default=true, req=false})
+
 	self.dataset = {}
 	self.columns = {}
 	self.column_order = {}
 	self.n_rows = 0
 	self.categorical = {}
 
-  if (args.schema) then
+	if (args.schema) then
 		self.schema = {}
 	end
 end
@@ -56,13 +59,15 @@ function Dataframe:_copy_meta(to)
 	to.schema = clone(self.schema)
 	to.print = clone(self.print)
 	to.categorical = clone(self.categorical)
+
 	return to
 end
 
 -- Internal function to collect columns names
 function Dataframe:_refresh_metadata()
 	keyset={}
-  rows = -1
+	rows = -1
+
 	for k,v in pairs(self.dataset) do
 		table.insert(keyset, k)
 

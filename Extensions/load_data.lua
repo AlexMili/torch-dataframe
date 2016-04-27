@@ -63,6 +63,7 @@ function Dataframe:load_table(...)
 		{...},
 		'Dataframe.load_table',
 		'Imports a table directly data into Dataframe',
+		-- See https://github.com/torch/dok/issues/13
 		{arg='data', type='table', help='table to import', req=true},
 		{arg='infer_schema', type='boolean', help='automatically detect columns\' type', default=true},
 		{arg='column_order', type='table', help='The column order', req=false}
