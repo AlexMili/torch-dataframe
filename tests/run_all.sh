@@ -11,7 +11,7 @@ for f in *_tests.lua; do
     echo "";
     echo "********************************************";
     echo "Running tests in $f";
-    th $f;
+    lua $f;
     var=$(($var+$?))
     count=$(($count+1))
     echo "End $f";
