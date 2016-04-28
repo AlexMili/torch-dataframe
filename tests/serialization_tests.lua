@@ -1,3 +1,5 @@
+require 'torch'
+
 -- Make sure that directory structure is always the same
 require 'lfs'
 if (string.match(lfs.currentdir(), "/tests$")) then

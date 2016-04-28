@@ -28,67 +28,26 @@ function Dataframe:load_csv(...)
 	-- Remove previous data
 	self:_clean()
 
-	self.dataset = csvigo.load{path = args.path,
-	                           header = args.header,
-														 separator = args.separator,
-														 skip = args.skip,
-													   verbose = args.verbose}
+	self.column_order,self.dataset = csvigo.load{path = args.path,
+												header = args.header,
+												separator = args.separator,
+												skip = args.skip,
+												verbose = args.verbose,
+												column_order = true}
 	self:_clean_columns()
 	self:_refresh_metadata()
 
 	-- Change all missing values to nan
 	for k,v in pairs(self.dataset) do
 		for i = 1,self.n_rows do
-			if (v[i] == nil or
-			    v[i] == '') then
-			  v[i] = 0/0
+			if (v[i] == nil or v[i] == '') then
+				v[i] = 0/0
 			end
 		end
 		self.dataset[k] = v
 	end
 
-	self.column_order = self:_getCsvHeaderOrder(args.path, args.separator)
 	if args.infer_schema then self:_infer_schema() end
-end
-
--- Returns the order of the original CSV
-function Dataframe:_getCsvHeaderOrder(filepath, separator)
-	file, msg = io.open(filepath, 'r')
-	if not file then error("Could not open file") end
-  local line = file:read()
-	file:close()
-	if not line then error("Could not read line") end
-	line = line:gsub('\r', '')
-
-	line = line .. separator -- end with separator
-	if separator == ' ' then separator = '%s+' end
-	local t = {}
-	count = 0
-	local fieldstart = 1
-	repeat
-		count = count + 1
-		-- next field is quoted? (starts with "?)
-	  if string.find(line, '^"', fieldstart) then
-			local a, c
-	    local i = fieldstart
-	    repeat
-	      -- find closing quote
-	      a, i, c = string.find(line, '"("?)', i+1)
-	    until c ~= '"'  -- quote not followed by quote?
-
-	    if not i then error('unmatched "') end
-			local f = string.sub(line, fieldstart+1, i-1)
-	    t[count] = (string.gsub(f, '""', '"'))
-
-			-- Move along the line to next separator
-	    fieldstart = string.find(line, separator, i) + 1
-	  else
-	     local nexti = string.find(line, separator, fieldstart)
-	     t[count] = string.sub(line, fieldstart, nexti-1)
-	     fieldstart = nexti + 1
-	  end
-	until fieldstart > string.len(line)
-	return t
 end
 
 --
