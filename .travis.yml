@@ -1,29 +1,30 @@
-language: c
+language: python
 
-sudo: true
+sudo: false
 
 branches:
   only:
     - master
     - travis
+    - specs
 env:
   global:
     - LUAROCKS=2.3.0
+    - TORCH_SERVER=https://raw.githubusercontent.com/torch/rocks/master/
   matrix:
-    - LUA=lua5.1
+    - LUA="lua 5.1"
 
 before_install:
-  - source .travis/setenv_lua.sh
-  - travis_wait .travis/install-torch-wrapper.sh $(pwd)/deps/torch $(pwd)/torch-install-log.txt
-  - source $(pwd)/deps/torch/install/bin/torch-activate
+  - pip install hererocks
+  - hererocks lua_install -r^ --$LUA
+  - export PATH=$PATH:$PWD/lua_install/bin
 
 install:
-  - luarocks make torch-dataframe-0.1-1.rockspec CFLAGS="-O2 -fPIC -fprofile-arcs" LIBFLAG="-shared"
-  - luarocks install csvigo
+  - luarocks --from=$TORCH_SERVER install dok
+  - luarocks --from=$TORCH_SERVER install torch
+  - luarocks --from=$TORCH_SERVER install csvigo
   - luarocks install luafilesystem
-
-before_script:
-  - source $(pwd)/deps/torch/install/bin/torch-activate
+  - luarocks make torch-dataframe-0.1-1.rockspec CFLAGS="-O2 -fPIC -fprofile-arcs -ftest-coverage" LIBFLAG="-shared"
 
 script:
   - cd tests
