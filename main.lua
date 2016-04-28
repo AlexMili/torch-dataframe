@@ -309,7 +309,8 @@ function Dataframe:insert(rows)
 		else
 			for j = 1,no_rows_2_insert do
 				value = rows[column_name][j]
-				if (self:is_categorical(column_name)) then
+				if (self:is_categorical(column_name) and
+				    not isnan(value)) then
 					vale = self:_get_raw_cat_key(column_name, value)
 				end -- TODO: Should we convert string columns with '' to nan?
 				self.dataset[column_name][self.n_rows + j] = value
@@ -580,6 +581,9 @@ end
 
 -- Internal function for getting raw value for a categorical variable
 function Dataframe:_get_raw_cat_key(column_name, key)
+	if (isnan(key)) then
+		return key
+	end
 	keys = self:get_cat_keys(column_name)
 	if (keys[key] ~= nil) then
 		return keys[key]

@@ -43,9 +43,10 @@ end
 function Dataframe:add_cat_key(column_name, key)
 	assert(self:has_column(column_name), "Could not find column: " .. tostring(column_name))
 	assert(self:is_categorical(column_name), "The column isn't categorical: " .. tostring(column_name))
+	assert(not isnan(key), "You can't add a nan key to "  .. tostring(column_name))
 	assert(type(key) == "number" or
 	       type(key) == "string",
-				 "Keys can only be strings or numbers")
+				 "Keys can only be strings or numbers, you have provided: " .. tostring(key) .. " of type: " .. type(key))
 	keys = self:get_cat_keys(column_name)
 	key_index = table.exact_length(keys) + 1
 	keys[key] = key_index
@@ -101,7 +102,7 @@ function Dataframe:clean_categorical(...)
 		vals = self:get_column(args.column_name)
 		found_keys = {}
 		for _,v in pairs(vals) do
-			if (keys[v] ~= nil) then
+			if (keys[v] ~= nil and not isnan(v)) then
 				found_keys[v] = v
 			end
 		end
