@@ -169,6 +169,20 @@ function cat_tests.update()
   a:clean_categorical('Col B', true)
   tester:eq(a:get_cat_keys('Col B'), {A=1},
            "Keys should be removed after calling clean_categorical with resetting")
+
+  a:load_csv{path = "advanced_short.csv",
+            verbose = false}
+  a:as_categorical('Col B')
+  a:as_categorical('Col C')
+  a:update(function(row) return row['Col A'] == 3 end,
+          function(row)
+            row['Col B'] = 0/0
+            return row
+          end)
+  tester:assert(isnan(a:get_column('Col B')[3]),
+            "The nan should be saved as such")
+  tester:assert(isnan(a:get_column('Col C')[2]),
+            "The nan should be untouched")
 end
 
 function cat_tests.set()
