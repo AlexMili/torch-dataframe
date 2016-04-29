@@ -23,7 +23,7 @@ function Dataframe:load_csv(...)
 		{arg='infer_schema', type='boolean', help='automatically detect columns\' type', default=true},
 		{arg='separator', type='string', help='separator (one character)', default=','},
 		{arg='skip', type='number', help='skip this many lines at start of file', default=0},
-		{arg='verbose', type='boolean', help='verbose load', default=true}
+		{arg='verbose', type='boolean', help='verbose load', default=false}
 	)
 	-- Remove previous data
 	self:_clean()
