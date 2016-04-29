@@ -26,33 +26,29 @@ table.reduce = function (list, fn)
 end
 
 function df_tests.csv_test_correct_size()
-   local a = Dataframe()
-   a:load_csv{path = "simple_short.csv",
-              verbose = false}
+   local a = Dataframe("simple_short.csv")
+
    tester:eq(a:shape(), {rows=4, cols=3},
      "The simple_short.csv is 4x3")
 end
 
 function df_tests.csv_test_integer_column()
-  local a = Dataframe()
-  a:load_csv{path = "simple_short.csv",
-             verbose = false}
+  local a = Dataframe("simple_short.csv")
+
   tester:eq(a:get_column('Col A'), {1, 2, 3, 4},
     "The simple_short.csv first column a linspan")
 end
 
 function df_tests.csv_test_float_column()
-  local a = Dataframe()
-  a:load_csv{path = "simple_short.csv",
-             verbose = false}
+  local a = Dataframe("simple_short.csv")
+  
   tester:eq(a:get_column('Col B'), {.2,.3,.4,.5},
-    "The simple_short.csv is are a span of floats")
+    "The simple_short.csv second column is a span of floats")
 end
 
 function df_tests.csv_test_mixed_column()
-  local a = Dataframe()
-  a:load_csv{path = "simple_short.csv",
-             verbose = false}
+  local a = Dataframe("simple_short.csv")
+  
   tester:eq(a:get_column('Col C')[1], 1000)
   tester:eq(a:get_column('Col C')[2], 0.1)
   tester:eq(a:get_column('Col C')[3], 9999999999)
@@ -121,9 +117,8 @@ function df_tests.table_test_trimming()
 end
 
 function df_tests.drop()
-  local a = Dataframe()
-  a:load_csv{path = "simple_short.csv",
-             verbose = false}
+  local a = Dataframe("simple_short.csv")
+  
   a:drop('Col A')
   tester:assert(not a:has_column('Col A'))
   tester:assert(a:has_column('Col B'))
@@ -148,9 +143,8 @@ function df_tests.drop()
 end
 
 function df_tests.add_column()
-  local a = Dataframe()
-  a:load_csv{path = "simple_short.csv",
-             verbose = false}
+  local a = Dataframe("simple_short.csv")
+  
   d_col = {0,1,2,3}
   a:add_column('Col D', d_col)
   tester:ne(a:get_column('Col A'), nil, "Col A should be present")
@@ -171,26 +165,23 @@ function df_tests.add_column()
 end
 
 function df_tests.get_column()
-  local a = Dataframe()
-  a:load_csv{path = "simple_short.csv",
-             verbose = false}
+  local a = Dataframe("simple_short.csv")
+  
   tester:assertError(function() a:get_column('Col D') end)
   tester:ne(a:get_column('Col C'), nil)
 end
 
 function df_tests.insert()
-  local a = Dataframe()
-  a:load_csv{path = "simple_short.csv",
-             verbose = false}
+  local a = Dataframe("simple_short.csv")
+  
   a:insert({['Col A']={15},['Col B']={25},['Col C']={35}})
   tester:eq(a:shape(), {rows=5, cols=3},
     "The simple_short.csv is 4x3 after insert should be 5x3")
 end
 
 function df_tests.reset_column()
-  local a = Dataframe()
-  a:load_csv{path = "simple_short.csv",
-             verbose = false}
+  local a = Dataframe("simple_short.csv")
+  
   a:reset_column('Col C', 555)
   tester:eq(a:shape(), {rows=4, cols=3},
     "The simple_short.csv is 4x3")
@@ -202,9 +193,7 @@ function df_tests.reset_column()
 end
 
 function df_tests.remove_index()
-  local a = Dataframe()
-  a:load_csv{path = "simple_short.csv",
-             verbose = false}
+  local a = Dataframe("simple_short.csv")
 
   a:remove_index(1)
   tester:eq(a:shape(), {rows=3, cols=3},
@@ -218,18 +207,16 @@ function df_tests.remove_index()
 end
 
 function df_tests.rename_column()
-  local a = Dataframe()
-  a:load_csv{path = "simple_short.csv",
-             verbose = false}
+  local a = Dataframe("simple_short.csv")
+  
   a:rename_column("Col A", "Col D")
   tester:assert(a:has_column("Col D"))
   tester:assert(not a:has_column("Col A"))
 end
 
 function df_tests.count_na_and_fill_na()
-  local a = Dataframe()
-  a:load_csv{path = "advanced_short.csv",
-             verbose = false}
+  local a = Dataframe("advanced_short.csv")
+  
   tester:eq(a:count_na(), {["Col A"]= 0, ["Col B"]= 0, ["Col C"]=1})
   a:fill_na("Col A", 1)
   tester:eq(a:count_na(), {["Col A"]= 0, ["Col B"]= 0, ["Col C"]=1})
@@ -239,9 +226,8 @@ function df_tests.count_na_and_fill_na()
 end
 
 function df_tests.fill_all_na()
-  local a = Dataframe()
-  a:load_csv{path = "advanced_short.csv",
-             verbose = false}
+  local a = Dataframe("advanced_short.csv")
+  
   a.dataset['Col A'][3] = nil
   tester:eq(a:count_na(), {["Col A"]= 1, ["Col B"]= 0, ["Col C"]=1})
   a:fill_all_na(-1)
@@ -250,16 +236,13 @@ function df_tests.fill_all_na()
 end
 
 function df_tests.get_numerical_colnames()
-  local a = Dataframe()
-  a:load_csv{path = "advanced_short.csv",
-             verbose = false}
+  local a = Dataframe("advanced_short.csv")
+  
   tester:eq(a:get_numerical_colnames(), {'Col A', 'Col C'})
 end
 
 function df_tests.to_tensor()
-  local a = Dataframe()
-  a:load_csv{path = "simple_short.csv",
-             verbose = false}
+  local a = Dataframe("advanced_short.csv")
 
   tnsr = a:to_tensor()
   tester:eq(tnsr:size(1),
