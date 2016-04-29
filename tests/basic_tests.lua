@@ -154,7 +154,7 @@ function df_tests.add_column()
   tester:eq(a:shape(), {rows=4, cols=4},
     "The simple_short.csv is 4x3 after add should be 4x4")
 
-  tester:assertError(a:add_column('Col D'))
+  tester:assertError(function() a:add_column('Col D') end)
   a:add_column('Col E')
   col = a:get_column('Col E')
   for _,v in pairs(col) do
@@ -245,10 +245,8 @@ function df_tests.to_tensor()
   local a = Dataframe("advanced_short.csv")
 
   tnsr = a:to_tensor()
-  tester:eq(tnsr:size(1),
-            a:shape()["rows"])
-  tester:eq(tnsr:size(2),
-            a:shape()["cols"])
+  tester:eq(tnsr:size(1), a:shape()["rows"])
+  tester:eq(tnsr:size(2), a:shape()["cols"]-1)-- Only numerical columns
   sum = 0
   col_no = a:get_column_no('Col A')
   for i=1,tnsr:size(1) do
