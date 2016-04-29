@@ -183,9 +183,9 @@ end
 -- RETURNS: nothing
 --
 function Dataframe:add_column(column_name, default_value)
-	assert(not self:has_column('column_name'), "The column " .. column_name .. " already exists in the dataset")
+	assert(not self:has_column(column_name), "The column " .. column_name .. " already exists in the dataset")
 
-  if (type(default_value) == 'table') then
+	if (type(default_value) == 'table') then
 		assert(table.maxn(default_value) == self.n_rows,
 		       'The default values don\'t match the number of rows')
 	elseif (default_value == nil) then
