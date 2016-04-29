@@ -27,7 +27,7 @@ install:
   - luarocks make torch-dataframe-0.1-1.rockspec CFLAGS="-O2 -fPIC -fprofile-arcs -ftest-coverage" LIBFLAG="-shared"
 
 script:
-  - cd tests
+  - cd specs
   - ./run_all.sh
 
 after_success:
