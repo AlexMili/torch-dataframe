@@ -156,3 +156,32 @@ function Dataframe:_clean_columns()
 
 	self.dataset = temp_dataset
 end
+
+-- Count missing values 
+function Dataframe:_count_missing()
+	counter =0
+	for index,col in pairs(self.columns) do
+		for i = 1,self.n_rows do
+			if (self.dataset[col][i] == nil) then
+				counter = counter + 1
+			end
+		end
+	end
+
+	return counter
+end
+
+-- Fill missing values with NaN value
+function Dataframe:_fill_missing()
+	for index,col in pairs(self.columns) do
+		for i = 1,self.n_rows do
+			-- In CSV mode - only needed by number columns because the nil value is due to tonumber() from _infer_schema()
+			if (self.dataset[col][i] == nil and self.schema[col] == 'number') then
+				self.dataset[col][i] = 0/0
+			-- In table mode only
+			elseif (self.dataset[col][i] == nil and self.schema[col] == 'string') then
+				self.dataset[coll][i] = 'n/a'
+			end
+		end
+	end
+end
