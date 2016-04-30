@@ -94,7 +94,7 @@ function Dataframe:load_table(args)
 	count = 0
 	for k,v in pairs(args.data) do
 		count = count + 1
-		self.column_order[count] = k
+		self.column_order[count] = trim(k)
 
 		-- if there is only one value for this column we need to duplicate the value to all next rows
 		if (type(v) ~= 'table') then
@@ -109,7 +109,7 @@ function Dataframe:load_table(args)
 		end
 	end
 
-	self.column_order = trim_table_strings(self.column_order)
+	if args.column_order then args.column_order = trim_table_strings(args.column_order) end
 	self:_clean_columns()
 
 	if (args.column_order and not tables_equals(args.column_order,self.column_order)) then
