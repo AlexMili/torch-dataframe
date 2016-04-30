@@ -62,10 +62,12 @@ function Dataframe:_refresh_metadata()
 	for k,v in pairs(self.dataset) do
 		table.insert(keyset, k)
 
+		-- handle the case when there is only one value for the entire column
 		local no_rows_in_v = 1
 		if (type(v) == 'table') then
 			no_rows_in_v = table.maxn(v)
 		end
+
 		if (rows == -1) then
 			rows = no_rows_in_v
 		else
