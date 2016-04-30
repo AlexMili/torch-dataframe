@@ -41,9 +41,11 @@ describe("Loading data process", function()
 		end)
 
 		it("Updates the columns names and escapes blank spaces",function()
-			assert.are.same(df.columns,{'Col C','Col B','Col D','Col A'})
 			assert.are.same(df.column_order,{'Col A','Col B','Col C','Col D'})
 			assert.has.no_error(function() df:get_column('Col A') end)
+			assert.has.no_error(function() df:get_column('Col B') end)
+			assert.has.no_error(function() df:get_column('Col C') end)
+			assert.has.no_error(function() df:get_column('Col D') end)
 		end)
 
 		it("Updates the number of rows",function()
@@ -95,10 +97,9 @@ describe("Loading data process", function()
 			df:load_table{data={
 				['        first_column']={3,5,8},
 				['second_column       ']={10,11,12}
-			}}
+			},column_order={'first_column     ','      second_column'}}
 
-			assert.are.same(df.columns,{'first_column','second_column'})
-			assert.are.same(df.column_order,{'second_column','first_column'})
+			assert.are.same(df.column_order,{'first_column','second_column'})
 			assert.has.no_error(function() df:get_column('first_column') end)
 			assert.has.no_error(function() df:get_column('second_column') end)
 		end)
