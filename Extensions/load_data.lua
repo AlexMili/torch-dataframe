@@ -35,6 +35,7 @@ function Dataframe:load_csv(...)
 												verbose = args.verbose,
 												column_order = true}
 	self:_clean_columns()
+	self.column_order = trim_table_strings(self.column_order)
 	self:_refresh_metadata()
 
 	if args.infer_schema then
@@ -74,6 +75,7 @@ function Dataframe:load_table(args)
 
 	self:_clean()
 
+	-- Check that all columns with a length > 1 has the same number of rows (length)
 	local length = -1
 	for k,v in pairs(args.data) do
 		if (type(v) == 'table') then
@@ -93,6 +95,8 @@ function Dataframe:load_table(args)
 	for k,v in pairs(args.data) do
 		count = count + 1
 		self.column_order[count] = k
+
+		-- if there is only one value for this column we need to duplicate the value to all next rows
 		if (type(v) ~= 'table') then
 			-- Populate the table if single value has been provided
 			tmp = {}
@@ -105,9 +109,10 @@ function Dataframe:load_table(args)
 		end
 	end
 
+	self.column_order = trim_table_strings(self.column_order)
 	self:_clean_columns()
 
-	if (args.column_order) then
+	if (args.column_order and not tables_equals(args.column_order,self.column_order)) then
 		no_cols = table.exact_length(self.dataset)
 		assert(#args.column_order == no_cols,
 					"The length of the column order " .. #args.column_order ..
@@ -115,8 +120,10 @@ function Dataframe:load_table(args)
 		for i = 1,no_cols do
 			assert(args.column_order[i] ~= nil, "The column order should be continous." ..
 			       " Could not find column no. " .. i)
+			
 			found = false
-		  for k,v in pairs(self.dataset) do
+
+			for k,v in pairs(self.dataset) do
 				if (k == args.column_order[i]) then
 					found = true
 					break
