@@ -51,23 +51,27 @@ function Dataframe:load_csv(...)
 end
 
 --
--- load_table{data=your_table} : load table in Dataframe
+-- load_table{data=your_table} : Imports a table data directly into Dataframe
 --
 -- ARGS: - data 			(required) 					[string]	: table to import
 --		 - infer_schema 	(optional, default=false)	[boolean] 	: automatically detect columns type
+--		 - column_order 	(optional)					[table] 	: the column order
 --
 -- RETURNS: nothing
 --
-function Dataframe:load_table(...)
-	local args = dok.unpack(
-		{...},
-		'Dataframe.load_table',
-		'Imports a table directly data into Dataframe',
-		-- See https://github.com/torch/dok/issues/13
-		{arg='data', type='table', help='table to import', req=true},
-		{arg='infer_schema', type='boolean', help='automatically detect columns\' type', default=true},
-		{arg='column_order', type='table', help='The column order', req=false}
-	)
+function Dataframe:load_table(args)
+	-- local args = dok.unpack(
+	-- 	{...},
+	-- 	'Dataframe.load_table',
+	-- 	'Imports a table data directly into Dataframe',
+	-- 	-- See https://github.com/torch/dok/issues/13
+	-- 	{arg='data', type='table', help='table to import', req=true},
+	-- 	{arg='infer_schema', type='boolean', help='automatically detect columns\' type', default=true},
+	-- 	{arg='column_order', type='table', help='The column order', req=false}
+	-- )
+	-- infer_schema default value
+	if not args.infer_schema then args.infer_schema = true end
+
 	self:_clean()
 
 	local length = -1
