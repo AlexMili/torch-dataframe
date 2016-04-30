@@ -14,45 +14,58 @@ lfs.chdir("specs")
 
 describe("Loading data process", function()
 
-	describe("Simple CSV data loading",function()
-		local df = Dataframe()
-		df:load_csv{path = "./data/simple_short.csv", verbose = false}
+	describe("for CSV files",function()
+		local df = Dataframe("./data/full.csv")
 
-		it("Has 4 rows and 3 columns",function()
-			assert.are.same(df:shape(),{rows=4, cols=3})
+		it("Loads the shape of the file",function()
+			assert.are.same(df:shape(),{rows=4, cols=4})
 		end)
 
-		it("Loads integer-only columns in integer-table",function()
+		it("Loads integer-only columns in integer column",function()
 			assert.are.same(df:get_column('Col A'), {1, 2, 3, 4})
 		end)
 
-		it("Loads float-only columns in float-table",function()
+		it("Loads float-only columns in float column",function()
 			assert.are.same(df:get_column('Col B'), {.2,.3,.4,.5})
 		end)
 
-		it("Loads mixed numerical columns in mixed-table",function()
-			assert.is.equal(df:get_column('Col C')[1], 1000)
-			assert.is.equal(df:get_column('Col C')[2], 0.1)
+		it("Loads string-only columns in string column",function()
+			assert.are.same(df:get_column('Col D'), {'A','B','','D'})
+		end)
+
+		it("Loads mixed numerical columns in mixed column",function()
+			assert.is.equal(df:get_column('Col C')[1], 0.1)
+			assert.is_true(isnan(df:get_column('Col C')[2]))
 			assert.is.equal(df:get_column('Col C')[3], 9999999999)
 			assert.is.equal(df:get_column('Col C')[4], -222)
 		end)
+
+		it("Updates the columns names and escapes blank spaces",function()
+			assert.are.same(df.columns,{'Col C','Col B','Col D','Col A'})
+			assert.are.same(df.column_order,{'Col A','Col B','Col C','Col D'})
+			assert.has.no_error(function() df:get_column('Col A') end)
+		end)
+
+		it("Updates the number of rows",function()
+			assert.is.equal(df.n_rows,4)
+		end)
+
+		it("Fills numerical missing values with NaN values",function()
+			assert.is.equal(df:_count_missing(),0)
+		end)
+
+		it("Infers data schema",function()
+			assert.are.same(df.schema, {['Col A']='number',['Col B']='number',['Col C']='number',['Col D']='string'})
+		end)
 	end)
 
-	describe("Table data loading",function()
+	describe("for lua tables",function()
 		local df = Dataframe()
 
-		it("Loads the table according to its types and length",function()
+		it("Loads a simple table",function()
 			df:load_table{data={
-				['first_column']={
-					3,
-					4,
-					5
-				},
-				['second_column']={
-					10,
-					11,
-					12
-				}
+				['first_column']={3,4,5},
+				['second_column']={10,11,12}
 			}}
 
 			assert.are.same(df:get_column("first_column"), {3,4,5})
@@ -62,15 +75,8 @@ describe("Loading data process", function()
 		it("Generate an error if the column inserted are not the same size",function()
 			assert.has.error(function()
 				df:load_table{data={
-					['first_column']={
-						3,
-						4,
-						5
-					},
-					['second_column']={
-						10,
-						11
-					}
+					['first_column']={3,5},
+					['second_column']={10,11,12}
 				}}
 			end)
 		end)
@@ -78,15 +84,50 @@ describe("Loading data process", function()
 		it("Duplicate to all rows the only value given for a column",function()
 			df:load_table{data={
 				['first_column']=3,
-				['second_column']={
-					10,
-					11,
-					12
-				}
+				['second_column']={10,11,12}
 			}}
 
 			assert.are.same(df:get_column("first_column"), {3,3,3})
 			assert.are.same(df:get_column("second_column"), {10,11,12})
+		end)
+
+		it("Updates the columns names and escapes blank spaces",function()
+			df:load_table{data={
+				['        first_column']={3,5,8},
+				['second_column       ']={10,11,12}
+			}}
+
+			assert.are.same(df.columns,{'first_column','second_column'})
+			assert.are.same(df.column_order,{'second_column','first_column'})
+			assert.has.no_error(function() df:get_column('first_column') end)
+			assert.has.no_error(function() df:get_column('second_column') end)
+		end)
+
+		it("Updates the number of rows",function()
+			df:load_table{data={
+				['first_column']={3,5,8},
+				['second_column']={10,11,12}
+			}}
+
+			assert.is.equal(df.n_rows,3)
+		end)
+
+		it("Fills numerical missing values with NaN values",function()
+			df:load_table{data={
+				['first_column']={3,nil,8},
+				['second_column']={10,11,12}
+			}}
+
+			assert.is.equal(df:_count_missing(),0)
+		end)
+
+		it("Infers data schema",function()
+			df:load_table{data={
+				['first_column']={3,9,8},
+				['second_column']={10,11,12},
+				['third_column']={'first','second','third'}
+			}}
+			assert.are.same(df.schema, {['first_column']='number',['second_column']='number',['third_column']='string'})
 		end)
 	end)
 end)
