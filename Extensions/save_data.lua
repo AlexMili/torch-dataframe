@@ -2,29 +2,6 @@ require 'dok'
 local params = {...}
 local Dataframe = params[1]
 
--- UTILS
-
-local function escapeCsv(s, separator)
-   if string.find(s, '["' .. separator .. ']') then
-   --if string.find(s, '[,"]') then
-      s = '"' .. string.gsub(s, '"', '""') .. '"'
-   end
-   return s
-end
-
--- convert an array of strings or numbers into a row in a csv file
-local function tocsv(t, separator, column_order)
-   local s = ""
-	 for i=1,#column_order do
-		 p = t[column_order[i]]
-		 if (isnan(p)) then
-			 p = ''
-		 end
-     s = s .. separator .. escapeCsv(p, separator)
-   end
-   return string.sub(s, 2) -- remove first comma
-end
-
 --
 -- to_csv() : convert dataset to CSV file
 --
@@ -40,22 +17,18 @@ function Dataframe:to_csv(...)
 		'Saves a Dataframe into a CSV using csvigo as backend',
 		{arg='path', type='string', help='path to file', req=true},
 		{arg='separator', type='string', help='separator (one character)', default=','},
-		{arg='verbose', type='boolean', help='verbose load', default=true}
+		{arg='verbose', type='boolean', help='verbose load', default=false}
 	)
 
-	file, msg = io.open(args.path, 'w')
-	if not file then error("Could not open file") end
-	for i = 0,self.n_rows do
-		if (i == 0) then
-			row = {}
-			for _,k in pairs(self.columns) do
-				row[k] = k
-			end
-		else
-			row = self:get_row(i)
-		end
-		res, msg = file:write(tocsv(row, args.separator, self.column_order), "\n")
-		if (not res) then error(msg) end
+	-- Make sure that categorical columns are presented in the correct way
+	save_data = {}
+	for _,k in pairs(self.columns) do
+		save_data[k] = self:get_column(k)
 	end
-	file:close()
+
+	csvigo.save{path = args.path,
+				data = save_data,
+				separator = args.separator,
+				verbose = args.verbose,
+				column_order = self.column_order}
 end
