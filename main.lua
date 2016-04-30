@@ -34,23 +34,14 @@ function Dataframe:__init(csv_or_data)
 	end
 end
 
--- Private function for cleaning all data
-function Dataframe:_clean(...)
-	local args = dok.unpack(
-		{...},
-		'Dataframe._clean',
-		'Cleans and resets all data parameters',
-		{arg='schema', type='boolean', help='Also clean schema', default=true, req=false})
-
+-- Private function for cleaning and reseting all data and meta data
+function Dataframe:_clean()
 	self.dataset = {}
 	self.columns = {}
 	self.column_order = {}
 	self.n_rows = 0
 	self.categorical = {}
-
-	if (args.schema) then
-		self.schema = {}
-	end
+	self.schema = {}
 end
 
 -- Private function for copying core settings to new Dataframe
