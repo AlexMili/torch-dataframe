@@ -37,17 +37,17 @@ function Dataframe:load_csv(...)
 	self:_clean_columns()
 	self:_refresh_metadata()
 
-	-- Change all missing values to nan
-	for k,v in pairs(self.dataset) do
-		for i = 1,self.n_rows do
-			if (v[i] == nil or v[i] == '') then
-				v[i] = 0/0
-			end
+	if args.infer_schema then
+		self:_infer_schema()
+	else
+		-- Default value for self.schema
+		for key,value in pairs(self.column_order) do
+			self.schema[value] = 'number'
 		end
-		self.dataset[k] = v
 	end
 
-	if args.infer_schema then self:_infer_schema() end
+	-- Change all missing values to nan
+	self:_fill_missing()
 end
 
 --
@@ -105,16 +105,6 @@ function Dataframe:load_table(args)
 		end
 	end
 
-	-- Change all missing values to nan
-	for k,v in pairs(self.dataset) do
-		for i = 1,self.n_rows do
-			if (v[i] == nil) then
-			  v[i] = 0/0
-			end
-		end
-		self.dataset[k] = v
-	end
-
 	self:_clean_columns()
 
 	if (args.column_order) then
@@ -139,7 +129,18 @@ function Dataframe:load_table(args)
 	end
 
 	self:_refresh_metadata()
-	if args.infer_schema then self:_infer_schema() end
+	
+	if args.infer_schema then
+		self:_infer_schema()
+	else
+		-- Default value for self.schema
+		for key,value in pairs(self.column_order) do
+			self.schema[value] = 'number'
+		end
+	end
+
+	-- Change all missing values to nan
+	self:_fill_missing()
 end
 
 -- Internal function to clean columns names
