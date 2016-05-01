@@ -19,6 +19,17 @@ or
 luarocks install torch-dataframe
 ```
 
+## Tests
+To launch the tests you need to install ```busted``` (See : Olivine-Labs/busted) via luarocks :
+```bash
+luarocks install busted
+```
+then you can run all tests via command line :
+```bash
+cd specs/
+./run_all.sh
+```
+
 ## Usage
 Initiate the object :
 ```lua
