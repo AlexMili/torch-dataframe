@@ -1,6 +1,5 @@
 -- Main Dataframe file
 require 'torch'
-require 'csvigo'
 require 'dok'
 
 -- create class object
