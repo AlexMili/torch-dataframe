@@ -110,30 +110,6 @@ describe("Dataframe class", function()
 		assert.are.same(a:shape(), {rows = 3, cols = 1})
 	end)
 
-	it("Loads a table of two columns", function()
-		local a = Dataframe()
-		local first = {1,2,3}
-		local second = {"a","b","c"}
-
-		a:load_table{data={['firstColumn']=first,
-						   ['secondColumn']=second}}
-
-		assert.are.same(a:get_column('firstColumn'), first)
-		assert.are.same(a:get_column('secondColumn'), second)
-	end)
-
-	it("Cleans column names", function()
-		local a = Dataframe()
-		local first = {1,2,3}
-		local second = {"a","b","c"}
-
-		a:load_table{data={['firstColumn ']=first,
-						   [' secondColumn']=second}}
-
-		assert.are.same(a:get_column('firstColumn'), first)
-		assert.are.same(a:get_column('secondColumn'), second)
-	end)
-
 	it("Removes an entire column", function()
 		local a = Dataframe("./data/simple_short.csv")
 
@@ -254,37 +230,6 @@ describe("Dataframe class", function()
 		local a = Dataframe("./data/advanced_short.csv")
 
 		assert.are.same(a:get_numerical_colnames(), {'Col A', 'Col C'})
-	end)
-
-	it("Exports the Dataframe to a tensor",function()
-		local a = Dataframe("./data/advanced_short.csv")
-
-		tnsr = a:to_tensor()
-		assert.is.equal(tnsr:size(1),a:shape()["rows"])
-		assert.is.equal(tnsr:size(2),a:shape()["cols"]-1)
-		sum = 0
-		col_no = a:get_column_no('Col A')
-
-		for i=1,tnsr:size(1) do
-			sum = math.abs(tnsr[i][col_no] - a:get_column('Col A')[i])
-		end
-		
-		assert.is_true(sum < 10^-5)
-	end)
-
-	it("Exports the Dataframe to a CSV file",function()
-		local a = Dataframe("./data/simple_short.csv")
-
-		a:to_csv{path = "./data/copy_of_short.csv", verbose = false}
-		local b = Dataframe()
-		b:load_csv{path = "./data/copy_of_short.csv", verbose = false}
-
-		for k,v in pairs(a.dataset) do
-			assert.are.same(a:get_column(k),
-			b:get_column(k))
-		end
-
-		os.remove("./data/copy_of_short.csv")
 	end)
 
 	it("Returns first elements of the dataframe",function()
