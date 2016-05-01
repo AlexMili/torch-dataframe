@@ -1,7 +1,7 @@
 package = "torch-dataframe"
  version = "1.0-0"
  source = {
-    url = "git://github.com/alexmili/torch-dataframe/archive/v1.0-0.tar.gz"
+    url = "https://github.com/alexmili/torch-dataframe/archive/v1.0-0.tar.gz"
  }
  description = {
     summary = "A Dataframe class for Torch",
