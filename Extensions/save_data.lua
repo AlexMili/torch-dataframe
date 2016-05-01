@@ -30,7 +30,8 @@ function Dataframe:to_csv(...)
 				data = save_data,
 				separator = args.separator,
 				verbose = args.verbose,
-				column_order = self.column_order}
+				column_order = self.column_order,
+				nan_as_missing = true}
 end
 
 --
