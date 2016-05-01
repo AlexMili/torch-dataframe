@@ -46,7 +46,7 @@ function Dataframe:to_tensor(...)
 		{...},
 		'Dataframe.to_tensor',
 		'Convert the numeric section or specified columns of the dataset to a tensor',
-		{arg='filename', type='string', help='the name of the column'},
+		{arg='filename', type='string', help='the name of file'},
 		{arg='columns', type='string|table', help='the columns to export to labels'}
 	)
 
