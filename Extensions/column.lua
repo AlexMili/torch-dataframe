@@ -227,12 +227,17 @@ function Dataframe:get_column_order(...)
 		{arg='column_name', type='string', help='the name of the column', req=true},
 		{arg='as_tensor', type='boolean', help='if return index position in tensor', default=false}
 	)
+
+	assert(self:has_column(column_name), "Could not find column: " .. tostring(args.column_name))
+	
 	number_count = 0
 	for i = 1,#self.column_order do
 		column_name = self.column_order[i]
+
 		if (self.schema[column_name] == "number") then
 			number_count = number_count + 1
 		end
+
 		if (args.column_name == column_name) then
 			if (args.as_tensor and
 			    self:is_numerical(column_name)) then
@@ -246,5 +251,6 @@ function Dataframe:get_column_order(...)
 			end
 		end
 	end
+	
 	return nil
 end
