@@ -19,6 +19,7 @@ inspired from [R's](https://cran.r-project.org/) and [pandas'](http://pandas.pyd
 	- [Exporting](#exporting)
 - [Tests](#tests)
 - [Documentation](#documentation)
+- [Contributing](#contributing)
 
 <!-- /TOC -->
 
@@ -189,3 +190,8 @@ cd specs/
 The package relies on self-documenting functions via the [argcheck](https://github.com/torch/argcheck)
 package and [GitHub Wiki](https://github.com/AlexMili/torch-dataframe/wiki) for
 more extensive documentation.
+
+## Contributing
+
+Feel free to report a bug, suggest enhancements or submit new cool feature  using [Issues](https://github.com/AlexMili/torch-dataframe/issues) or directly send us a [Pull Request](https://github.com/AlexMili/torch-dataframe/pulls) :).
+Don't forget to test your code before submitting. You can find how we implemented our tests in the [specs directory](https://github.com/AlexMili/torch-dataframe/tree/readme/specs). See "Behavior Driven Development" for more details on this technique.
