@@ -1,7 +1,7 @@
 package = "torch-dataframe"
- version = "0.1-1"
+ version = "1.0-0"
  source = {
-    url = "git://github.com/alexmili/torch-dataframe"
+    url = "https://github.com/alexmili/torch-dataframe/archive/v1.0-0.tar.gz"
  }
  description = {
     summary = "A Dataframe class for Torch",
@@ -11,7 +11,7 @@ package = "torch-dataframe"
     ]],
     homepage = "https://github.com/alexmili/torch-dataframe",
     license = "MIT/X11",
-    maintainer = "Alex Mili"
+    maintainer = "AlexMili"
  }
  dependencies = {
     "lua ~> 5.1",
