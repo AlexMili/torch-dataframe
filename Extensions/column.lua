@@ -8,9 +8,26 @@ local Dataframe = params[1]
 -- ARGS: - column_name (required) [string]: the column to check
 --
 -- RETURNS: boolean
+--
 function Dataframe:is_numerical(column_name)
 	assert(self:has_column(column_name), "Could not find column: " .. tostring(column_name))
 	return self.schema[column_name] == "number"
+end
+
+--
+-- has_column(column_name) : checks if column exist
+--
+-- ARGS: - column_name (required) [string]: the column to check
+--
+-- RETURNS: boolean
+--
+function Dataframe:has_column(column_name)
+	for _,v in pairs(self.columns) do
+		if (v == column_name) then
+			return true
+		end
+	end
+	return false
 end
 
 --
@@ -77,15 +94,6 @@ function Dataframe:add_column(column_name, default_value)
 	self:_refresh_metadata()
 end
 
-function Dataframe:has_column(column_name)
-	for _,v in pairs(self.columns) do
-    if (v == column_name) then
-			return true
-		end
-  end
-	return false
-end
-
 --
 -- get_column('column_name') : get column content
 --
@@ -109,21 +117,16 @@ function Dataframe:get_column(...)
 				 "Converting to tensor requires a numerical/categorical variable." ..
 				 " The column " .. tostring(args.column_name) ..
 				 " is of type " .. tostring(self.schema[args.column_name]))
-	if (self:has_column(args.column_name)) then
-		column_data = self.dataset[args.column_name]
-		if (not args.as_tensor and
-		    not args.as_raw and
-		    self:is_categorical(args.column_name)) then
-			return self:to_categorical(column_data, args.column_name)
-		else
-			if (args.as_tensor) then
-				return torch.Tensor(column_data)
-			else
-				return column_data
-			end
-		end
+	
+	column_data = self.dataset[args.column_name]
+
+	if (not args.as_tensor and not args.as_raw and
+	    self:is_categorical(args.column_name)) then
+		return self:to_categorical(column_data, args.column_name)
+	elseif (args.as_tensor) then
+		return torch.Tensor(column_data)
 	else
-		return nil
+		return column_data
 	end
 end
 
