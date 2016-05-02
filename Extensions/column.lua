@@ -213,16 +213,16 @@ function Dataframe:get_numerical_colnames()
 end
 
 --
--- get_column_no : Gets the column number of the provided column
+-- get_column_order : Gets the column index of the provided column
 --
 -- ARGS: - column_name (required) [string] : the name of the column
 --       - as_tensor (optional) [boolaen] : if return index position in tensor
 --
 -- RETURNS: integer
-function Dataframe:get_column_no(...)
+function Dataframe:get_column_order(...)
 	local args = dok.unpack(
 		{...},
-		'Dataframe.get_column_no',
+		'Dataframe.get_column_order',
 		'Gets the index number of the column name',
 		{arg='column_name', type='string', help='the name of the column', req=true},
 		{arg='as_tensor', type='boolean', help='if return index position in tensor', default=false}

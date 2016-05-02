@@ -98,7 +98,7 @@ describe("Column order functionality", function()
 		assert.is.equal(tnsr:size(2),a:shape()["cols"] - 1)
 
 		sum = 0
-		col_no = a:get_column_no{column_name='1st', as_tensor = true}
+		col_no = a:get_column_order{column_name='1st', as_tensor = true}
 		
 		for i=1,tnsr:size(1) do
 			sum = math.abs(tnsr[i][col_no] - a:get_column('1st')[i])
@@ -107,7 +107,7 @@ describe("Column order functionality", function()
 		assert.is_true(sum < 10^-5)
 
 		sum = 0
-		col_no = a:get_column_no{column_name='3rd', as_tensor = true}
+		col_no = a:get_column_order{column_name='3rd', as_tensor = true}
 		
 		for i=1,tnsr:size(1) do
 			sum = math.abs(tnsr[i][col_no] - a:get_column('3rd')[i])
@@ -115,6 +115,6 @@ describe("Column order functionality", function()
 		
 		assert.is_true(sum < 10^-5)
 
-		assert.is.equal(a:get_column_no{'2nd', as_tensor = true}, nil)
+		assert.is.equal(a:get_column_order{'2nd', as_tensor = true}, nil)
 	end)
 end)

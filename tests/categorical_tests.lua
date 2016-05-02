@@ -327,7 +327,7 @@ function cat_tests.to_tensor()
             "Incorrect number of columns, expecting " .. a:shape()["cols"] - 1 ..
             " but got " .. tnsr:size(2))
   sum = 0
-  col_no = a:get_column_no('Col A')
+  col_no = a:get_column_order('Col A')
   for i=1,tnsr:size(1) do
     sum = math.abs(tnsr[i][col_no] - a:get_column('Col A')[i])
   end
@@ -344,7 +344,7 @@ function cat_tests.to_tensor()
             "Incorrect number of columns, expecting " .. a:shape()["cols"] - 1 ..
             " but got " .. tnsr:size(2))
   sum = 0
-  col_no = a:get_column_no('Col A')
+  col_no = a:get_column_order('Col A')
   for i=1,tnsr:size(1) do
     sum = math.abs(tnsr[i][col_no] - a:get_column('Col A')[i])
   end
