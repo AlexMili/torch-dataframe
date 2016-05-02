@@ -133,12 +133,31 @@ describe("Column operations", function()
 		end)
 	end)
 
-	it("Renames a column", function()
+	describe("Rename column functionality",function()
 		local a = Dataframe("./data/simple_short.csv")
+		a:rename_column("Col C","Col V")
+		assert.is_true(a:has_column("Col V"))
+		assert.is_true(not a:has_column("Col C"))
 
-		a:rename_column("Col A", "Col D")
-		assert.is_true(a:has_column("Col D"))
-		assert.is_true(not a:has_column("Col A"))
+		it("Fails if the column doesn't exist",function()
+			assert.has_error(function() a:rename_column('Col M','Col G') end)
+		end)
+
+		it("Fails if the new column already exist",function()
+			assert.has_error(function() a:rename_column('Col A','Col B') end)
+		end)
+
+		it("Refreshs metadata",function()
+			local colfound = false
+			for k,v in pairs(a.columns) do
+				if v == 'Col V' then
+					colfound = true
+				end
+			end
+
+			assert.is_true(colfound)
+			assert.are.same({'Col A','Col B','Col V'},a.column_order)
+		end)
 	end)
 
 	it("Returns all numerical columns names", function()
