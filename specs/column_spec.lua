@@ -85,25 +85,37 @@ describe("Column operations", function()
 				assert.is_true(isnan(v))
 			end
 		end)
-		
+
 		it("Fills all the column with default value if it is a single value",function()
 			a:add_column('Col F', 1)
 			assert.are.same(a:get_column('Col F'), {1,1,1,1})
 		end)
 
-		it("Should fail if the default value provided is a table with a different number of rows",function()
+		it("Fails if the default value provided is a table with a different number of rows",function()
 			assert.has.error(function() a:add_column('Col G', {0,1,2,3,5}) end)
 		end)
 
 	end)
 
-	it("Returns a column",function()
-		local a = Dataframe("./data/simple_short.csv")
+	describe("Get a column functionality",function()
+		local a = Dataframe("./data/full.csv")
 
-		assert.has.error(function() a:get_column('Col D') end)
-		assert.is_not.equal(a:get_column('Col A'), nil)-- "Col A should be present"
-		assert.is_not.equal(a:get_column('Col B'), nil)-- "Col B should be present"
-		assert.is_not.equal(a:get_column('Col C'), nil)-- "Col C should be present"
+		assert.are.same(a:get_column('Col A'), {1,2,3,4})
+
+		it("Fails if the column doesn't exist",function()
+			assert.has.error(function() a:get_column('Col H') end)
+		end)
+
+		it("Returns a numerical column as a tensor",function()
+			a_tnsr = torch.Tensor({1,2,3,4})
+			a_col = a:get_column{column_name="Col A",as_tensor=true}
+
+			assert.is_true(torch.equal(a_tnsr,a_col))
+		end)
+
+		it("Fails returning a tensor if the column is not numerical",function()
+			assert.has_error(function() a:get_column{column_name="Col D",as_tensor=true} end)
+		end)
 	end)
 
 	it("Resets a column",function()
