@@ -118,16 +118,19 @@ describe("Column operations", function()
 		end)
 	end)
 
-	it("Resets a column",function()
+	describe("Reset column functionality",function()
 		local a = Dataframe("./data/simple_short.csv")
 
-		a:reset_column('Col C', 555)
-		assert.are.same(a:shape(), {rows=4, cols=3})-- "The simple_short.csv is 4x3"
-		assert.are.same(a:get_column('Col C'), {555, 555, 555, 555})
+		it("Resets single column's values",function()
+			a:reset_column('Col C', 555)
+			assert.are.same(a:get_column('Col C'), {555, 555, 555, 555})
+		end)
 
-		a:reset_column({'Col A', 'Col B'}, 555)
-		assert.are.same(a:get_column('Col A'), {555, 555, 555, 555})
-		assert.are.same(a:get_column('Col B'), {555, 555, 555, 555})
+		it("Resets multiple columns at once",function()
+			a:reset_column({'Col A', 'Col B'}, 444)
+			assert.are.same(a:get_column('Col A'), {444, 444, 444, 444})
+			assert.are.same(a:get_column('Col B'), {444, 444, 444, 444})
+		end)
 	end)
 
 	it("Renames a column", function()

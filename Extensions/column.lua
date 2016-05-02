@@ -142,6 +142,7 @@ function Dataframe:reset_column(column_name, new_value)
 	if type(column_name) == 'string' then
 		column_name = {column_name}
 	end
+	
 	for _,k in pairs(column_name) do
 		assert(self:has_column(k), "Could not find column: " .. tostring(k))
 		for i = 1,self.n_rows do
