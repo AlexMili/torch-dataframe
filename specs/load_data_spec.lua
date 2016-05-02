@@ -59,6 +59,14 @@ describe("Loading data process", function()
 		it("Infers data schema",function()
 			assert.are.same(df.schema, {['Col A']='number',['Col B']='number',['Col C']='number',['Col D']='string'})
 		end)
+
+		it("Keeps the original column order",function()
+			assert.are.same(df.column_order,
+				{[1] = "Col A",
+				 [2] = "Col B",
+				 [3] = "Col C",
+				 [4] = "Col D"})
+		end)
 	end)
 
 	describe("for lua tables",function()
@@ -129,6 +137,29 @@ describe("Loading data process", function()
 				['third_column']={'first','second','third'}
 			}}
 			assert.are.same(df.schema, {['first_column']='number',['second_column']='number',['third_column']='string'})
+		end)
+
+		it("Keeps the provided column order",function()
+			local a = Dataframe()
+
+			local column_order = {
+					[1] = 'firstColumn',
+					[2] = 'secondColumn',
+					[3] = 'thirdColumn'
+			}
+
+			local data = {
+					['firstColumn']={1,2,3},
+					['secondColumn']={"2","1","3"},
+					['thirdColumn']={"2","a","3"}
+			}
+
+			a:load_table{data=data, column_order = column_order}
+
+			assert.are.same(a.column_order, column_order)
+
+			column_order[2] = nil
+			assert.has.error(function() a:load_table{data=data, column_order = column_order} end)
 		end)
 	end)
 end)
