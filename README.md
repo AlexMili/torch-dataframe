@@ -2,13 +2,14 @@
 [![Build Status](https://travis-ci.org/AlexMili/torch-dataframe.svg?branch=master)](https://travis-ci.org/AlexMili/torch-dataframe)
 
 # Dataframe
-Dataframe is a Torch7 class to load and manipulate Kaggle-style CSVs inspired from R and pandas Dataframes.
+Dataframe is a [Torch7]((http://torch.ch/)) class to load and manipulate tabular data (e.g. Kaggle-style CSVs)
+inspired from [R's](https://cran.r-project.org/) and [pandas'](http://pandas.pydata.org/)
+[data frames](https://github.com/mobileink/data.frame/wiki/What-is-a-Data-Frame%3F).
 
 <!-- TOC depthFrom:2 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
 
 - [Requirements](#requirements)
 - [Installation](#installation)
-- [Tests](#tests)
 - [Usage](#usage)
 	- [Load data](#load-data)
 	- [Data inspection](#data-inspection)
@@ -16,9 +17,10 @@ Dataframe is a Torch7 class to load and manipulate Kaggle-style CSVs inspired fr
 	- [Categorical variables](#categorical-variables)
 	- [Subsetting](#subsetting)
 	- [Exporting](#exporting)
+- [Tests](#tests)
+- [Documentation](#documentation)
 
 <!-- /TOC -->
-
 
 ## Requirements
 - [torch](http://torch.ch/)
@@ -37,21 +39,6 @@ or
 
 ```bash
 luarocks install torch-dataframe
-```
-
-## Tests
-
-To launch the tests you need to install ```busted``` (See: [Olivine-Labs/busted](http://olivinelabs.com/busted/)) via luarocks:
-
-```bash
-luarocks install busted
-```
-
-then you can run all tests via command line:
-
-```bash
-cd specs/
-./run_all.sh
 ```
 
 ## Usage
@@ -77,7 +64,8 @@ Load from table:
 df:load_table{data={['firstColumn']={1,2,3},['secondColumn']={4,5,6}}}
 ```
 
-You can also initiate the object with a csv-filename or a table by passing the table or filename as an argument:
+You can also instantiate the object with a csv-filename or a table by passing
+the table or filename as an argument:
 
 ```lua
 require 'Dataframe'
@@ -89,16 +77,20 @@ df = Dataframe('./data/training.csv')
 You can discover your dataset with the following functions:
 
 ```lua
-df:shape() -- print {rows=3, cols=3}
-df:count_na() -- print all the missing values by column name
-df.columns -- table of columns names
-
 -- you can either view the data as a plain text output or itorch html table
 df:output() -- prints html if in itorch otherwise prints plain table
 df:to_html() -- forces html output
 print(df) -- prints a plain table using the tostring() output
 
 df:show() -- prints the head + tail of the table
+```
+
+General dataset information can be found using:
+
+```lua
+df:shape() -- print {rows=3, cols=3}
+df.columns -- table of columns names
+df:count_na() -- print all the missing values by column name
 ```
 
 If you want to inspect random elements you can use the `get_random()`:
@@ -172,3 +164,28 @@ or to CSV:
 ```lua
 df:to_csv('data.csv')
 ```
+
+## Tests
+
+The package contains an extensive test suite and tries to apply a [behavior driven
+development](https://en.wikipedia.org/wiki/Behavior-driven_development) approach.
+All features should be accompanied by a test-case.
+
+To launch the tests you need to install ```busted``` (See: [Olivine-Labs/busted](http://olivinelabs.com/busted/)) via luarocks:
+
+```bash
+luarocks install busted
+```
+
+then you can run all tests via command line:
+
+```bash
+cd specs/
+./run_all.sh
+```
+
+## Documentation
+
+The package relies on self-documenting functions via the [argcheck](https://github.com/torch/argcheck)
+package and [GitHub Wiki](https://github.com/AlexMili/torch-dataframe/wiki) for
+more extensive documentation.
