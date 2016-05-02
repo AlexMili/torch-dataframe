@@ -160,9 +160,23 @@ describe("Column operations", function()
 		end)
 	end)
 
-	it("Returns all numerical columns names", function()
-		local a = Dataframe("./data/advanced_short.csv")
+	describe("Other functionalities",function()
+			local a = Dataframe("./data/advanced_short.csv")
 
-		assert.are.same(a:get_numerical_colnames(), {'Col A', 'Col C'})
+		it("Returns all numerical columns names", function()
+			assert.are.same(a:get_numerical_colnames(), {'Col A', 'Col C'})
+		end)
+
+		it("Checks if a column exist",function()
+			assert.is_false(a:has_column("Col H"))
+			assert.is_true(a:has_column("Col A"))
+		end)
+
+		it("Checks if a column is numerical",function()
+			assert.has.error(function() a:is_numerical("Col H") end)
+			assert.is_true(a:is_numerical("Col A"))
+			assert.is_false(a:is_numerical("Col B"))
+		end)
 	end)
+
 end)
