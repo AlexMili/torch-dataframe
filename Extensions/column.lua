@@ -142,7 +142,7 @@ function Dataframe:reset_column(column_name, new_value)
 	if type(column_name) == 'string' then
 		column_name = {column_name}
 	end
-	
+
 	for _,k in pairs(column_name) do
 		assert(self:has_column(k), "Could not find column: " .. tostring(k))
 		for i = 1,self.n_rows do
@@ -181,6 +181,13 @@ function Dataframe:rename_column(old_column_name, new_column_name)
 		self.categorical[new_column_name] = self.categorical[old_column_name]
 		self.categorical[old_column_name] = nil
 	end
+
+	for k,v in pairs(self.column_order) do
+		if v == old_column_name then
+			self.column_order[k] = new_column_name
+		end
+	end
+
 	self:_refresh_metadata()
 	self:_infer_schema()
 end
