@@ -14,7 +14,7 @@ lfs.chdir("specs")
 
 describe("Column operations", function()
 
-	describe("Drop functionnality",function()
+	describe("Drop functionality",function()
 
 		it("Allows to remove an entire column", function()
 			local a = Dataframe("./data/simple_short.csv")
@@ -63,33 +63,47 @@ describe("Column operations", function()
 		end)
 	end)
 
-	it("Adds a column",function()
+	describe("Add functionality",function()
 		local a = Dataframe("./data/simple_short.csv")
 
-		d_col = {0,1,2,3}
-		a:add_column('Col D', d_col)
-		assert.is_not.equal(a:get_column('Col A'), nil)-- "Col A should be present"
-		assert.is_not.equal(a:get_column('Col B'), nil)-- "Col B should be present"
-		assert.is_not.equal(a:get_column('Col C'), nil)-- "Col C should be present"
-		assert.are.same(a:get_column('Col D'), d_col)-- "Col D isn't the expected value"
-		assert.are.same(a:shape(), {rows=4, cols=4})-- "The simple_short.csv is 4x3 after add should be 4x4"
-		assert.has.error(function() a:add_column('Col D') end)
-		a:add_column('Col E')
-		col = a:get_column('Col E')
+		it("Raises an error if the column is already existing",function()
+			assert.has_error(function() a:add_column('Col A') end)
+		end)
 
-		for _,v in pairs(col) do
-			assert.is_true(isnan(v))
-		end
+		it("Allows to use a table as the default value",function()
+			d_col = {0,1,2,3}
+			a:add_column('Col D', d_col)
+			assert.are.same(a:get_column('Col D'), d_col)-- "Col D isn't the expected value"
+			assert.are.same(a:shape(), {rows=4, cols=4})-- "The simple_short.csv is 4x3 after add should be 4x4"
+		end)
+
+		it("Fills all the column with NaN values if no default value to insert is provided",function()
+			a:add_column('Col E')
+			col = a:get_column('Col E')
+
+			for _,v in pairs(col) do
+				assert.is_true(isnan(v))
+			end
+		end)
 		
-		a:add_column('Col F', 1)
-		assert.are.same(a:get_column('Col F'), {1,1,1,1})
+		it("Fills all the column with default value if it is a single value",function()
+			a:add_column('Col F', 1)
+			assert.are.same(a:get_column('Col F'), {1,1,1,1})
+		end)
+
+		it("Should fail if the default value provided is a table with a different number of rows",function()
+			assert.has.error(function() a:add_column('Col G', {0,1,2,3,5}) end)
+		end)
+
 	end)
 
 	it("Returns a column",function()
 		local a = Dataframe("./data/simple_short.csv")
 
 		assert.has.error(function() a:get_column('Col D') end)
-		assert.is_not.equal(a:get_column('Col C'), nil)
+		assert.is_not.equal(a:get_column('Col A'), nil)-- "Col A should be present"
+		assert.is_not.equal(a:get_column('Col B'), nil)-- "Col B should be present"
+		assert.is_not.equal(a:get_column('Col C'), nil)-- "Col C should be present"
 	end)
 
 	it("Resets a column",function()
