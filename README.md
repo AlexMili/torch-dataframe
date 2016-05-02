@@ -26,6 +26,7 @@ inspired from [R's](https://cran.r-project.org/) and [pandas'](http://pandas.pyd
 ## Requirements
 - [torch](http://torch.ch/)
 - [csvigo](https://github.com/clementfarabet/lua---csv)
+- [luafilesystem](https://keplerproject.github.io/luafilesystem/)
 
 ## Installation
 You can clone this repository or directly install it through luarocks:
