@@ -40,7 +40,8 @@ luarocks install torch-dataframe
 ```
 
 ## Tests
-To launch the tests you need to install ```busted``` (See : [Olivine-Labs/busted](http://olivinelabs.com/busted/)) via luarocks :
+
+To launch the tests you need to install ```busted``` (See: [Olivine-Labs/busted](http://olivinelabs.com/busted/)) via luarocks:
 
 ```bash
 luarocks install busted
