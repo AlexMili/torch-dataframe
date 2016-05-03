@@ -34,7 +34,13 @@ You can clone this repository or directly install it through luarocks:
 ```bash
 git clone https://github.com/AlexMili/torch-dataframe
 cd torch-dataframe
-luarocks make
+luarocks make rocks/torch-dataframe-scm-1.rockspec
+```
+
+the same in one line :
+
+```bash
+luarocks install torch-dataframe scm-1
 ```
 
 or
