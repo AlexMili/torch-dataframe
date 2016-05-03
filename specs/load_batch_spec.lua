@@ -16,7 +16,7 @@ describe("Loading batch process", function()
 		
 	it("Should force a call to init_batch",function()
 		local a = Dataframe("./data/realistic_29_row_data.csv")
-		assert.is.error(function() a:load_batch() end)
+		assert.has.error(function() a:load_batch() end)
 
 		torch.manualSeed(0)
 		a:init_batch()
@@ -42,7 +42,7 @@ describe("Loading batch process", function()
 		local a = Dataframe("./data/realistic_29_row_data.csv")
 
 		it("Should force a call to init_batch",function()
-			assert.is.error(function() a:load_batch() end)
+			assert.has.error(function() a:load_batch() end)
 		end)
 
 		it("Loads batches",function()
