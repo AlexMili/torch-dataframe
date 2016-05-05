@@ -29,38 +29,43 @@ function Dataframe:load_batch(...)
 		Loads a batch of data from the table. Note that you have to call init_batch before load_batch
 		in order to split the dataset into train/test/validations.
 		]],
-		{arg='no_files', type='integer', help='The number of lines to include (-1 for all)', req=true},
-		{arg='offset', type='integer', help='The number of files to skip before starting load', default=0},
+		{arg='no_lines', type='integer', help='The number of lines to include (-1 for all)', req=true},
+		{arg='offset', type='integer', help='The number of lines to skip before starting to load', default=0},
 		{arg='load_row_fn', type='function', help='Receives a row and returns a tensor assumed to be the data', req=true},
 		{arg='type', type='function', help='Type of data to load', default="train"},
 		{arg='label_columns', type='table', help='The columns that are to be the label. If omitted defaults to all numerical.'})
 	-- Check argument integrity
 	assert(self.batch.datasets[args.type] ~= nil, "There is no batch dataset group corresponding to '".. args.type .."'")
-	assert(isint(args.no_files) and
-				 (args.no_files > 0 or
-					args.no_files == -1) and
-					args.no_files <= self:batch_size(args.type),
-				 "The number of files to load has to be either -1 for all files or " ..
+	assert(isint(args.no_lines) and
+				 (args.no_lines > 0 or
+					args.no_lines == -1) and
+					args.no_lines <= self:batch_size(args.type),
+				 "The number of lines to load has to be either -1 for all lines or " ..
 				 " a positive integer less or equeal to the number of observations in that category " ..
 				 self:batch_size(args.type) .. "." ..
-				 " You provided " .. tostring(args.no_files))
-	if (args.no_files == -1) then args.no_files = self:batch_size(args.type) end
-	assert(isint(args.offset) and
-				 args.offset >= 0,
+				 " You provided " .. tostring(args.no_lines))
+	
+	if (args.no_lines == -1) then args.no_lines = self:batch_size(args.type) end
+
+	assert(isint(args.offset) and args.offset >= 0,
 				 "The offset has to be a positive integer, you provided " .. tostring(args.offset))
 	assert(type(args.load_row_fn) == 'function',
 				 "You haven't provided a function that will load the data")
+
 	if (args.label_columns == nil) then
 		args.label_columns = {}
+
 		for k,_ in pairs(self.dataset) do
 			if (self:is_numerical(k)) then
 				table.insert(args.label_columns, k)
 			end
 		end
 	else
+
 		if (type(args.label_columns) ~= 'table') then
 			args.label_columns = {args.label_columns}
 		end
+
 		for _,k in pairs(args.label_columns) do
 			assert(args.dataset[k] ~= nil, "Could not find column " .. tostring(k))
 			assert(self:is_numerical(k), "Column " .. tostring(k) .. " is not numerical")
@@ -69,12 +74,12 @@ function Dataframe:load_batch(...)
 
 	local rows = {}
 	local start_position = (args.offset + 1) % self:batch_size(args.type)
-	local stop_position = (args.no_files + args.offset) % self:batch_size(args.type)
+	local stop_position = (args.no_lines + args.offset) % self:batch_size(args.type)
 	if (stop_position == 0) then
 		stop_position = self:batch_size(args.type)
 	end
 	assert(stop_position ~= start_position and
-				 args.no_files ~= 1,
+				 args.no_lines ~= 1,
 				 [[
 				 It seems that the start and stop positions are identical. This is most
 				 likely due to an unintentional loop where the batch is the size of the
