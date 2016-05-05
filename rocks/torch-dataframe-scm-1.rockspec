@@ -30,7 +30,7 @@ package = "torch-dataframe"
       ["Dataframe.Extensions.load_data"] = 'Extensions/load_data.lua',
       ["Dataframe.Extensions.missing_data"] = 'Extensions/missing_data.lua',
       ["Dataframe.Extensions.output"] = 'Extensions/output.lua',
-      ["Dataframe.Extensions.save_data"] = 'Extensions/save_data.lua',
+      ["Dataframe.Extensions.export_data"] = 'Extensions/export_data.lua',
       ["Dataframe.Extensions.select_set_update"] = 'Extensions/select_set_update.lua',
       ["Dataframe.Extensions.statistics"] = 'Extensions/statistics.lua'
   }
