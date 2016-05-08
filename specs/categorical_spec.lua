@@ -22,7 +22,7 @@ describe("Categorical column", function()
 
 	it("Should be convertible to an integer column",function()
 		a:as_categorical('Col B')
-		
+
 		assert.are.same(a:get_cat_keys('Col B'), {A=1, B=2})
 		assert.is_true(a:is_categorical('Col B'))
 		assert.is_true(a:is_numerical('Col B'))
@@ -30,7 +30,7 @@ describe("Categorical column", function()
 
 	it("Should be convertible to an int linspace if it's a numerical column",function()
 		a:as_categorical('Col C')
-		
+
 		assert.are.same(a:get_cat_keys('Col C'), {[8] = 1, [9] = 2})
 		assert.is_true(a:is_categorical('Col C'))
 		assert.is_true(not a:is_categorical('Col A'))
@@ -130,9 +130,9 @@ describe("Categorical column", function()
 
 	it("Updates rows according to custom function",function()
 		local a = Dataframe("./data/advanced_short.csv")
-		
+
 		a:as_categorical('Col B')
-		
+
 		a:update(
 			function(row) return row['Col A'] == 3 end,
 			function(row) row['Col B'] = 'C' return row end
@@ -143,7 +143,7 @@ describe("Categorical column", function()
 
 		a:load_csv{path = "./data/advanced_short.csv"}
 		a:as_categorical('Col B')
-		
+
 		a:update(
 			function(row) return row['Col B'] == 'B' end,
 			function(row) row['Col B'] = 'A' return row end
@@ -157,12 +157,12 @@ describe("Categorical column", function()
 
 		a:load_csv{path = "./data/advanced_short.csv"}
 		a:as_categorical('Col B')
-		
+
 		a:update(
 			function(row) return row['Col B'] == 'B' end,
 			function(row) row['Col B'] = 'A' return row end
 		)
-		
+
 		a:clean_categorical('Col B', true)
 		assert.are.same(a:get_cat_keys('Col B'), {A=1})-- "Keys should be removed after calling clean_categorical with resetting"
 
@@ -229,6 +229,7 @@ describe("Categorical column", function()
 		local a = Dataframe("./data/advanced_short.csv")
 
 		a:as_categorical('Col B')
+		assert.has.error(function() a:as_categorical(1) end)
 		assert.is_true(a:is_categorical('Col B'))
 		a:rename_column('Col B', 'Alt col B')
 		assert.has.error(function() a:is_categorical('Col B') end)
@@ -308,7 +309,7 @@ describe("Categorical column", function()
 		a:shape()["cols"] - 1)-- "Incorrect number of columns, expecting " .. a:shape()["cols"] - 1 .. " but got " .. tnsr:size(2)
 		sum = 0
 		col_no = a:get_column_no('Col A')
-		
+
 		for i=1,tnsr:size(1) do
 			sum = math.abs(tnsr[i][col_no] - a:get_column('Col A')[i])
 		end
@@ -327,9 +328,8 @@ describe("Categorical column", function()
 		for i=1,tnsr:size(1) do
 			sum = math.abs(tnsr[i][col_no] - a:get_column('Col A')[i])
 		end
-		
+
 		assert.is_true(sum < 1e-5)-- "The difference between the columns should be < 10^-5, it is currently " .. sum
 	end)
 
 end)
-
