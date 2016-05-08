@@ -2,13 +2,24 @@ require 'dok'
 local params = {...}
 local Dataframe = params[1]
 
---
--- as_categorical('column_name') : set a column to categorical
---
--- ARGS: - column_name 		(required) 	[string|table] 	: column to set to categorical
---
--- RETURNS: nothing
-function Dataframe:as_categorical(column_name)
+local argcheck = require "argcheck"
+
+Dataframe.as_categorical = argcheck{
+	doc =  [[
+<a name="Dataframe.as_categorical">
+### Dataframe.as_categorical(@ARGP)
+
+@ARGT
+
+Set a column to categorical type. Adds the column to self.categorical table with
+the keuys retrieved from Dataframe.unique.
+
+_Return value_: void
+	]],
+	{name="self", type="Dataframe"},
+	{name="column_name", type="string|table",
+	 doc="Either a single column name or a table with column names"},
+	call = function(self, column_name)
 	if (type(column_name) ~= 'table') then
 		column_name = {column_name}
 	end
@@ -32,35 +43,48 @@ function Dataframe:as_categorical(column_name)
 	end
 	self:_infer_schema()
 end
+}
 
---
--- add_cat_key('column_name', 'key') ; adds a key to the keyset of a categorical column
---
--- ARGS: -column_name (required) [string] : the column name
---       -key         (required) [string|number] : the new key
---
--- RETURNS: new index value for key
-function Dataframe:add_cat_key(column_name, key)
+Dataframe.add_cat_key = argcheck{
+	doc =  [[
+<a name="Dataframe.add_cat_key">
+### Dataframe.add_cat_key(@ARGP)
+
+@ARGT
+
+Adds a key to the keyset of a categorical column. Mostly intended for internal use.
+
+_Return value_: index value for key (integer)
+	]],
+	{name="self", type="Dataframe"},
+	{name="column_name", type="string", doc="The column name"},
+	{name="key", type="number|string", doc="The new key to insert"},
+	call = function(self, column_name, key)
 	assert(self:has_column(column_name), "Could not find column: " .. tostring(column_name))
 	assert(self:is_categorical(column_name), "The column isn't categorical: " .. tostring(column_name))
 	assert(not isnan(key), "You can't add a nan key to "  .. tostring(column_name))
-	assert(type(key) == "number" or
-	       type(key) == "string",
-				 "Keys can only be strings or numbers, you have provided: " .. tostring(key) .. " of type: " .. type(key))
 	keys = self:get_cat_keys(column_name)
 	key_index = table.exact_length(keys) + 1
 	keys[key] = key_index
 	self.categorical[column_name] = keys
 	return key_index
-end
+end}
 
---
--- as_string('column_name') : converts a column to string, reverts the as_categorical
---
--- ARGS: - column_name 		(required) 	[string] 	: column to set to string
---
--- RETURNS: nothing
-function Dataframe:as_string(column_name)
+Dataframe.as_string = argcheck{
+	doc =  [[
+<a name="Dataframe.as_string">
+### Dataframe.as_string(@ARGP)
+
+@ARGT
+
+Converts a categorical column to a string column. This can be used to revert
+the Dataframe.as_categorical or as a way to convert numericals into strings.
+
+_Return value_: void
+]],
+	{name="self", type="Dataframe"},
+	{name="column_name", type="string", doc="The column name"},
+	call= function(self, column_name)
 	assert(self:has_column(column_name), "Could not find column: " .. column_name)
 	if (self:is_categorical(column_name)) then
 		self.dataset[column_name] = self:get_column{column_name = column_name,
@@ -77,29 +101,31 @@ function Dataframe:as_string(column_name)
 	end
 	self:_refresh_metadata()
 	self:_infer_schema()
-end
+end}
 
---
--- clean_categorical('column_name') : removes any categories no longer present from the keys
---
--- ARGS: see dok.unpack
---
--- RETURNS: void
-function Dataframe:clean_categorical(...)
-	local args = dok.unpack(
-		{...},
-		{"Dataframe.clean_categorical"},
-		{"Removes categorical values no longer present in the column"},
-		{arg='column_name', type='string', help='the name of the column', req=true},
-		{arg='reset_keys', type='boolean', help='if all the keys should be reinitialized', default=false})
-	assert(self:has_column(args.column_name), "Couldn't find column: " .. tostring(args.column_name))
-	assert(self:is_categorical(args.column_name), tostring(args.column_name) .. " isn't categorical")
-	if (args.reset_keys) then
-		self:as_string(args.column_name)
-		self:as_categorical(args.column_name)
+Dataframe.clean_categorical = argcheck{
+	doc =  [[
+<a name="Dataframe.clean_categorical">
+### Dataframe.clean_categorical(@ARGP)
+
+@ARGT
+
+Removes any categories no longer present from the keys
+
+_Return value_: void
+]],
+	{name="self", type="Dataframe"},
+	{name='column_name', type='string', doc='the name of the column'},
+	{name='reset_keys', type='boolean', doc='if all the keys should be reinitialized', default=false},
+	call=function(self, column_name, reset_keys)
+	assert(self:has_column(column_name), "Couldn't find column: " .. tostring(column_name))
+	assert(self:is_categorical(column_name), tostring(column_name) .. " isn't categorical")
+	if (reset_keys) then
+		self:as_string(column_name)
+		self:as_categorical(column_name)
 	else
-		keys = self:get_cat_keys(args.column_name)
-		vals = self:get_column(args.column_name)
+		keys = self:get_cat_keys(column_name)
+		vals = self:get_column(column_name)
 		found_keys = {}
 		for _,v in pairs(vals) do
 			if (keys[v] ~= nil and not isnan(v)) then
@@ -111,87 +137,94 @@ function Dataframe:clean_categorical(...)
 				keys[v] = nil
 			end
 		end
-		self.categorical[args.column_name] = keys
+		self.categorical[column_name] = keys
 	end
-end
+end}
 
---
--- is_categorical('column_name') : check if a column is categorical
---
--- ARGS: - column_name 		(required) 	[string] 	: column to check
---
--- RETURNS: boolean
-function Dataframe:is_categorical(column_name)
+Dataframe.is_categorical = argcheck{
+	doc =  [[
+<a name="Dataframe.is_categorical">
+### Dataframe.is_categorical(@ARGP)
+
+@ARGT
+
+Check if a column is categorical
+
+_Return value_: boolean
+]],
+	{name="self", type="Dataframe"},
+	{name='column_name', type='string', doc='the name of the column'},
+	call=function(self, column_name)
 	assert(self:has_column(column_name), "This column doesn't exist")
 	return self.categorical[column_name] ~= nil
-end
+end}
 
---
--- get_cat_keys('column_name') : get keys for a column
---
--- ARGS: - column_name 		(required) 	[string] 	: column to check
---
--- RETURNS: table
-function Dataframe:get_cat_keys(column_name)
+Dataframe.get_cat_keys = argcheck{
+	doc =  [[
+<a name="Dataframe.get_cat_keys">
+### Dataframe.get_cat_keys(@ARGP)
+
+@ARGT
+
+Get keys from a categorical column.
+
+_Return value_: table with `["key"] = number` structure
+]],
+	{name="self", type="Dataframe"},
+	{name='column_name', type='string', doc='the name of the column'},
+	call=function(self, column_name)
 	assert(self:has_column(column_name), "Could not find column: " .. tostring(column_name))
 	assert(self:is_categorical(column_name), "The " .. tostring(column_name) .. " isn't a categorical column")
   return self.categorical[column_name]
-end
+end}
 
---
--- to_categorical(...) : Converts values to categorical according to a column's keys
---
--- ARGS: - data   (required) [number|table|tensor] : The numerical data to convert
---       - column_name (required) [string]         : The column name which keys to use
---
--- RETURNS: string if single value entered or table if multiple values
-function Dataframe:to_categorical(...)
-	local args = dok.unpack(
-		{...},
-		'Dataframe.to_categorical',
-		'Converts values to categorical according to a column\'s keys',
-		{arg='data', type='number|string|table|tensor', help='The data to be converted', req=true},
-		{arg='column_name', type='string', help='The name of the column', req=true})
-	assert(self:has_column(args.column_name), "Invalid column name: " .. args.column_name)
-	assert(self:is_categorical(args.column_name), "Column isn't categorical")
+Dataframe.to_categorical = argcheck{
+	doc =  [[
+<a name="Dataframe.to_categorical">
+### Dataframe.to_categorical(@ARGP)
+
+@ARGT
+
+Converts values to categorical according to a column's keys
+
+_Return value_: string if single value entered or table if multiple values
+]],
+	{name="self", type="Dataframe"},
+	{name='data', type='number|table', doc='The integers to be converted'},
+	{name='column_name', type='string', doc='The name of the column  which keys to use'},
+	call=function(self, data, column_name)
+	assert(self:has_column(column_name), "Invalid column name: " .. column_name)
+	assert(self:is_categorical(column_name), "Column isn't categorical")
 	local single_value = false
-	if (torch.isTensor(args.data)) then
-		assert(#args.data:size() == 1,
-		       "The function currently only supports single dimensional tensors")
-		local tmp = {}
-		for i = 1,args.data:size()[1] do
-			table.insert(tmp, args.data[i])
-		end
-		args.data = tmp
-	elseif(type(args.data) ~= 'table') then
-		if (not isnan(args.data)) then
-			val = tonumber(args.data)
-			assert(type(val) == 'number', "The data " .. args.data .. " is not a valid number")
-			args.data = val
-			assert(math.floor(args.data) == args.data, "The data is not a valid integer")
+	if(type(data) ~= 'table') then
+		if (not isnan(data)) then
+			val = tonumber(data)
+			assert(type(val) == 'number', "The data " .. data .. " is not a valid number")
+			data = val
+			assert(math.floor(data) == data, "The data is not a valid integer")
 		end
 		single_value = true
-		args.data = {args.data}
+		data = {data}
 	else
-		for k,v in pairs(args.data) do
-			if (not isnan(args.data[k])) then
-				val = tonumber(args.data[k])
+		for k,v in pairs(data) do
+			if (not isnan(data[k])) then
+				val = tonumber(data[k])
 				assert(type(val) == 'number',
 				       "The data ".. tostring(val) .." in position " .. k .. " is not a valid number")
-				args.data[k] = val
-				assert(math.floor(args.data[k]) == args.data[k],
-				       "The data " .. args.data[k] .. " in position " .. k .. " is not a valid integer")
+				data[k] = val
+				assert(math.floor(data[k]) == data[k],
+				       "The data " .. data[k] .. " in position " .. k .. " is not a valid integer")
 			end
 		end
 	end
 
 	ret = {}
-	for _,v in pairs(args.data) do
+	for _,v in pairs(data) do
 		local val = nil
 		if (isnan(v)) then
 			val = 0/0
 		else
-			for k,index in pairs(self.categorical[args.column_name]) do
+			for k,index in pairs(self.categorical[column_name]) do
 				if (index == v) then
 					val = k
 					break
@@ -207,41 +240,52 @@ function Dataframe:to_categorical(...)
 	else
 		return ret
 	end
-end
+end}
 
---
--- from_categorical(...) : Converts categorical to numerical according to a column's keys
---
--- ARGS: - data   (required) [number|table|tensor] : The numerical data to convert
---       - column_name (required) [string]         : The column name which keys to use
---       - as_tensor (optional) [boolean]          : If the return value should be a tensor
---
--- RETURNS: table or tensor
-function Dataframe:from_categorical(...)
-	local args = dok.unpack(
-		{...},
-		'Dataframe.from_categorical',
-		'Converts categorical to numerical according to a column\'s keys',
-		{arg='data', type='number|string|table', help='The data to be converted', req=true},
-		{arg='column_name', type='string', help='The name of the column', req=true},
-	  {arg='as_tensor', type='boolean', help='If the returned value should be a tensor'})
-	assert(self:has_column(args.column_name), "Can't find the column: " .. args.column_name)
-	assert(self:is_categorical(args.column_name), "Column isn't categorical")
-	if(type(args.data) ~= 'table') then
-		args.data = {args.data}
+Dataframe.to_categorical = argcheck{
+	overload=Dataframe.to_categorical,
+	{name="self", type="Dataframe"},
+	{name='data', type='torch.*Tensor', doc='The integers to be converted'},
+	{name='column_name', type='string', doc='The name of the column  which keys to use'},
+	call=function(self, data, column_name)
+	assert(#data:size() == 1,
+	       "The function currently only supports single dimensional tensors")
+	return self:to_categorical(torch.totable(data), column_name)
+end}
+
+Dataframe.from_categorical = argcheck{
+	doc =  [[
+<a name="Dataframe.from_categorical">
+### Dataframe.from_categorical(@ARGP)
+
+@ARGT
+
+Converts categorical to numerical according to a column's keys
+
+_Return value_: table or tensor
+]],
+	{name="self", type="Dataframe"},
+	{name='data', type='number|string|table', doc='The data to be converted'},
+	{name='column_name', type='string', doc='The name of the column'},
+	{name='as_tensor', type='boolean', doc='If the returned value should be a tensor', default=false},
+	call=function(self, data, column_name, as_tensor)
+	assert(self:has_column(column_name), "Can't find the column: " .. column_name)
+	assert(self:is_categorical(column_name), "Column isn't categorical")
+	if(type(data) ~= 'table') then
+		data = {data}
 	end
 
 	ret = {}
-	for _,v in pairs(args.data) do
-		local val = self.categorical[args.column_name][v]
+	for _,v in pairs(data) do
+		local val = self.categorical[column_name][v]
 		if (val == nil) then
 			val = 0/0
 		end
 		table.insert(ret, val)
 	end
-	if (args.as_tensor) then
+	if (as_tensor) then
 		return torch.Tensor(ret)
 	else
 		return ret
 	end
-end
+end}
