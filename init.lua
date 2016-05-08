@@ -27,6 +27,10 @@ end
 local utils_file = string.gsub(dataframe_path,"?", "utils")
 assert(loadfile(utils_file))()
 
+-- Custom argument checks
+local argcheck_file = string.gsub(dataframe_path,"?", "argcheck")
+assert(loadfile(argcheck_file))()
+
 local main_file = string.gsub(dataframe_path,"?", "main")
 local Dataframe = assert(loadfile(main_file))()
 
