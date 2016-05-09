@@ -2,43 +2,43 @@ require 'dok'
 local params = {...}
 local Dataframe = params[1]
 
---
--- load_csv{path='path/to/file'} : load csv file
---
--- ARGS: - path 			(required) 					[string]	: Path to the CSV
---		 - header 			(optional, default=true) 	[boolean]	: if has header on first line
---		 - infer_schema 	(optional, default=true)	[boolean] 	:
---		 - separator 		(optional, default=',')		[string] 	: if has header on first line
---		 - skip			 	(optional, default=0) 		[number] 	:
---
--- RETURNS: nothing
---
-function Dataframe:load_csv(...)
-	local args = dok.unpack(
-		{...},
-		'Dataframe.load_csv',
-		'Loads a CSV file into Dataframe using csvigo as backend',
-		{arg='path', type='string', help='path to file', req=true},
-		{arg='header', type='boolean', help='if has header on first line', default=true},
-		{arg='infer_schema', type='boolean', help='automatically detect columns\' type', default=true},
-		{arg='separator', type='string', help='separator (one character)', default=','},
-		{arg='skip', type='number', help='skip this many lines at start of file', default=0},
-		{arg='verbose', type='boolean', help='verbose load', default=false}
-	)
+local argcheck = require "argcheck"
+
+Dataframe.load_csv = argcheck{
+	doc =  [[
+<a name="Dataframe.load_csv">
+### Dataframe.load_csv(@ARGP)
+
+@ARGT
+
+Loads a CSV file into Dataframe using csvigo as backend
+
+_Return value_: void
+	]],
+	{name="self", type="Dataframe"},
+	{name="path", type="string", doc="path to file"},
+	{name="header", type="boolean", doc="if has header on first line", default=true},
+	{name="infer_schema", type="boolean", help="automatically detect column's type", default=true},
+	{name="separator", type="string", help="separator (one character)", default=","},
+	{name="skip", type="number", help="skip this many lines at start of file", default=0},
+	{name="verbose", type="boolean", help="verbose load", default=false},
+	call=function(self, path, header, infer_schema, separator, skip, verbose)
 	-- Remove previous data
 	self:_clean()
 
-	self.column_order,self.dataset = csvigo.load{path = args.path,
-												header = args.header,
-												separator = args.separator,
-												skip = args.skip,
-												verbose = args.verbose,
-												column_order = true}
+	self.column_order,self.dataset =
+		csvigo.load{path = path,
+		            header = header,
+		            separator = separator,
+		            skip = skip,
+		            verbose = verbose,
+		            column_order = true}
+
 	self:_clean_columns()
 	self.column_order = trim_table_strings(self.column_order)
 	self:_refresh_metadata()
 
-	if args.infer_schema then
+	if infer_schema then
 		self:_infer_schema()
 	else
 		-- Default value for self.schema
@@ -49,35 +49,47 @@ function Dataframe:load_csv(...)
 
 	-- Change all missing values to nan
 	self:_fill_missing()
-end
+end}
 
---
--- load_table{data=your_table} : Imports a table data directly into Dataframe
---
--- ARGS: - data 			(required) 					[string]	: table to import
---		 - infer_schema 	(optional, default=false)	[boolean] 	: automatically detect columns type
---		 - column_order 	(optional)					[table] 	: the column order
---
--- RETURNS: nothing
---
-function Dataframe:load_table(args)
-	-- local args = dok.unpack(
-	-- 	{...},
-	-- 	'Dataframe.load_table',
-	-- 	'Imports a table data directly into Dataframe',
-	-- 	-- See https://github.com/torch/dok/issues/13
-	-- 	{arg='data', type='table', help='table to import', req=true},
-	-- 	{arg='infer_schema', type='boolean', help='automatically detect columns\' type', default=true},
-	-- 	{arg='column_order', type='table', help='The column order', req=false}
-	-- )
-	-- infer_schema default value
-	if not args.infer_schema then args.infer_schema = true end
+Dataframe.load_table = argcheck{
+	doc =  [[
+<a name="Dataframe.load_table">
+### Dataframe.load_table(@ARGP)
 
+@ARGT
+
+Imports a table data directly into Dataframe. The table should all be of equal length
+or just single values. If a table contains one column with 10 rows and then has
+another column with a single element that element is duplicated 10 times, i.e.
+filling the entire column with that single value.
+
+_Note_: due to inability to separate table input from ordered arguments
+this function _forces names_.
+
+Example:
+```lua
+a = Dataframe()
+a:load_table{data={
+	['first_column']={3,4,5},
+	['second_column']={10,11,12}
+}}
+```
+
+_Return value_: void
+	]],
+	noordered=true, -- Required due to the table input for data
+	{name="self", type="Dataframe"},
+	{name="data", type="table", doc="Table (dictionary) to import. Max depth 2."},
+	{name="infer_schema", type="boolean", default=true,
+	 doc="automatically detect columns' type"},
+	{name="column_order", type="table", default=false,
+	 doc="The order of the column (has to be array and _not_ a dictionary)"},
+	call=function(self, data, infer_schema, column_order)
 	self:_clean()
 
 	-- Check that all columns with a length > 1 has the same number of rows (length)
 	local length = -1
-	for k,v in pairs(args.data) do
+	for k,v in pairs(data) do
 		if (type(v) == 'table') then
 			if (length > 1) then
 				assert(length == table.maxn(v),
@@ -92,7 +104,7 @@ function Dataframe:load_table(args)
 	assert(length > 0, "Could not find any valid elements")
 
 	count = 0
-	for k,v in pairs(args.data) do
+	for k,v in pairs(data) do
 		count = count + 1
 		self.column_order[count] = trim(k)
 
@@ -105,39 +117,40 @@ function Dataframe:load_table(args)
 			end
 			self.dataset[k] = tmp
 		else
-			self.dataset[k] = clone(v)
+			self.dataset[k] = clone(v) --TODO: Should we check if all elements are single values?
 		end
 	end
 
-	if args.column_order then args.column_order = trim_table_strings(args.column_order) end
+	if column_order then column_order = trim_table_strings(column_order) end
 	self:_clean_columns()
 
-	if (args.column_order and not tables_equals(args.column_order,self.column_order)) then
+	if (column_order and not tables_equals(column_order,self.column_order)) then
 		no_cols = table.exact_length(self.dataset)
-		assert(#args.column_order == no_cols,
-					"The length of the column order " .. #args.column_order ..
-					" should be the same as the data " .. no_cols)
-		for i = 1,no_cols do
-			assert(args.column_order[i] ~= nil, "The column order should be continous." ..
-			       " Could not find column no. " .. i)
-			
-			found = false
+		assert(#column_order == no_cols,
+		       "The length of the column order " .. #column_order ..
+		       " should be the same as the data " .. no_cols)
 
+		for i = 1,no_cols do
+			assert(column_order[i] ~= nil, "The column order should be continous." ..
+			       " Could not find column no. " .. i)
+
+			found = false
 			for k,v in pairs(self.dataset) do
-				if (k == args.column_order[i]) then
+				if (k == column_order[i]) then
 					found = true
 					break
 				end
 			end
-			assert(found, "Could not find the order column name " .. args.column_order[i] ..
+			assert(found, "Could not find the order column name " .. column_order[i] ..
 			              " in the data columns")
 		end
-		self.column_order = args.column_order
+
+		self.column_order = column_order
 	end
 
 	self:_refresh_metadata()
-	
-	if args.infer_schema then
+
+	if infer_schema then
 		self:_infer_schema()
 	else
 		-- Default value for self.schema
@@ -148,12 +161,23 @@ function Dataframe:load_table(args)
 
 	-- Change all missing values to nan
 	self:_fill_missing()
-end
+end}
 
--- Internal function to clean columns names
-function Dataframe:_clean_columns()
+Dataframe._clean_columns = argcheck{
+	doc =  [[
+<a name="Dataframe._clean_columns">
+### Dataframe._clean_columns(@ARGP)
+
+@ARGT
+
+Internal function to clean columns names
+
+_Return value_: void
+	]],
+	{name="self", type="Dataframe"},
+	call = function(self)
+
 	temp_dataset = {}
-
 	for k,v in pairs(self.dataset) do
 		trimmed_column_name = trim(k)
 		assert(temp_dataset[trimmed_column_name] == nil,
@@ -163,11 +187,25 @@ function Dataframe:_clean_columns()
 	end
 
 	self.dataset = temp_dataset
-end
+end}
 
--- Count missing values 
-function Dataframe:_count_missing()
-	counter =0
+-- Count missing values
+Dataframe._count_missing = argcheck{
+	doc =  [[
+<a name="Dataframe._count_missing">
+### Dataframe._count_missing(@ARGP)
+
+@ARGT
+
+Internal function for counting all missing values. _Note_: internally Dataframe
+uses nan (0/0) and this function only identifies missing values within an array.
+This is used within the test cases.
+
+_Return value_: number of missing values (integer)
+	]],
+	{name="self", type="Dataframe"},
+	call = function(self)
+	counter = 0
 	for index,col in pairs(self.columns) do
 		for i = 1,self.n_rows do
 			if (self.dataset[col][i] == nil) then
@@ -177,19 +215,32 @@ function Dataframe:_count_missing()
 	end
 
 	return counter
-end
+end}
 
 -- Fill missing values with NaN value
-function Dataframe:_fill_missing()
+Dataframe._fill_missing = argcheck{
+	doc =  [[
+<a name="Dataframe._fill_missing">
+### Dataframe._fill_missing(@ARGP)
+
+@ARGT
+
+Internal function for changing missing values to NaN values.
+
+_Return value_: void
+	]],
+	{name="self", type="Dataframe"},
+	call = function(self)
 	for index,col in pairs(self.columns) do
 		for i = 1,self.n_rows do
-			-- In CSV mode - only needed by number columns because the nil value is due to tonumber() from _infer_schema()
+			-- In CSV mode - only needed by number columns because the nil value
+			--  is due to tonumber() from _infer_schema()
 			if (self.dataset[col][i] == nil and self.schema[col] == 'number') then
 				self.dataset[col][i] = 0/0
-			-- In table mode only
+			-- In table mode only - TODO: Check if this is correct, maybe better to use 0/0 here as well
 			elseif (self.dataset[col][i] == nil and self.schema[col] == 'string') then
 				self.dataset[coll][i] = 'n/a'
 			end
 		end
 	end
-end
+end}
