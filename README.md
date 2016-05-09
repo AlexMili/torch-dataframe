@@ -11,6 +11,7 @@ inspired from [R's](https://cran.r-project.org/) and [pandas'](http://pandas.pyd
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Usage](#usage)
+	- [Named arguments](#named-arguments)
 	- [Load data](#load-data)
 	- [Data inspection](#data-inspection)
 	- [Manipulate](#manipulate)
@@ -44,6 +45,17 @@ luarocks install torch-dataframe
 ```
 
 ## Usage
+
+### Named arguments
+
+The Dataframe relies on [argcheck](https://github.com/torch/argcheck) for parsing
+arguments. This means that you can used named parameters using the `function{arg_name=value}`
+syntax. Named arguments are supported by all functions except the constructor and
+is in certain functions mandatory in order to avoid ambiguity.
+
+The argcheck package also works as the API documentation. It checks arguments
+and if you happen to provide the function with invalid arguments it will automatically
+output the function documentation.
 
 ### Load data
 
