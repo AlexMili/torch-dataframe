@@ -64,6 +64,13 @@ describe("Loading data process", function()
 	describe("for lua tables",function()
 		local df = Dataframe()
 
+		it("named arguements are forced",function()
+			assert.has.error(function() df:load_table({
+				['first_column']={3,4,5},
+				['second_column']={10,11,12}
+			}) end)
+		end)
+
 		it("Loads a simple table",function()
 			df:load_table{data={
 				['first_column']={3,4,5},
