@@ -45,7 +45,7 @@ describe("Exporting data process", function()
 			tnsr = a:to_tensor()
 			tnsr2 = torch.load('./data/tensor_test.th7')
 
-			assert.is_true(torch.equal(tnsr,tnsr2))
+			assert.is_true(torch.all(tnsr:eq(tnsr2)))
 
 			assert.is.equal(tnsr:size(1),a:shape()["rows"])
 			assert.is.equal(tnsr:size(2),table.exact_length(a:get_numerical_colnames()))
