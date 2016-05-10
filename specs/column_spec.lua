@@ -110,7 +110,7 @@ describe("Column operations", function()
 			a_tnsr = torch.Tensor({1,2,3,4})
 			a_col = a:get_column{column_name="Col A",as_tensor=true}
 
-			assert.is_true(torch.equal(a_tnsr,a_col))
+			assert.is_true(torch.all(a_tnsr:eq(a_col)))
 		end)
 
 		it("Fails returning a tensor if the column is not numerical",function()
