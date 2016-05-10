@@ -248,7 +248,7 @@ function df_tests.to_tensor()
   tester:eq(tnsr:size(1), a:shape()["rows"])
   tester:eq(tnsr:size(2), a:shape()["cols"]-1)-- Only numerical columns
   sum = 0
-  col_no = a:get_column_no('Col A')
+  col_no = a:get_column_order('Col A')
   for i=1,tnsr:size(1) do
     sum = math.abs(tnsr[i][col_no] - a:get_column('Col A')[i])
   end
