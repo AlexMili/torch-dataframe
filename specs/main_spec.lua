@@ -110,99 +110,11 @@ describe("Dataframe class", function()
 		assert.are.same(a:shape(), {rows = 3, cols = 1})
 	end)
 
-	it("Loads a table of two columns", function()
-		local a = Dataframe()
-		local first = {1,2,3}
-		local second = {"a","b","c"}
-
-		a:load_table{data={['firstColumn']=first,
-						   ['secondColumn']=second}}
-
-		assert.are.same(a:get_column('firstColumn'), first)
-		assert.are.same(a:get_column('secondColumn'), second)
-	end)
-
-	it("Cleans column names", function()
-		local a = Dataframe()
-		local first = {1,2,3}
-		local second = {"a","b","c"}
-
-		a:load_table{data={['firstColumn ']=first,
-						   [' secondColumn']=second}}
-
-		assert.are.same(a:get_column('firstColumn'), first)
-		assert.are.same(a:get_column('secondColumn'), second)
-	end)
-
-	it("Removes an entire column", function()
-		local a = Dataframe("./data/simple_short.csv")
-
-		a:drop('Col A')
-		assert.is_true(not a:has_column('Col A'))
-		assert.is_true(a:has_column('Col B'))
-		assert.is_true(a:has_column('Col C'))
-		assert.are.same(a:shape(), {rows=4, cols=2})-- "The simple_short.csv is 4x3 after drop should be 4x2"
-		-- Should cause an error
-		--tester:assertError(a:drop('Col A'))
-
-		-- Drop second column
-		a:drop('Col B')
-		assert.is_true(not a:has_column('Col A'))
-		assert.is_true(not a:has_column('Col B'))
-		assert.is_true(a:has_column('Col C'))
-		assert.are.same(a:shape(), {rows=4, cols=1})-- "The simple_short.csv is 4x3 after drop should be 4x1"
-
-		-- All are dropped
-		a:drop('Col C')
-		assert.are.same(a.dataset, {})-- "All columns are dropped"
-	end)
-
-	it("Adds a column",function()
-		local a = Dataframe("./data/simple_short.csv")
-
-		d_col = {0,1,2,3}
-		a:add_column('Col D', d_col)
-		assert.is_not.equal(a:get_column('Col A'), nil)-- "Col A should be present"
-		assert.is_not.equal(a:get_column('Col B'), nil)-- "Col B should be present"
-		assert.is_not.equal(a:get_column('Col C'), nil)-- "Col C should be present"
-		assert.are.same(a:get_column('Col D'), d_col)-- "Col D isn't the expected value"
-		assert.are.same(a:shape(), {rows=4, cols=4})-- "The simple_short.csv is 4x3 after add should be 4x4"
-		assert.has.error(function() a:add_column('Col D') end)
-		a:add_column('Col E')
-		col = a:get_column('Col E')
-
-		for _,v in pairs(col) do
-			assert.is_true(isnan(v))
-		end
-		
-		a:add_column('Col F', 1)
-		assert.are.same(a:get_column('Col F'), {1,1,1,1})
-	end)
-
-	it("Returns a column",function()
-		local a = Dataframe("./data/simple_short.csv")
-
-		assert.has.error(function() a:get_column('Col D') end)
-		assert.is_not.equal(a:get_column('Col C'), nil)
-	end)
-
 	it("Inserts new data",function()
 		local a = Dataframe("./data/simple_short.csv")
 
 		a:insert({['Col A']={15},['Col B']={25},['Col C']={35}})
 		assert.are.same(a:shape(), {rows=5, cols=3})-- "The simple_short.csv is 4x3 after insert should be 5x3"
-	end)
-
-	it("Resets a column",function()
-		local a = Dataframe("./data/simple_short.csv")
-
-		a:reset_column('Col C', 555)
-		assert.are.same(a:shape(), {rows=4, cols=3})-- "The simple_short.csv is 4x3"
-		assert.are.same(a:get_column('Col C'), {555, 555, 555, 555})
-
-		a:reset_column({'Col A', 'Col B'}, 555)
-		assert.are.same(a:get_column('Col A'), {555, 555, 555, 555})
-		assert.are.same(a:get_column('Col B'), {555, 555, 555, 555})
 	end)
 
 	it("Removes a row given an index",function()
@@ -218,14 +130,6 @@ describe("Dataframe class", function()
 		assert.are.same(a:shape(), {rows=0, cols=3})
 	end)
 
-	it("Renames a column", function()
-		local a = Dataframe("./data/simple_short.csv")
-
-		a:rename_column("Col A", "Col D")
-		assert.is_true(a:has_column("Col D"))
-		assert.is_true(not a:has_column("Col A"))
-	end)
-
 	it("Counts and fill missing values of a specific column", function()
 		local a = Dataframe("./data/advanced_short.csv")
 
@@ -237,7 +141,7 @@ describe("Dataframe class", function()
 		assert.are.same(a:get_column("Col C"), {8, 1, 9})
 	end)
 
-	it("Fills all Dataframe's missi g values", function()
+	it("Fills all Dataframe's missing values", function()
 		local a = Dataframe("./data/advanced_short.csv")
 
 		a.dataset['Col A'][3] = nil
@@ -250,42 +154,6 @@ describe("Dataframe class", function()
 		assert.are.same(a:get_column('Col A'), {1,2,-1})
 	end)
 
-	it("Returns all numerical columns names", function()
-		local a = Dataframe("./data/advanced_short.csv")
-
-		assert.are.same(a:get_numerical_colnames(), {'Col A', 'Col C'})
-	end)
-
-	it("Exports the Dataframe to a tensor",function()
-		local a = Dataframe("./data/advanced_short.csv")
-
-		tnsr = a:to_tensor()
-		assert.is.equal(tnsr:size(1),a:shape()["rows"])
-		assert.is.equal(tnsr:size(2),a:shape()["cols"]-1)
-		sum = 0
-		col_no = a:get_column_no('Col A')
-
-		for i=1,tnsr:size(1) do
-			sum = math.abs(tnsr[i][col_no] - a:get_column('Col A')[i])
-		end
-		
-		assert.is_true(sum < 10^-5)
-	end)
-
-	it("Exports the Dataframe to a CSV file",function()
-		local a = Dataframe("./data/simple_short.csv")
-
-		a:to_csv{path = "./data/copy_of_short.csv", verbose = false}
-		local b = Dataframe()
-		b:load_csv{path = "./data/copy_of_short.csv", verbose = false}
-
-		for k,v in pairs(a.dataset) do
-			assert.are.same(a:get_column(k),
-			b:get_column(k))
-		end
-
-		os.remove("./data/copy_of_short.csv")
-	end)
 
 	it("Returns first elements of the dataframe",function()
 		local a = Dataframe("./data/simple_short.csv")
