@@ -13,11 +13,13 @@ paths.dofile('init.lua')
 lfs.chdir("specs")
 
 describe("Loading batch process", function()
-		
-	it("Should force a call to init_batch",function()
-		local a = Dataframe("./data/realistic_29_row_data.csv")
-		assert.has.error(function() a:load_batch() end)
+	local a = Dataframe("./data/realistic_29_row_data.csv")
 
+	it("Raises an error if init_batch hasn't be called",function()
+		assert.has.error(function() a:load_batch() end)
+	end)
+		
+	it("Initializes",function()
 		torch.manualSeed(0)
 		a:init_batch()
 		order = 0
@@ -40,10 +42,12 @@ describe("Loading batch process", function()
 
 	describe("In action",function()
 		local a = Dataframe("./data/realistic_29_row_data.csv")
+		a:init_batch()
 
-		it("Should force a call to init_batch",function()
-			assert.has.error(function() a:load_batch() end)
+		it("Fails if the number of lines isn't correct",function()
+			--assert.has.error(a:load_batch(0))
 		end)
+
 
 		it("Loads batches",function()
 			a:init_batch()

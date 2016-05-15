@@ -55,9 +55,9 @@ function Dataframe:load_batch(...)
 	if (args.label_columns == nil) then
 		args.label_columns = {}
 
-		for k,_ in pairs(self.dataset) do
-			if (self:is_numerical(k)) then
-				table.insert(args.label_columns, k)
+		for i=1,#self.columns do
+			if (self:is_numerical(self.columns[i])) then
+				table.insert(args.label_columns, self.columns[i])
 			end
 		end
 	else
@@ -66,18 +66,20 @@ function Dataframe:load_batch(...)
 			args.label_columns = {args.label_columns}
 		end
 
-		for _,k in pairs(args.label_columns) do
-			assert(args.dataset[k] ~= nil, "Could not find column " .. tostring(k))
-			assert(self:is_numerical(k), "Column " .. tostring(k) .. " is not numerical")
+		for i=1,#args.label_columns do
+			assert(args.dataset[args.label_columns[i]] ~= nil, "Could not find column " .. tostring(k))
+			assert(self:is_numerical(args.label_columns[i]), "Column " .. tostring(args.label_columns[i]) .. " is not numerical")
 		end
 	end
 
 	local rows = {}
 	local start_position = (args.offset + 1) % self:batch_size(args.type)
 	local stop_position = (args.no_lines + args.offset) % self:batch_size(args.type)
+	
 	if (stop_position == 0) then
 		stop_position = self:batch_size(args.type)
 	end
+
 	assert(stop_position ~= start_position and
 				 args.no_lines ~= 1,
 				 [[
@@ -85,22 +87,29 @@ function Dataframe:load_batch(...)
 				 likely due to an unintentional loop where the batch is the size of the
 				 self:batch_size(args.type) + 1
 				 ]])
+
 	-- If we loop and restart the loading then we need to load the last examples
 	--  and then restart from 1
 	if (start_position > stop_position) then
+
 		for i=start_position,self:batch_size(args.type) do
 			table.insert(rows, self.batch.datasets[args.type][i])
 		end
+		
 		start_position = 1
 	end
+
 	for i=start_position,stop_position do
 		table.insert(rows, self.batch.datasets[args.type][i])
 	end
+	
 	local dataset_2_load = self:_create_subset(rows)
+	
 	tensor_label, tensor_col_names = dataset_2_load:to_tensor{columns = args.label_columns}
 	single_data = args.load_row_fn(dataset_2_load:get_row(1))
 	single_data = _add_single_first_dim(single_data)
 	tensor_data = single_data
+	
 	if (#rows > 1) then
 		for i = 2,#rows do
 			single_data = args.load_row_fn(dataset_2_load:get_row(i))
