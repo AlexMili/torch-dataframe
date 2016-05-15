@@ -5,8 +5,7 @@ sudo: false
 branches:
   only:
     - master
-    - travis
-    - specs
+    - develop
 env:
   global:
     - LUAROCKS=2.3.0
