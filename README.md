@@ -206,11 +206,15 @@ cd specs/
 
 ## Documentation
 
-The package relies on self-documenting functions via the [argcheck](https://github.com/torch/argcheck)
-package and [GitHub Wiki](https://github.com/AlexMili/torch-dataframe/wiki) for
-more extensive documentation.
+The package relies on self-documenting functions via the [argcheck](https://github.com/torch/argcheck) package and [GitHub Wiki](https://github.com/AlexMili/torch-dataframe/wiki) for more extensive documentation.
+
+To generate the documentation please run :
+```bash
+th doc.lua > Doc/README.md
+```
 
 ## Contributing
 
 Feel free to report a bug, suggest enhancements or submit new cool feature  using [Issues](https://github.com/AlexMili/torch-dataframe/issues) or directly send us a [Pull Request](https://github.com/AlexMili/torch-dataframe/pulls) :).
-Don't forget to test your code before submitting. You can find how we implemented our tests in the [specs directory](https://github.com/AlexMili/torch-dataframe/tree/readme/specs). See "Behavior Driven Development" for more details on this technique.
+Don't forget to test your code and generate the doc before submitting. You can find how we implemented our tests in the [specs directory](https://github.com/AlexMili/torch-dataframe/tree/readme/specs). See "Behavior Driven Development" for more details on this technique.
+
