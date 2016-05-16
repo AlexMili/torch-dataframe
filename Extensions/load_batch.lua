@@ -88,7 +88,7 @@ _Return value_: data, label tensors, table with tensor column names
     table.insert(rows, self.batch.datasets[type][i])
   end
   local dataset_2_load = self:_create_subset(rows)
-  tensor_label, tensor_col_names = dataset_2_load:to_tensor{columns = label_columns}
+  tensor_label, tensor_col_names = dataset_2_load:to_tensor{columns = Df_Array(label_columns)}
   single_data = load_row_fn(dataset_2_load:get_row(1))
   single_data = _add_single_first_dim(single_data)
   tensor_data = single_data

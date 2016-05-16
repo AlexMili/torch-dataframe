@@ -44,33 +44,30 @@ Dataframe.to_tensor = argcheck{
 
 Convert the numeric section or specified columns of the dataset to a tensor
 
-_Return value_: torch.tensor with self.n_rows rows and #columns
+_Return value_: (1) torch.tensor with self.n_rows rows and #columns, (2) exported column names
 	]],
 	{name="self", type="Dataframe"},
-	{name='filename', type='string', doc='filename for tensor.save()', default=false},
-	{name="columns", type='string|table', doc='the columns to export to labels', default=false},
-	call = function(self, filename, columns)
+	call = function(self)
 
-	if (not columns) then
-		numeric_dataset = {}
-		for _,k in pairs(self:get_numerical_colnames()) do
-			numeric_dataset[k] = self:get_column{column_name = k,
-		                                       as_tensor = true}
-		end
-		assert(table.exact_length(numeric_dataset) > 0,
-		       "Didn't find any numerical columns to export to tensor")
-	else
-		if (type(columns) == "string") then
-			columns = {columns}
-		end
-		numeric_dataset = {}
-		for _,k in pairs(columns) do
-			assert(self:has_column(k), "Could not find column: '" .. tostring(k) .. "'"..
-			                           " in " .. table.collapse_to_string(self.columns))
-			assert(self:is_numerical(k), "Column " .. tostring(k) .. " is not numerical")
-			numeric_dataset[k] =  self:get_column{column_name = k,
-			                                      as_tensor = true}
-		end
+	return self:to_tensor(Df_Array(self:get_numerical_colnames()))
+end}
+
+Dataframe.to_tensor = argcheck{
+	overload=Dataframe.to_tensor,
+	{name="self", type="Dataframe"},
+	{name="columns", type='Df_Array', doc='The columns to export to labels'},
+	call = function(self, columns)
+
+	columns = columns.data
+
+	-- Check data integrity
+	numeric_dataset = {}
+	for _,k in pairs(columns) do
+		assert(self:has_column(k), "Could not find column: '" .. tostring(k) .. "'"..
+		                           " in " .. table.collapse_to_string(self.columns))
+		assert(self:is_numerical(k), "Column " .. tostring(k) .. " is not numerical")
+		numeric_dataset[k] =  self:get_column{column_name = k,
+		                                      as_tensor = true}
 	end
 
 	tensor_data = nil
@@ -98,9 +95,23 @@ _Return value_: torch.tensor with self.n_rows rows and #columns
 		end
 	end
 
-	if filename then
-		torch.save(filename, tensor_data)
+	return tensor_data, tensor_col_names
+end}
+
+Dataframe.to_tensor = argcheck{
+	overload=Dataframe.to_tensor,
+	{name="self", type="Dataframe"},
+	{name='filename', type='string', doc='Filename for tensor.save()'},
+	{name="columns", type='Df_Array', doc='The columns to export to labels', default=false},
+	call = function(self, filename, columns)
+
+	if (columns) then
+		tensor_data, tensor_col_names = self:to_tensor{columns = columns}
+	else
+		tensor_data, tensor_col_names = self:to_tensor()
 	end
+
+	torch.save(filename, tensor_data)
 
 	return tensor_data, tensor_col_names
 end}

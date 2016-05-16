@@ -253,6 +253,7 @@ describe("Categorical column", function()
 			["Col B"] = "C",
 			["Col C"] = 10
 		}
+		
 		ret_val:insert(new_data)
 		assert.are.same(ret_val:from_categorical({'A', 'B', 'C'}, 'Col B'),
 		{1, 2, 3})-- "The categorical should add the new value as the last number"
@@ -309,7 +310,7 @@ describe("Categorical column", function()
 		a:shape()["cols"] - 1)-- "Incorrect number of columns, expecting " .. a:shape()["cols"] - 1 .. " but got " .. tnsr:size(2)
 		sum = 0
 		col_no = a:get_column_order('Col A')
-		
+
 		for i=1,tnsr:size(1) do
 			sum = math.abs(tnsr[i][col_no] - a:get_column('Col A')[i])
 		end
