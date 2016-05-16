@@ -102,4 +102,8 @@ table.collapse_to_string = function(tbl)
 	return ret
 end
 
+-- Util for debugging purpos
+table._dump = function(tbl)
+	print(table.collapse_to_string(tbl))
+end
 -- END UTILS
