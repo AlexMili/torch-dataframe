@@ -40,7 +40,7 @@ describe("Exporting data process", function()
 			local a = Dataframe("./data/advanced_short.csv")
 			-- Avoid NaN comparison (which always false)
 			a:fill_all_na(2)
-			a:to_tensor("./data/tensor_test.th7")
+			a:to_tensor{filename="./data/tensor_test.th7"}
 
 			tnsr = a:to_tensor()
 			tnsr2 = torch.load('./data/tensor_test.th7')
