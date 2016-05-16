@@ -63,6 +63,14 @@ The argcheck package also works as the API documentation. It checks arguments
 and if you happen to provide the function with invalid arguments it will automatically
 output the function documentation.
 
+__Important__: Due to limitations in the Lua language the package uses helper classes
+for separating regular table arguments from tables passed into as arguments. The
+three classes are:
+
+- *Df_Array* - contains only values and no keys
+- *Df_Dict* - a dictionary table that has named keys that map to all values
+- *Df_Tbl* - a raw table wrapper that does a shallow argument copy
+
 ### Load data
 
 Initiate the object:
@@ -176,7 +184,7 @@ Finally, you can save your dataset to tensor (only numerical/categorical columns
 
 ```lua
 df:to_tensor{filename = './data/train.th7'} -- saves data
-data = df:to_tensor{columns = {'first_column', 'my string column'}} -- Converts the two columns into tensor
+data = df:to_tensor{columns = Df_Array('first_column', 'my string column')} -- Converts the two columns into tensor
 ```
 
 or to CSV:
@@ -217,4 +225,3 @@ th doc.lua > Doc/README.md
 
 Feel free to report a bug, suggest enhancements or submit new cool feature  using [Issues](https://github.com/AlexMili/torch-dataframe/issues) or directly send us a [Pull Request](https://github.com/AlexMili/torch-dataframe/pulls) :).
 Don't forget to test your code and generate the doc before submitting. You can find how we implemented our tests in the [specs directory](https://github.com/AlexMili/torch-dataframe/tree/readme/specs). See "Behavior Driven Development" for more details on this technique.
-
