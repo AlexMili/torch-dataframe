@@ -1,4 +1,90 @@
-<a name="Dataframe.as_categorical">
+<a name="Dataframe.load_csv">
+### Dataframe.load_csv(self, path[, header][, infer_schema][, separator][, skip][, verbose])
+
+```
+({
+   self         = Dataframe  -- 
+   path         = string     -- path to file
+  [header       = boolean]   -- if has header on first line [default=true]
+  [infer_schema = boolean]   -- automatically detect column's type [default=true]
+  [separator    = string]    -- separator (one character) [default=,]
+  [skip         = number]    -- skip this many lines at start of file [default=0]
+  [verbose      = boolean]   -- verbose load [default=false]
+})
+```
+
+Loads a CSV file into Dataframe using csvigo as backend
+
+_Return value_: void
+	<a name="Dataframe.load_table">
+### Dataframe.load_table(self, data[, infer_schema][, column_order])
+
+```
+{
+   self         = Dataframe  -- 
+   data         = table      -- Table (dictionary) to import. Max depth 2.
+  [infer_schema = boolean]   -- automatically detect columns' type [default=true]
+  [column_order = table]     -- The order of the column (has to be array and _not_ a dictionary) [default=false]
+}
+```
+
+Imports a table data directly into Dataframe. The table should all be of equal length
+or just single values. If a table contains one column with 10 rows and then has
+another column with a single element that element is duplicated 10 times, i.e.
+filling the entire column with that single value.
+
+_Note_: due to inability to separate table input from ordered arguments
+this function _forces names_.
+
+Example:
+```lua
+a = Dataframe()
+a:load_table{data={
+	['first_column']={3,4,5},
+	['second_column']={10,11,12}
+}}
+```
+
+_Return value_: void
+	<a name="Dataframe._clean_columns">
+### Dataframe._clean_columns(self)
+
+```
+({
+   self = Dataframe  -- 
+})
+```
+
+Internal function to clean columns names
+
+_Return value_: void
+	<a name="Dataframe._count_missing">
+### Dataframe._count_missing(self)
+
+```
+({
+   self = Dataframe  -- 
+})
+```
+
+Internal function for counting all missing values. _Note_: internally Dataframe
+uses nan (0/0) and this function only identifies missing values within an array.
+This is used within the test cases.
+
+_Return value_: number of missing values (integer)
+	<a name="Dataframe._fill_missing">
+### Dataframe._fill_missing(self)
+
+```
+({
+   self = Dataframe  -- 
+})
+```
+
+Internal function for changing missing values to NaN values.
+
+_Return value_: void
+	<a name="Dataframe.as_categorical">
 ### Dataframe.as_categorical(self, column_name)
 
 ```
@@ -127,7 +213,7 @@ Loads a batch of data from the table. Note that you have to call init_batch befo
 in order to split the dataset into train/test/validations.
 
 _Return value_: data, label tensors, table with tensor column names
-	<a name="Dataframe.batch_size">
+<a name="Dataframe.batch_size">
 ### Dataframe.batch_size(self, type)
 
 ```
@@ -140,7 +226,7 @@ _Return value_: data, label tensors, table with tensor column names
 Gets the size of the current batch type.
 
 _Return value_: number of rows/lines (integer)
-	<a name="Dataframe.init_batch">
+<a name="Dataframe.init_batch">
 ### Dataframe.init_batch([data_types][, shuffle])
 
 ```
@@ -158,7 +244,7 @@ _Note_: This function must be called prior to load_batch as it needs the
 information for loading correct rows.
 
 _Return value_: void
-	<a name="Dataframe._add_2_batch_datasets">
+<a name="Dataframe._add_2_batch_datasets">
 ### Dataframe._add_2_batch_datasets(self, number[, shuffle][, offset])
 
 ```
@@ -173,93 +259,7 @@ _Return value_: void
 Internal function for adding rows 2 batch datasets
 
 _Return value_: void
-	<a name="Dataframe.load_csv">
-### Dataframe.load_csv(self, path[, header][, infer_schema][, separator][, skip][, verbose])
-
-```
-({
-   self         = Dataframe  -- 
-   path         = string     -- path to file
-  [header       = boolean]   -- if has header on first line [default=true]
-  [infer_schema = boolean]   -- automatically detect column's type [default=true]
-  [separator    = string]    -- separator (one character) [default=,]
-  [skip         = number]    -- skip this many lines at start of file [default=0]
-  [verbose      = boolean]   -- verbose load [default=false]
-})
-```
-
-Loads a CSV file into Dataframe using csvigo as backend
-
-_Return value_: void
-	<a name="Dataframe.load_table">
-### Dataframe.load_table(self, data[, infer_schema][, column_order])
-
-```
-{
-   self         = Dataframe  -- 
-   data         = table      -- Table (dictionary) to import. Max depth 2.
-  [infer_schema = boolean]   -- automatically detect columns' type [default=true]
-  [column_order = table]     -- The order of the column (has to be array and _not_ a dictionary) [default=false]
-}
-```
-
-Imports a table data directly into Dataframe. The table should all be of equal length
-or just single values. If a table contains one column with 10 rows and then has
-another column with a single element that element is duplicated 10 times, i.e.
-filling the entire column with that single value.
-
-_Note_: due to inability to separate table input from ordered arguments
-this function _forces names_.
-
-Example:
-```lua
-a = Dataframe()
-a:load_table{data={
-	['first_column']={3,4,5},
-	['second_column']={10,11,12}
-}}
-```
-
-_Return value_: void
-	<a name="Dataframe._clean_columns">
-### Dataframe._clean_columns(self)
-
-```
-({
-   self = Dataframe  -- 
-})
-```
-
-Internal function to clean columns names
-
-_Return value_: void
-	<a name="Dataframe._count_missing">
-### Dataframe._count_missing(self)
-
-```
-({
-   self = Dataframe  -- 
-})
-```
-
-Internal function for counting all missing values. _Note_: internally Dataframe
-uses nan (0/0) and this function only identifies missing values within an array.
-This is used within the test cases.
-
-_Return value_: number of missing values (integer)
-	<a name="Dataframe._fill_missing">
-### Dataframe._fill_missing(self)
-
-```
-({
-   self = Dataframe  -- 
-})
-```
-
-Internal function for changing missing values to NaN values.
-
-_Return value_: void
-	<a name="Dataframe.to_csv">
+<a name="Dataframe.to_csv">
 ### Dataframe.to_csv(self, path[, separator][, verbose])
 
 ```
@@ -274,18 +274,35 @@ _Return value_: void
 Saves a Dataframe into a CSV using csvigo as backend
 
 _Return value_: void
-	<a name="Dataframe.to_tensor">
-### Dataframe.to_tensor(self[, filename][, columns])
+<a name="Dataframe.to_tensor">
+### Dataframe.to_tensor(self)
 
 ```
 ({
-   self     = Dataframe      -- 
-  [filename = string]        -- filename for tensor.save() [default=false]
-  [columns  = string|table]  -- the columns to export to labels [default=false]
+   self = Dataframe  -- 
 })
 ```
 
 Convert the numeric section or specified columns of the dataset to a tensor
 
-_Return value_: torch.tensor with self.n_rows rows and #columns
-		
+_Return value_: (1) torch.tensor with self.n_rows rows and #columns, (2) exported column names
+
+You can export selected columns using the columns argument:
+
+```
+({
+   self    = Dataframe  -- 
+   columns = Df_Array   -- The columns to export to labels
+})
+```
+
+If a filename is provided the tensor will be saved (`torch.save`) to that file:
+
+```
+({
+   self     = Dataframe  -- 
+   filename = string     -- Filename for tensor.save()
+  [columns  = Df_Array]  -- The columns to export to labels [default=false]
+})
+```
+	

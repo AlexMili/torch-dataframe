@@ -14,7 +14,7 @@ Dataframe.to_csv = argcheck{
 Saves a Dataframe into a CSV using csvigo as backend
 
 _Return value_: void
-	]],
+]],
 	{name="self", type="Dataframe"},
 	{name='path', type='string', doc='path to file'},
 	{name="separator", type='string', doc='separator (one character)', default=','},
@@ -45,14 +45,19 @@ Dataframe.to_tensor = argcheck{
 Convert the numeric section or specified columns of the dataset to a tensor
 
 _Return value_: (1) torch.tensor with self.n_rows rows and #columns, (2) exported column names
-	]],
+]],
 	{name="self", type="Dataframe"},
 	call = function(self)
 
 	return self:to_tensor(Df_Array(self:get_numerical_colnames()))
 end}
 
-Dataframe.to_tensor = argcheck{
+Dataframe.to_tensor = argcheck{doc=[[
+
+You can export selected columns using the columns argument:
+
+@ARGT
+]],
 	overload=Dataframe.to_tensor,
 	{name="self", type="Dataframe"},
 	{name="columns", type='Df_Array', doc='The columns to export to labels'},
@@ -99,6 +104,12 @@ Dataframe.to_tensor = argcheck{
 end}
 
 Dataframe.to_tensor = argcheck{
+	doc=[[
+
+If a filename is provided the tensor will be saved (`torch.save`) to that file:
+
+@ARGT
+]],
 	overload=Dataframe.to_tensor,
 	{name="self", type="Dataframe"},
 	{name='filename', type='string', doc='Filename for tensor.save()'},

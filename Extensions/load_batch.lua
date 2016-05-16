@@ -16,7 +16,7 @@ Loads a batch of data from the table. Note that you have to call init_batch befo
 in order to split the dataset into train/test/validations.
 
 _Return value_: data, label tensors, table with tensor column names
-	]],
+]],
 	{name="self", type="Dataframe"},
 	{name='no_lines', type='number', doc='The number of lines/rows to include (-1 for all)'},
 	{name='offset', type='number', doc='The number of lines/rows to skip before starting load', default=0},
@@ -113,7 +113,7 @@ Dataframe.batch_size = argcheck{
 Gets the size of the current batch type.
 
 _Return value_: number of rows/lines (integer)
-	]],
+]],
 	{name="self", type="Dataframe"},
 	{name="type", type="string", doc="the type of batch data"},
 	call=function(self, type)
@@ -151,7 +151,7 @@ _Note_: This function must be called prior to load_batch as it needs the
 information for loading correct rows.
 
 _Return value_: void
-	]],
+]],
 	noordered=true,
 	{name='data_types', type='table',
 	 doc='Types of data with corresponding proportions to to split to.',
@@ -252,7 +252,7 @@ Dataframe._add_2_batch_datasets = argcheck{
 Internal function for adding rows 2 batch datasets
 
 _Return value_: void
-	]],
+]],
 	{name="self", type="Dataframe"},
 	{name='number', type='number', doc='The number of rows to add'},
 	{name='shuffle', type='boolean', doc="Whether the rows should be shuffled before laoding", default=true},
