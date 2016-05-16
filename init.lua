@@ -27,6 +27,15 @@ end
 local utils_file = string.gsub(dataframe_path,"?", "utils")
 assert(loadfile(utils_file))()
 
+-- Load all helper classes
+help_clss_path = string.gsub(dataframe_path, "[^/]+$", "") .. "helper_classes/"
+for extension_file,_ in lfs.dir (help_clss_path) do
+  if (string.match(extension_file, "[.]lua$")) then
+    local file = help_clss_path .. extension_file
+    assert(loadfile(file))()
+  end
+end
+
 -- Custom argument checks
 local argcheck_file = string.gsub(dataframe_path,"?", "argcheck")
 assert(loadfile(argcheck_file))()
