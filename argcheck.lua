@@ -6,6 +6,12 @@ env.istype = function(obj, typename)
       torch.type(obj) == "string"
   end
 
+	-- Either a boolean or string
+  if (typename == "string|boolean") then
+    return torch.type(obj) == "boolean" or
+      torch.type(obj) == "string"
+  end
+
 	-- Check if either a number, table with numbers or a numerical tensor
 	if (typename == "number|table") then
     if (torch.type(obj) == "number") then
