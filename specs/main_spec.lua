@@ -263,7 +263,7 @@ describe("Dataframe class", function()
 	it("Updates a single cell given a column name and an index",function()
 		local a = Dataframe("./data/simple_short.csv")
 
-		a:set(1, 'Col A', {['Col A']=99})
+		a:set(1, 'Col A', Df_Dict({['Col A']=99}))
 		assert.is.equal(a:get_column('Col A')[1], 99)
 	end)
 
@@ -285,7 +285,7 @@ describe("Dataframe class", function()
 		['Col B']=4,
 		['Col C']=4
 		}
-		a:_update_single_row(1, new)
+		a:_update_single_row(1, Df_Tbl(new), Df_Tbl(a:get_row(1)))
 		assert.are.same(a:get_row(1), new)
 	end)
 end)
