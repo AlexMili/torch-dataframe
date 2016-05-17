@@ -12,6 +12,12 @@ env.istype = function(obj, typename)
       torch.type(obj) == "string"
   end
 
+	if (typename == "number|string|boolean") then
+		return torch.type(obj) == "boolean" or
+			torch.type(obj) == "string" or
+			torch.type(obj) == "number"
+  end
+
 	-- Only numerical tensors count
   if (typename == "torch.*Tensor") then
     -- regular expressions don't work therefore this

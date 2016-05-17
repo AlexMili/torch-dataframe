@@ -1,43 +1,62 @@
-require 'dok'
 local params = {...}
 local Dataframe = params[1]
 
---
--- is_numerical(column_name) : checks if column is numerical
---
--- ARGS: - column_name (required) [string]: the column to check
---
--- RETURNS: boolean
---
-function Dataframe:is_numerical(column_name)
+local argcheck = require "argcheck"
+
+Dataframe.is_numerical = argcheck{
+	doc = [[
+<a name="Dataframe.is_numerical">
+### Dataframe.is_numerical(@ARGP)
+
+@ARGT
+
+Checks if column is numerical
+
+_Return value_: boolean
+]],
+	{name="self", type="Dataframe"},
+	{name="column_name", type="string", doc="The column name to check"},
+	call=function(self, column_name)
 	assert(self:has_column(column_name), "Could not find column: " .. tostring(column_name))
 	return self.schema[column_name] == "number"
-end
+end}
 
---
--- has_column(column_name) : checks if column exist
---
--- ARGS: - column_name (required) [string]: the column to check
---
--- RETURNS: boolean
---
-function Dataframe:has_column(column_name)
+Dataframe.has_column = argcheck{
+	doc = [[
+<a name="Dataframe.has_column">
+### Dataframe.has_column(@ARGP)
+
+@ARGT
+
+Checks if column is present in the dataset
+
+_Return value_: boolean
+]],
+	{name="self", type="Dataframe"},
+	{name="column_name", type="string", doc="The column to check"},
+	call=function(self, column_name)
 	for _,v in pairs(self.columns) do
 		if (v == column_name) then
 			return true
 		end
 	end
 	return false
-end
+end}
 
---
--- drop('column_name') : delete column from dataset
---
--- ARGS: - column_name (required) [string]	: column to delete
---
--- RETURNS: nothing
---
-function Dataframe:drop(column_name)
+Dataframe.drop = argcheck{
+	doc = [[
+<a name="Dataframe.drop">
+### Dataframe.drop(@ARGP)
+
+@ARGT
+
+Delete column from dataset
+
+_Return value_: void
+]],
+	{name="self", type="Dataframe"},
+	{name="column_name", type="string", doc="The column to drop"},
+	call=function(self, column_name)
 	assert(self:has_column(column_name), "The column " .. column_name .. " doesn't exist")
 	self.dataset[column_name] = nil
 	temp_dataset = {}
@@ -51,48 +70,100 @@ function Dataframe:drop(column_name)
 		end
 	end
 
+	-- Drop the column from the column_order
+	local col_ordr = {}
+	for i=1,#self.column_order do
+		if (self.column_order[i] ~= column_name) then
+			table.insert(col_ordr, self.column_order[i])
+		end
+	end
+
 	if (not empty) then
 		self.dataset = temp_dataset
 		self.categorical[column_name] = nil
-		self:_refresh_metadata()
+		self:_refresh_metadata() -- TODO: Merge column_order with columns
 	else
 		self:__init()
 	end
-end
+end}
 
---
--- add_column('column_name', 0) : add new column to Dataframe
---
--- ARGS: - column_name 		(required) 				[string]	: column name to add
---		 - default_value 	(optional, default=0) 	[any]		: column default value
---
--- RETURNS: nothing
---
-function Dataframe:add_column(column_name, default_value)
-	assert(not self:has_column(column_name), "The column " .. column_name .. " already exists in the dataset")
+Dataframe.drop = argcheck{
+	doc = [[
+You can also delete multiple columns by supplying a Df_Array
 
-	if (type(default_value) == 'table') then
-		assert(table.maxn(default_value) == self.n_rows,
-		       'The default values don\'t match the number of rows')
-	elseif (default_value == nil) then
+@ARGT
+]],
+	overload=Dataframe.drop,
+	{name="self", type="Dataframe"},
+	{name="columns", type="Df_Array", doc="The columns to drop"},
+	call=function(self, columns)
+	columns = columns.data
+	for i=1,#columns do
+		self:drop(columns[i])
+	end
+end}
+
+Dataframe.add_column = argcheck{
+	doc = [[
+<a name="Dataframe.add_column">
+### Dataframe.add_column(@ARGP)
+
+@ARGT
+
+Add new column to Dataframe
+
+_Return value_: void
+]],
+	{name="self", type="Dataframe"},
+	{name="column_name", type="string", doc="The column to add"},
+	{name="default_value", type="number|string|boolean", doc="The default_value", default=0/0},
+	call=function(self, column_name, default_value)
+	-- Use nan as missing values
+	if (default_value == nil) then
 		default_value =  0/0
 	end
 
+	local default_values = {}
+	for i=1,self.n_rows do
+		table.insert(default_values, default_value)
+	end
+	self:add_column(column_name, Df_Array(default_values))
+end}
+
+Dataframe.add_column = argcheck{
+	doc = [[
+If you have a column with values to add then use the Df_Array
+
+@ARGT
+
+Add new column to Dataframe
+
+_Return value_: void
+]],
+	overload=Dataframe.add_column,
+	{name="self", type="Dataframe"},
+	{name="column_name", type="string", doc="The column to add"},
+	{name="default_values", type="Df_Array", doc="The default values"},
+	call=function(self, column_name, default_values)
+	assert(not self:has_column(column_name), "The column " .. column_name .. " already exists in the dataset")
+	default_values = default_values.data
+
+	assert(table.maxn(default_values) == self.n_rows,
+	       'The default values don\'t match the number of rows')
+
 	self.dataset[column_name] = {}
 	for i = 1, self.n_rows do
-		if (type(default_value) == 'table') then
-			val = default_value[i]
-			if (val == nil) then
-				val = 0/0
-			end
-			self.dataset[column_name][i] = val
-		else
-			self.dataset[column_name][i] = default_value
+		val = default_values[i]
+		if (val == nil) then
+			val = 0/0
 		end
+		self.dataset[column_name][i] = val
 	end
+
+	-- Append column order
 	table.insert(self.column_order, column_name)
 	self:_refresh_metadata()
-end
+end}
 
 --
 -- get_column('column_name') : get column content
