@@ -1,127 +1,151 @@
-require 'dok'
 local params = {...}
 local Dataframe = params[1]
 
---
--- sub() : Selects a subset of rows and returns those
---
--- ARGS: - start 			(optional) [number] 	: row to start at
--- 		   - stop 			(optional) [number] 	: last row to include
---
--- RETURNS: Dataframe
---
-function Dataframe:sub(...)
-	local args = dok.unpack(
-		{...},
-		'Dataframe.sub',
-		'Retrieves a subset of elements',
-		{arg='start', type='integer', help='row to start at', default=1},
-		{arg='stop', type='integer', help='row to stop at', default=self.n_rows}
-	)
+
+local argcheck = require "argcheck"
+
+Dataframe.sub = argcheck{
+	doc =  [[
+<a name="Dataframe.sub">
+### Dataframe.sub(@ARGP)
+
+@ARGT
+
+Selects a subset of rows and returns those
+
+_Return value_: Dataframe
+]],
+	{name="self", type="Dataframe"},
+	{name='start', type='number', doc='Row to start at', default=1},
+	{name="stop", type='number', doc='Last row to include', default=false},
+	call = function(self, start, stop)
+	if (not stop) then
+		stop = self.n_rows
+	end
+
 	assert(args.start <= args.stop, "Stop argument can't be less than the start argument")
 	assert(args.start > 0, "Start position can't be less than 1")
 	assert(args.stop <= self.n_rows, "Stop position can't be more than available rows")
 
-	indexes = {}
+	local indexes = {}
 	for i = args.start,args.stop do
 		table.insert(indexes, i)
 	end
-	return self:_create_subset(indexes)
-end
 
---
--- get_random ('n_items') : Retrieves a random number of rows for exploring
---
--- ARGS: - n_items (optional) [integer] : number of rows to get
---
--- RETURNS: Dataframe
-function Dataframe:get_random(...)
-	local args = dok.unpack(
-		{...},
-		'Dataframe.get_random',
-		'Retrieves a random number of rows for exploring',
-		{arg='n_items', type='integer', help='The number of items to retreive', default=1}
-	)
-	assert(isint(args.n_items), "The number must be an integer. You've provided " .. tostring(args.n_items))
-	assert(args.n_items > 0 and
-	       args.n_items < self.n_rows, "The number must be an integer between 0 and " ..
-				 self.n_rows .. " - you've provided " .. tostring(args.n_items))
+	return self:_create_subset(Df_Array(indexes))
+end}
+
+Dataframe.get_random = argcheck{
+	doc =  [[
+<a name="Dataframe.get_random">
+### Dataframe.get_random(@ARGP)
+
+@ARGT
+
+Retrieves a random number of rows for exploring
+
+_Return value_: Dataframe
+]],
+	{name="self", type="Dataframe"},
+	{name='n_items', type='number', doc='Number of rows to retrieve', default=1},
+	call = function(self, n_items)
+
+	assert(isint(n_items), "The number must be an integer. You've provided " .. tostring(n_items))
+	assert(n_items > 0 and
+	       n_items < self.n_rows, "The number must be an integer between 0 and " ..
+				 self.n_rows .. " - you've provided " .. tostring(n_items))
 	local rperm = torch.randperm(self.n_rows)
 	local indexes = {}
-	for i = 1,args.n_items do
+	for i = 1,n_items do
 		table.insert(indexes, rperm[i])
 	end
-	return self:_create_subset(indexes)
-end
+	return self:_create_subset(Df_Array(indexes))
+end}
 
---
--- head() : get the table's first elements
---
--- ARGS: - n_items 			(required) [number] 	: items to print
---
--- RETURNS: Dataframe
---
-function Dataframe:head(...)
-	local args = dok.unpack(
-		{...},
-		'Dataframe.head',
-		'Retrieves the first elements of a table',
-		{arg='n_items', type='integer', help='The number of items to display', default=10}
-	)
-	head = self:sub(1, math.min(args.n_items, self.n_rows))
+Dataframe.head = argcheck{
+	doc =  [[
+<a name="Dataframe.head">
+### Dataframe.head(@ARGP)
+
+@ARGT
+
+Retrieves the first elements of a table
+
+_Return value_: Dataframe
+]],
+	{name="self", type="Dataframe"},
+	{name='n_items', type='number', doc='Number of rows to retrieve', default=10},
+	call = function(self, n_items)
+
+	head = self:sub(1, math.min(n_items, self.n_rows))
+
 	return head
-end
+end}
 
---
--- tail() : get the table's last elements
---
--- ARGS: - n_items 			(required) [number] 	: items to print
---
--- RETURNS: Dataframe
---
-function Dataframe:tail(...)
-	local args = dok.unpack(
-		{...},
-		'Dataframe.tail',
-		'Retrieves the last elements of a table',
-		{arg='n_items', type='integer', help='The number of items to display', default=10},
-		{arg='html', type='boolean', help='Display as html', default=false}
-	)
+Dataframe.tail = argcheck{
+	doc =  [[
+<a name="Dataframe.tail">
+### Dataframe.tail(@ARGP)
+
+@ARGT
+
+Retrieves the last elements of a table
+
+_Return value_: Dataframe
+]],
+	{name="self", type="Dataframe"},
+	{name='n_items', type='number', doc='Number of rows to retrieve', default=10},
+	call = function(self, n_items)
+
 	start_pos = math.max(1, self.n_rows - args.n_items + 1)
 	tail = self:sub(start_pos)
+
 	return tail
-end
+end}
 
--- Creates a class and returns a subset based on the index items
-function Dataframe:_create_subset(index_items)
-	if (type(index_items) ~= 'table') then
-		index_items = {index_items}
-	end
+Dataframe._create_subset = argcheck{
+	doc =  [[
+<a name="Dataframe._create_subset">
+### Dataframe._create_subset(@ARGP)
 
-	for _,i in pairs(index_items) do
-		assert(isint(i) and
-		 			 i > 0 and
-					 i <= self.n_rows,
-					 "There are values outside the allowed index range 1 to " .. self.n_rows ..
-					 ": " .. tostring(i))
+@ARGT
+
+Creates a class and returns a subset based on the index items. Intended for internal
+use.
+
+_Return value_: Dataframe
+]],
+	{name="self", type="Dataframe"},
+	{name='index_items', type='Df_Array', doc='The indexes to retrieve'},
+	call = function(self, index_items)
+	index_items = index_items.data
+
+	for i=1,#index_items do
+		local val = index_items[i]
+		assert(isint(val) and
+		       val > 0 and
+		       val <= self.n_rows,
+		       "There are values outside the allowed index range 1 to " .. self.n_rows ..
+		       ": " .. tostring(val))
 	end
 
 	-- TODO: for some reason the categorical causes errors in the loop, this strange copy fixes it
-	tmp = clone(self.categorical)
+	-- The above is most likely to global variables beeing overwritten due to lack of local definintions
+	local tmp = clone(self.categorical)
 	self.categorical = {}
-	ret = Dataframe.new()
+	local ret = Dataframe.new()
 	for _,i in pairs(index_items) do
-		val = self:get_row(i)
+		local val = self:get_row(i)
 		ret:insert(val)
 	end
 	self.categorical = tmp
 	ret = self:_copy_meta(ret)
 	return ret
-end
+end}
 
 
 --
--- where('column_name','my_value') : find the first row where the column has the given value
+-- where('column_name','my_value') :
 --
 -- ARGS: - column 		(required) [string] : column to browse or a condition_function that
 --                                          takes a row and returns true/false depending
@@ -130,37 +154,60 @@ end
 --
 -- RETURNS : Dataframe
 --
-function Dataframe:where(column, item_to_find)
-	if (type(column) ~= 'function') then
-		condition_function = function(row)
-			return row[column] == item_to_find
+Dataframe.where = argcheck{
+	doc =  [[
+<a name="Dataframe.where">
+### Dataframe.where(@ARGP)
+
+@ARGT
+
+Find the rows where the column has the given value
+
+_Return value_: Dataframe
+]],
+	{name="self", type="Dataframe"},
+	{name='column', type='string',
+	 doc='column to browse or findin the item argument'},
+	{name='item_to_find', type='number|string|boolean',
+	 doc='The value to find'},
+	call = function(self, column, item_to_find)
+
+	return self:where(function(row)
+		return row[column] == item_to_find
+	end)
+end}
+
+Dataframe.where = argcheck{
+	doc =  [[
+You can also provide a function for more advanced matching
+
+@ARGT
+
+]],
+	{name="self", type="Dataframe"},
+	{name='match_fn', type='function',
+	 doc='Function that takes a row as an argument and returns boolean'},
+	call = function(self, column, item_to_find)
+	local matches = _where_search(self, condition_function)
+	return self:_create_subset(Df_Array(matches))
+end}
+
+local _where_search = argcheck{
+	{name="self", "Dataframe"},
+	{name="condition_function", "function",
+	 doc="Function to test if the current row will be updated"},
+	call=function(self, condition_function)
+		local matches = {}
+		for i = 1, self.n_rows do
+			local row = self:get_row(i)
+			if condition_function(row) then
+				table.insert(matches, i)
+			end
 		end
-	else
-		condition_function = column
+
+		return matches
 	end
-
-	local matches = self:_where(condition_function)
-	return self:_create_subset(matches)
-end
-
---
--- _where(column, item_to_find)
---
--- ARGS: - condition_function 	(required) [func] : function to test if the current row will be updated
---
--- RETURNS : table with the index of all the matches
---
-function Dataframe:_where(condition_function)
-	local matches = {}
-	for i = 1, self.n_rows do
-		local row = self:get_row(i)
-		if condition_function(row) then
-			table.insert(matches, i)
-		end
-	end
-
-	return matches
-end
+}
 
 --
 -- update(function(row) row['column'] == 'test' end, function(row) row['other_column'] = 'new_value' return row end) : Update according to condition
@@ -171,7 +218,7 @@ end
 -- RETURNS : nothing
 --
 function Dataframe:update(condition_function, update_function)
-	local matches = self:_where(condition_function)
+	local matches = _where_search(self, condition_function)
 	for _, i in pairs(matches) do
 		row = self:get_row(i)
 		new_row = update_function(row)
