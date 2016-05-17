@@ -83,12 +83,12 @@ function Dataframe:_single_col_value_counts(...)
 		end
 	end
 	if (self:is_categorical(args.column_name)) then
-		tmp = {}
+		count_w_keys = {}
 		for key,no_found in pairs(count) do
 			name = self:to_categorical(key, args.column_name)
-			tmp[name] = no_found
+			count_w_keys[name] = no_found
 		end
-		count = tmp
+		count = count_w_keys
 	end
 	if (not args.dropna) then
 		count["_missing_"] = no_missing

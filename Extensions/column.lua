@@ -117,12 +117,12 @@ function Dataframe:get_column(...)
 				 "Converting to tensor requires a numerical/categorical variable." ..
 				 " The column " .. tostring(args.column_name) ..
 				 " is of type " .. tostring(self.schema[args.column_name]))
-	
+
 	column_data = self.dataset[args.column_name]
 
 	if (not args.as_tensor and not args.as_raw and
 	    self:is_categorical(args.column_name)) then
-		return self:to_categorical(column_data, args.column_name)
+		return self:to_categorical(Df_Array(column_data), args.column_name)
 	elseif (args.as_tensor) then
 		return torch.Tensor(column_data)
 	else
@@ -229,7 +229,7 @@ function Dataframe:get_column_order(...)
 	)
 
 	assert(self:has_column(column_name), "Could not find column: " .. tostring(args.column_name))
-	
+
 	number_count = 0
 	for i = 1,#self.column_order do
 		column_name = self.column_order[i]
@@ -251,6 +251,6 @@ function Dataframe:get_column_order(...)
 			end
 		end
 	end
-	
+
 	return nil
 end

@@ -15,15 +15,28 @@ Set a column to categorical type. Adds the column to self.categorical table with
 the keuys retrieved from Dataframe.unique.
 
 _Return value_: void
-	]],
+]],
 	{name="self", type="Dataframe"},
-	{name="column_name", type="string|table",
-	 doc="Either a single column name or a table with column names"},
+	{name="column_name", type="string",
+	 doc="The column name to convert"},
 	call = function(self, column_name)
-	if (type(column_name) ~= 'table') then
-		column_name = {column_name}
-	end
-	for _,cn in pairs(column_name) do
+		return self:as_categorical(Df_Array(column_name))
+end}
+
+Dataframe.as_categorical = argcheck{
+	overload=Dataframe.as_categorical,
+	doc =  [[
+
+@ARGT
+
+]],
+	{name="self", type="Dataframe"},
+	{name="column_array", type="Df_Array",
+	 doc="An array with column names"},
+	call = function(self, column_array)
+	column_array = column_array.data
+
+	for _,cn in pairs(column_array) do
 		assert(self:has_column(cn), "Could not find column: " .. cn)
 		assert(not self:is_categorical(cn), "Column already categorical")
 		keys = self:unique{column_name = cn,
@@ -187,34 +200,60 @@ Dataframe.to_categorical = argcheck{
 
 Converts values to categorical according to a column's keys
 
-_Return value_: string if single value entered or table if multiple values
+_Return value_: string with the value
 ]],
 	{name="self", type="Dataframe"},
-	{name='data', type='number|table', doc='The integers to be converted'},
+	{name='data', type='number', doc='The integer to be converted'},
+	{name='column_name', type='string', doc='The name of the column  which keys to use'},
+	call=function(self, data, column_name)
+	ret = self:to_categorical(Df_Array(data), column_name)
+	return ret[1]
+end}
+
+Dataframe.to_categorical = argcheck{
+	doc =  [[
+You can also provide a tensor
+
+@ARGT
+
+_Return value_: table with values
+]],
+	overload=Dataframe.to_categorical,
+	{name="self", type="Dataframe"},
+	{name='data', type='torch.*Tensor', doc='The integers to be converted'},
+	{name='column_name', type='string', doc='The name of the column  which keys to use'},
+	call=function(self, data, column_name)
+	assert(#data:size() == 1,
+	       "The function currently only supports single dimensional tensors")
+	return self:to_categorical(Df_Array(torch.totable(data)), column_name)
+end}
+
+Dataframe.to_categorical = argcheck{
+	doc =  [[
+You can also provide an array
+
+@ARGT
+
+_Return value_: table with values
+]],
+	overload=Dataframe.to_categorical,
+	{name="self", type="Dataframe"},
+	{name='data', type='Df_Array', doc='The integers to be converted'},
 	{name='column_name', type='string', doc='The name of the column  which keys to use'},
 	call=function(self, data, column_name)
 	assert(self:has_column(column_name), "Invalid column name: " .. column_name)
 	assert(self:is_categorical(column_name), "Column isn't categorical")
-	local single_value = false
-	if(type(data) ~= 'table') then
-		if (not isnan(data)) then
-			val = tonumber(data)
-			assert(type(val) == 'number', "The data " .. data .. " is not a valid number")
-			data = val
-			assert(math.floor(data) == data, "The data is not a valid integer")
-		end
-		single_value = true
-		data = {data}
-	else
-		for k,v in pairs(data) do
-			if (not isnan(data[k])) then
-				val = tonumber(data[k])
-				assert(type(val) == 'number',
-				       "The data ".. tostring(val) .." in position " .. k .. " is not a valid number")
-				data[k] = val
-				assert(math.floor(data[k]) == data[k],
-				       "The data " .. data[k] .. " in position " .. k .. " is not a valid integer")
-			end
+
+	data = data.data
+
+	for k,v in pairs(data) do
+		if (not isnan(data[k])) then
+			val = tonumber(data[k])
+			assert(type(val) == 'number',
+			       "The data ".. tostring(val) .." in position " .. k .. " is not a valid number")
+			data[k] = val
+			assert(math.floor(data[k]) == data[k],
+			       "The data " .. data[k] .. " in position " .. k .. " is not a valid integer")
 		end
 	end
 
@@ -235,22 +274,8 @@ _Return value_: string if single value entered or table if multiple values
 		end
 		table.insert(ret, val)
 	end
-	if (single_value) then
-		return ret[1]
-	else
-		return ret
-	end
-end}
 
-Dataframe.to_categorical = argcheck{
-	overload=Dataframe.to_categorical,
-	{name="self", type="Dataframe"},
-	{name='data', type='torch.*Tensor', doc='The integers to be converted'},
-	{name='column_name', type='string', doc='The name of the column  which keys to use'},
-	call=function(self, data, column_name)
-	assert(#data:size() == 1,
-	       "The function currently only supports single dimensional tensors")
-	return self:to_categorical(torch.totable(data), column_name)
+	return ret
 end}
 
 Dataframe.from_categorical = argcheck{
@@ -265,15 +290,31 @@ Converts categorical to numerical according to a column's keys
 _Return value_: table or tensor
 ]],
 	{name="self", type="Dataframe"},
-	{name='data', type='number|string|table', doc='The data to be converted'},
+	{name='data', type='number|string', doc='The data to be converted'},
+	{name='column_name', type='string', doc='The name of the column'},
+	{name='as_tensor', type='boolean', doc='If the returned value should be a tensor', default=false},
+	call=function(self, data, column_name, as_tensor)
+		return self:from_categorical(Df_Array(data), column_name, as_tensor)
+end}
+
+Dataframe.from_categorical = argcheck{
+	doc =  [[
+You can also provide an array with values
+
+@ARGT
+
+_Return value_: table or tensor
+]],
+	overload=Dataframe.from_categorical,
+	{name="self", type="Dataframe"},
+	{name='data', type='Df_Array', doc='The data to be converted'},
 	{name='column_name', type='string', doc='The name of the column'},
 	{name='as_tensor', type='boolean', doc='If the returned value should be a tensor', default=false},
 	call=function(self, data, column_name, as_tensor)
 	assert(self:has_column(column_name), "Can't find the column: " .. column_name)
 	assert(self:is_categorical(column_name), "Column isn't categorical")
-	if(type(data) ~= 'table') then
-		data = {data}
-	end
+
+	data = data.data
 
 	ret = {}
 	for _,v in pairs(data) do
@@ -283,6 +324,7 @@ _Return value_: table or tensor
 		end
 		table.insert(ret, val)
 	end
+
 	if (as_tensor) then
 		return torch.Tensor(ret)
 	else
