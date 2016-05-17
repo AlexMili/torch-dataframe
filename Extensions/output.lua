@@ -1,55 +1,63 @@
-require 'dok'
 local params = {...}
 local Dataframe = params[1]
 
---
--- output() : a print function for the dataset
---
--- See dok.unpack
---
-function Dataframe:output(...)
-	local args = dok.unpack(
-		{...},
-		'Dataframe.print',
-		[[Prints the table into itorch.html if in itorch and html == true, otherwise prints a table string]],
-		{arg='html', type='boolean', help='If the output should be in html format', default=itorch ~= nil},
-		{arg='max_rows', type='integer', help='Limit the maximum number of printed rows', default=20},
-		{arg='digits', type='integer', help='Set this to an integer >= 0 in order to reduce the number of integers shown'}
-	)
-	assert(args.max_rows > 0, "Can't print less than 1 row")
-	args.max_rows = math.min(self.n_rows, args.max_rows)
+local argcheck = require "argcheck"
 
-	data = self:sub(1, args.max_rows)
-	if (args.html) then
-		html_string = data:_to_html{digits = args.digits}
+Dataframe.output = argcheck{
+	doc =  [[
+<a name="Dataframe.output">
+### Dataframe.output(@ARGP)
+
+@ARGT
+
+Prints the table into itorch.html if in itorch and html == true, otherwise prints a table string
+
+_Return value_: void
+]],
+	{name="self", type="Dataframe"},
+	{name='html', type='boolean', doc='If the output should be in html format', default=itorch ~= nil},
+	{name='max_rows', type='integer', doc='Limit the maximum number of printed rows', default=20},
+	{name='digits', type='integer',
+	 doc='Set this to an integer >= 0 in order to reduce the number of integers shown',
+	 default=false},
+	call=function(self, html, max_rows, digits)
+	assert(max_rows > 0, "Can't print less than 1 row")
+	max_rows = math.min(self.n_rows, max_rows)
+
+	data = self:sub(1, max_rows)
+	if (html) then
+		html_string = data:_to_html{digits = digits}
 		if (itorch ~= nil) then
 			itorch.html(html_string)
 		else
 			print(html_string)
 		end
 	else
-		print(data:__tostring__{digits = args.digits})
+		print(data:__tostring__{digits = digits})
 	end
-end
+end}
 
---
--- show() : print dataset
---
--- ARGS: see dok.unpack
---
--- RETURNS: nothing
---
-function Dataframe:show(...)
-	local args = dok.unpack(
-		{...},
-		'Dataframe.show',
-		[[Prints the top  and bottom section of the table for better overview. Uses itorch if available]],
-		{arg='digits', type='integer', help='Set this to an integer >= 0 in order to reduce the number of integers shown'}
-	)
+Dataframe.show = argcheck{
+	doc =  [[
+<a name="Dataframe.show">
+### Dataframe.show(@ARGP)
+
+@ARGT
+
+Prints the top  and bottom section of the table for better overview. Uses itorch if available
+
+_Return value_: void
+]],
+	{name="self", type="Dataframe"},
+	{name='digits', type='number',
+	 doc='Set this to an integer >= 0 in order to reduce the number of integers shown',
+	 default=false},
+	call=function(self, digits)
+
 	if (self.n_rows <= 20) then
 		-- Print all
 		self:output{max_rows = 20,
-								digits = args.digits}
+								digits = digits}
 	else
 		head = self:head(10)
 		tail = self:tail(10)
@@ -57,34 +65,39 @@ function Dataframe:show(...)
 		if itorch ~= nil then
 			text = ''
 			text = text..head:_to_html{split_table='bottom',
-			                           digits = args.digits}
+			                           digits = digits}
 			text = text..'\n\t<tr>'
 			text = text..'<td><span style="font-size:20px;">...</span></td>' -- index cell
 			text = text..'<td colspan="'.. self:shape()["cols"] ..'"><span style="font-size:20px;">...</span></td>' -- the remainder
 			text = text..'\n</tr>'
 			text = text..tail:_to_html{split_table='top',
 			                           offset=self.n_rows - tail:shape()["rows"],
-																 digits = args.digits}
+																 digits = digits}
 
 			itorch.html(text)
 		else
-			head:output{digits = args.digits}
+			head:output{digits = digits}
 			print('...')
-			tail:output{digits = args.digits}
+			tail:output{digits = digits}
 		end
 	end
-end
+end}
 
---
--- tostring() : A convenience wrapper for __tostring
---
--- ARGS: none
---
--- RETURNS: string
---
-function Dataframe:tostring()
+Dataframe.tostring = argcheck{
+	doc=[[
+<a name="Dataframe.tostring">
+### Dataframe.tostring(@ARGP)
+
+@ARGT
+
+A convenience wrapper for __tostring
+
+_Return value_: string
+]],
+	{name="self", type="Dataframe"},
+	call=function (self)
 	return self:__tostring__()
-end
+end}
 
 -- helper
 local function _numeric2string(val, digits)
@@ -95,25 +108,25 @@ local function _numeric2string(val, digits)
 	end
 end
 
---
--- __tostring__() : Converts table to a string representation that follows standard
---                markdown syntax
---
--- ARGS: see dok.unpack
---
--- RETURNS: string
---
-function Dataframe:__tostring__(...)
-	local args = dok.unpack(
-		{...},
-		'Dataframe.__tostring__',
-		[[Converts table to a string representation that follows standard
-	    markdown syntax]],
-		{arg='digits', type='integer', help='Set this to an integer >= 0 in order to reduce the number of integers shown'}
-	)
-	if (args.digits) then
-		assert(isint(args.digits), "The digits argument must be an int")
-		assert(args.digits >= 0, "The digits argument must be positive")
+Dataframe.__tostring__ = argcheck{
+	doc=[[
+<a name="Dataframe.__tostring__">
+### Dataframe.__tostring__(@ARGP)
+
+@ARGT
+
+Converts table to a string representation that follows standard markdown syntax
+
+_Return value_: string
+]],
+	{name="self", type="Dataframe"},
+	{name='digits', type='number',
+	 doc='Set this to an integer >= 0 in order to reduce the number of integers shown',
+	 default=false},
+	call=function(self, digits)
+
+	if (digits) then
+		assert(digits >= 0, "The digits argument must be positive")
 	end
   local no_rows = math.min(self.print.no_rows, self.n_rows)
 	max_width = self.print.max_col_width
@@ -125,8 +138,8 @@ function Dataframe:__tostring__(...)
 		v = self:get_column(k)
 		for i = 1,no_rows do
 			if (v[i] ~= nil) then
-				if (args.digits and self:is_numerical(k)) then
-					val = _numeric2string(v[i], args.digits)
+				if (digits and self:is_numerical(k)) then
+					val = _numeric2string(v[i], digits)
 				else
 					val = v[i]
 				end
@@ -180,19 +193,22 @@ function Dataframe:__tostring__(...)
 
 		for ii = 1,#self.column_order do
 			column_name = self.column_order[ii]
+
 			if (ii > 1) then
 				df_string = df_string .. " | "
 			end
+
 			output = row[column_name]
 			if (self:is_numerical(column_name)) then
-			  if (args.digits and i > 0) then
-					output = _numeric2string(output, args.digits)
+			  if (digits and i > 0) then
+					output = _numeric2string(output, digits)
 				end
 				-- TODO: maybe use :format instead of manual padding
 				-- Right align numbers by padding to left
 				df_string = add_padding(df_string, string.len(output), lengths[column_name])
 				df_string = df_string .. output
 			else
+
 				if (string.len(output) > max_width) then
 					output = string.sub(output, 1, max_width - 3) .. "..."
 				end
@@ -201,41 +217,50 @@ function Dataframe:__tostring__(...)
 				df_string = add_padding(df_string, string.len(output), math.min(max_width, lengths[column_name]))
 			end
 		end
+
 		df_string = df_string .. " |"
 	end
+
 	if (self.n_rows > no_rows) then
 		df_string = df_string .. "\n| ..." .. string.rep(" ", table_width - 5 - 1) .. "|"
 	end
+
 	df_string = add_separator(df_string, table_width) .. "\n"
 	return df_string
-end
+end}
 
--- Internal function to convert a table to html (only works for 1D table)
-function Dataframe:_to_html(...)--data, start_at, end_at, split_table)
-	local args = dok.unpack(
-		{...},
-		{"Dataframe._to_html"},
-		{"Converts table to a html table string"},
-		{arg='split_table', type='string', help=[[
-			Where the table is split. Valid input is 'none', 'top', 'bottom', 'all'.
-			Note that the 'bottom' removes the trailing </table> while the 'top' removes
-			the initial '<table>'. The 'all' removes both but retains the header while
-			the 'top' has no header.
-		]], default='none'},
-		{arg='offset', type='integer', help="The line index offset", default=0},
-		{arg='digits', type='integer', help='Set this to an integer >= 0 in order to reduce the number of integers shown'}
-	)
-	if (args.digits) then
-		assert(isint(args.digits), "The digits argument must be an int")
-		assert(args.digits >= 0, "The digits argument must be positive")
+Dataframe._to_html = argcheck{
+	doc=[[
+<a name="Dataframe._to_html">
+### Dataframe._to_html(@ARGP)
+
+@ARGT
+
+Internal function to convert a table to html (only works for 1D table)
+
+_Return value_: string
+]],
+	{name="self", type="Dataframe"},
+	{name='split_table', type='string', doc=[[
+		Where the table is split. Valid input is 'none', 'top', 'bottom', 'all'.
+		Note that the 'bottom' removes the trailing </table> while the 'top' removes
+		the initial '<table>'. The 'all' removes both but retains the header while
+		the 'top' has no header.
+	]], default='none'},
+	{name='offset', type='integer', doc="The line index offset", default=0},
+	{name='digits', type='number', doc='Set this to an integer >= 0 in order to reduce the number of integers shown', default=false},
+	call=function(self, digits)
+
+	if (digits) then
+		assert(digits >= 0, "The digits argument must be positive")
 	end
 
 	result = ''
-	if args.split_table ~= 'top' and args.split_table ~= 'all' then
+	if split_table ~= 'top' and split_table ~= 'all' then
 		result = result.. '<table>'
 	end
 
-	if args.split_table ~= 'top' then
+	if split_table ~= 'top' then
 		result = result.. '\n\t<tr>'
 		result = result.. '\n\t\t<th>#</th>'
 		for i = 1,#self.column_order do
@@ -247,12 +272,12 @@ function Dataframe:_to_html(...)--data, start_at, end_at, split_table)
 
 	for row_no = 1,self.n_rows do
 		result = result.. '\n\t<tr>'
-		result = result.. '\n\t\t<td>'..(row_no + args.offset)..'</td>'
+		result = result.. '\n\t\t<td>'..(row_no + offset)..'</td>'
 		for col_no = 1,#self.column_order do
 			k = self.column_order[col_no]
 			val = self:get_column(k)[row_no]
-			if (args.digits and self:is_numerical(k)) then
-				val = _numeric2string(val, args.digits)
+			if (digits and self:is_numerical(k)) then
+				val = _numeric2string(val, digits)
 			else
 				val = tostring(val)
 			end
@@ -261,9 +286,9 @@ function Dataframe:_to_html(...)--data, start_at, end_at, split_table)
 		result = result.. '\n\t</tr>'
 	end
 
-	if args.split_table ~= 'bottom' and args.split_table ~= 'all' then
+	if split_table ~= 'bottom' and split_table ~= 'all' then
 		result = result.. '\n</table>'
 	end
 
 	return result
-end
+end}
