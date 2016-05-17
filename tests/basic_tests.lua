@@ -41,14 +41,14 @@ end
 
 function df_tests.csv_test_float_column()
   local a = Dataframe("simple_short.csv")
-  
+
   tester:eq(a:get_column('Col B'), {.2,.3,.4,.5},
     "The simple_short.csv second column is a span of floats")
 end
 
 function df_tests.csv_test_mixed_column()
   local a = Dataframe("simple_short.csv")
-  
+
   tester:eq(a:get_column('Col C')[1], 1000)
   tester:eq(a:get_column('Col C')[2], 0.1)
   tester:eq(a:get_column('Col C')[3], 9999999999)
@@ -57,15 +57,15 @@ end
 
 function df_tests.load_table_single_value()
   local a = Dataframe()
-  a:load_table{data={['first_column']=3,['second_column']={10,11,12}}}
+  a:load_table{data=Df_Dict({['first_column']=3,['second_column']={10,11,12}})}
   tester:assertTableEq(a:get_column("first_column"), {3,3,3})
   tester:assertTableEq(a:get_column("second_column"), {10,11,12})
 
-  a:load_table{data={['first_column']={3,4,5},['second_column']={10,11,12}}}
+  a:load_table{data=Df_Dict({['first_column']={3,4,5},['second_column']={10,11,12}})}
   tester:assertTableEq(a:get_column("first_column"), {3,4,5})
   tester:assertTableEq(a:get_column("second_column"), {10,11,12})
 
-  tester:assertError(function() a:load_table{data={['first_column']={3,4,5},['second_column']={10,11}}} end)
+  tester:assertError(function() a:load_table{data=Df_Dict({['first_column']={3,4,5},['second_column']={10,11}})} end)
 end
 
 function df_tests.table_schema()
@@ -76,7 +76,7 @@ function df_tests.table_schema()
   data = {['firstColumn']=first,
           ['secondColumn']=second,
           ['thirdColumn']=third}
-  a:load_table{data=data}
+  a:load_table{data=Df_Dict(data)}
   tester:eq(a.schema["firstColumn"], 'number')
   tester:eq(a.schema["secondColumn"], 'number')
   tester:eq(a.schema["thirdColumn"], 'string')
@@ -92,7 +92,7 @@ function df_tests.shape()
              verbose = false}
   tester:eq(a:shape(), {rows = 3, cols = 3})
 
-  a:load_table{data = {test = {1,nil,3}}}
+  a:load_table{data = Df_Dict({test = {1,nil,3}})}
   tester:eq(a:shape(), {rows = 3, cols = 1})
 end
 
@@ -100,8 +100,8 @@ function df_tests.table_test_two_columns()
   local a = Dataframe()
   local first = {1,2,3}
   local second = {"a","b","c"}
-  a:load_table{data={['firstColumn']=first,
-                     ['secondColumn']=second}}
+  a:load_table{data=Df_Dict({['firstColumn']=first,
+                     ['secondColumn']=second})}
   tester:eq(a:get_column('firstColumn'), first)
   tester:eq(a:get_column('secondColumn'), second)
 end
@@ -110,15 +110,15 @@ function df_tests.table_test_trimming()
   local a = Dataframe()
   local first = {1,2,3}
   local second = {"a","b","c"}
-  a:load_table{data={['firstColumn   ']=first,
-                     ['  secondColumn']=second}}
+  a:load_table{data=Df_Dict({['firstColumn   ']=first,
+                     ['  secondColumn']=second})}
   tester:eq(a:get_column('firstColumn'), first)
   tester:eq(a:get_column('secondColumn'), second)
 end
 
 function df_tests.drop()
   local a = Dataframe("simple_short.csv")
-  
+
   a:drop('Col A')
   tester:assert(not a:has_column('Col A'))
   tester:assert(a:has_column('Col B'))
@@ -144,7 +144,7 @@ end
 
 function df_tests.add_column()
   local a = Dataframe("simple_short.csv")
-  
+
   d_col = {0,1,2,3}
   a:add_column('Col D', d_col)
   tester:ne(a:get_column('Col A'), nil, "Col A should be present")
@@ -166,14 +166,14 @@ end
 
 function df_tests.get_column()
   local a = Dataframe("simple_short.csv")
-  
+
   tester:assertError(function() a:get_column('Col D') end)
   tester:ne(a:get_column('Col C'), nil)
 end
 
 function df_tests.insert()
   local a = Dataframe("simple_short.csv")
-  
+
   a:insert({['Col A']={15},['Col B']={25},['Col C']={35}})
   tester:eq(a:shape(), {rows=5, cols=3},
     "The simple_short.csv is 4x3 after insert should be 5x3")
@@ -181,7 +181,7 @@ end
 
 function df_tests.reset_column()
   local a = Dataframe("simple_short.csv")
-  
+
   a:reset_column('Col C', 555)
   tester:eq(a:shape(), {rows=4, cols=3},
     "The simple_short.csv is 4x3")
@@ -208,7 +208,7 @@ end
 
 function df_tests.rename_column()
   local a = Dataframe("simple_short.csv")
-  
+
   a:rename_column("Col A", "Col D")
   tester:assert(a:has_column("Col D"))
   tester:assert(not a:has_column("Col A"))
@@ -216,7 +216,7 @@ end
 
 function df_tests.count_na_and_fill_na()
   local a = Dataframe("advanced_short.csv")
-  
+
   tester:eq(a:count_na(), {["Col A"]= 0, ["Col B"]= 0, ["Col C"]=1})
   a:fill_na("Col A", 1)
   tester:eq(a:count_na(), {["Col A"]= 0, ["Col B"]= 0, ["Col C"]=1})
@@ -227,7 +227,7 @@ end
 
 function df_tests.fill_all_na()
   local a = Dataframe("advanced_short.csv")
-  
+
   a.dataset['Col A'][3] = nil
   tester:eq(a:count_na(), {["Col A"]= 1, ["Col B"]= 0, ["Col C"]=1})
   a:fill_all_na(-1)
@@ -237,7 +237,7 @@ end
 
 function df_tests.get_numerical_colnames()
   local a = Dataframe("advanced_short.csv")
-  
+
   tester:eq(a:get_numerical_colnames(), {'Col A', 'Col C'})
 end
 

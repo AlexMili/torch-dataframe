@@ -63,30 +63,19 @@ Imports a table data directly into Dataframe. The table should all be of equal l
 or just single values. If a table contains one column with 10 rows and then has
 another column with a single element that element is duplicated 10 times, i.e.
 filling the entire column with that single value.
-
-_Note_: due to inability to separate table input from ordered arguments
-this function _forces names_.
-
-Example:
-```lua
-a = Dataframe()
-a:load_table{data={
-	['first_column']={3,4,5},
-	['second_column']={10,11,12}
-}}
 ```
 
 _Return value_: void
 	]],
-	noordered=true, -- Required due to the table input for data
 	{name="self", type="Dataframe"},
-	{name="data", type="table", doc="Table (dictionary) to import. Max depth 2."},
+	{name="data", type="Df_Dict", doc="Table (dictionary) to import. Max depth 2."},
 	{name="infer_schema", type="boolean", default=true,
 	 doc="automatically detect columns' type"},
 	{name="column_order", type="table", default=false,
 	 doc="The order of the column (has to be array and _not_ a dictionary)"},
 	call=function(self, data, infer_schema, column_order)
 	self:_clean()
+	data = data.data
 
 	-- Check that all columns with a length > 1 has the same number of rows (length)
 	local length = -1

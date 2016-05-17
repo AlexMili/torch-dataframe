@@ -68,7 +68,7 @@ function stat_tests.get_mode()
                                   normalize = true},
                        {B = 2/3}, "Failed to get mode for Col B")
 
-  a:load_table{data={['A']={3,3,2},['B']={10,11,12}}}
+  a:load_table{data=Df_Dict({['A']={3,3,2},['B']={10,11,12}})}
   tester:assertTableEq(a:get_mode{normalize = true},
                       {A ={[3] = 2/3},
                        B ={[10] = 1/3, [11] = 1/3, [12] = 1/3}},

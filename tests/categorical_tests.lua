@@ -87,7 +87,7 @@ function cat_tests.get_column()
 
 
   true_vals = {"TRUE", "FALSE", "TRUE"}
-  a:load_table{data={['Col A']=true_vals,['Col B']={10,11,12}}}
+  a:load_table{data=Df_Dict({['Col A']=true_vals,['Col B']={10,11,12}})}
   a:as_categorical('Col A')
   tester:eq(a:get_column('Col A'), true_vals)
 end
@@ -229,7 +229,7 @@ function cat_tests.load()
   a:as_categorical('Col B')
   tester:assert(a:is_categorical('Col B'))
 
-  a:load_table{data={['Col A']="3",['Col B']={10,11,12}}}
+  a:load_table{data=Df_Dict({['Col A']="3",['Col B']={10,11,12}})}
   tester:assert(not a:is_categorical('Col B'))
   a:as_categorical('Col A')
   tester:assert(a:is_categorical('Col A'))

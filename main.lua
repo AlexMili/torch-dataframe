@@ -18,7 +18,7 @@ function Dataframe:__init(csv_or_data)
 	-- 	'Dataframe.__init',
 	-- 	'Initializes dataframe object',
 	-- 	{arg='csv_or_data', type='string|table', help='Path to CSV file or a data table for loading initial data', req=false})
-	
+
 	self:_clean()
 	self.print = {no_rows = 10, max_col_width = 20}
 
@@ -26,7 +26,7 @@ function Dataframe:__init(csv_or_data)
 		if (type(csv_or_data) == 'string') then
 			self:load_csv{path=csv_or_data,verbose=false}
 		elseif(type(csv_or_data) == 'table') then
-			self:load_table{data=csv_or_data}
+			self:load_table{data=Df_Dict(csv_or_data)}
 		else
 			error("Invalid data field type: " .. type(args.csv_or_data))
 		end
@@ -167,7 +167,7 @@ function Dataframe:insert(rows)
 	end
 
 	if (#self.columns == 0) then
-		self:load_table{data = rows}
+		self:load_table{data = Df_Dict(rows)}
 		return nil
 	end
 
