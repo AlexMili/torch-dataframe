@@ -64,18 +64,11 @@ describe("Loading data process", function()
 	describe("for lua tables",function()
 		local df = Dataframe()
 
-		it("named arguements are forced",function()
-			assert.has.error(function() df:load_table({
-				['first_column']={3,4,5},
-				['second_column']={10,11,12}
-			}) end)
-		end)
-
 		it("Loads a simple table",function()
-			df:load_table{data={
+			df:load_table{data=Df_Dict({
 				['first_column']={3,4,5},
 				['second_column']={10,11,12}
-			}}
+			})}
 
 			assert.are.same(df:get_column("first_column"), {3,4,5})
 			assert.are.same(df:get_column("second_column"), {10,11,12})
@@ -83,28 +76,28 @@ describe("Loading data process", function()
 
 		it("Generate an error if the column inserted are not the same size",function()
 			assert.has.error(function()
-				df:load_table{data={
+				df:load_table{data=Df_Dict({
 					['first_column']={3,5},
 					['second_column']={10,11,12}
-				}}
+				})}
 			end)
 		end)
 
 		it("Duplicate to all rows the only value given for a column",function()
-			df:load_table{data={
+			df:load_table{data=Df_Dict({
 				['first_column']=3,
 				['second_column']={10,11,12}
-			}}
+			})}
 
 			assert.are.same(df:get_column("first_column"), {3,3,3})
 			assert.are.same(df:get_column("second_column"), {10,11,12})
 		end)
 
 		it("Updates the columns names and escapes blank spaces",function()
-			df:load_table{data={
+			df:load_table{data=Df_Dict({
 				['        first_column']={3,5,8},
 				['second_column       ']={10,11,12}
-			},column_order={'first_column     ','      second_column'}}
+			}),column_order={'first_column     ','      second_column'}}
 
 			assert.are.same(df.column_order,{'first_column','second_column'})
 			assert.has.no_error(function() df:get_column('first_column') end)
@@ -112,29 +105,29 @@ describe("Loading data process", function()
 		end)
 
 		it("Updates the number of rows",function()
-			df:load_table{data={
+			df:load_table{data=Df_Dict({
 				['first_column']={3,5,8},
 				['second_column']={10,11,12}
-			}}
+			})}
 
 			assert.is.equal(df.n_rows,3)
 		end)
 
 		it("Fills numerical missing values with NaN values",function()
-			df:load_table{data={
+			df:load_table{data=Df_Dict({
 				['first_column']={3,nil,8},
 				['second_column']={10,11,12}
-			}}
+			})}
 
 			assert.is.equal(df:_count_missing(),0)
 		end)
 
 		it("Infers data schema",function()
-			df:load_table{data={
+			df:load_table{data=Df_Dict({
 				['first_column']={3,9,8},
 				['second_column']={10,11,12},
 				['third_column']={'first','second','third'}
-			}}
+			})}
 			assert.are.same(df.schema, {['first_column']='number',['second_column']='number',['third_column']='string'})
 		end)
 	end)

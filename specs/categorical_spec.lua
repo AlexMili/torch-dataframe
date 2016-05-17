@@ -100,7 +100,7 @@ describe("Categorical column", function()
 
 
 		true_vals = {"TRUE", "FALSE", "TRUE"}
-		a:load_table{data={['Col A']=true_vals,['Col B']={10,11,12}}}
+		a:load_table{data=Df_Dict({['Col A']=true_vals,['Col B']={10,11,12}})}
 		a:as_categorical('Col A')
 		assert.are.same(a:get_column('Col A'), true_vals)
 	end)
@@ -219,7 +219,7 @@ describe("Categorical column", function()
 		a:as_categorical('Col B')
 		assert.is_true(a:is_categorical('Col B'))
 
-		a:load_table{data={['Col A']="3",['Col B']={10,11,12}}}
+		a:load_table{data=Df_Dict({['Col A']="3",['Col B']={10,11,12}})}
 		assert.is_true(not a:is_categorical('Col B'))
 		a:as_categorical('Col A')
 		assert.is_true(a:is_categorical('Col A'))

@@ -34,12 +34,12 @@ describe("Column order functionality", function()
 					  ['secondColumn']=second,
 					  ['thirdColumn']=third}
 
-		a:load_table{data=data, column_order = column_order}
+		a:load_table{data=Df_Dict(data), column_order = column_order}
 
 		assert.are.same(a.column_order, column_order)
 
 		column_order[2] = nil
-		assert.is.error(function() a:load_table{data=data, column_order = column_order} end)
+		assert.is.error(function() a:load_table{data=Df_Dict(data), column_order = column_order} end)
 	end)
 
 	it("Keeps the right order when saving to CSV",function()
@@ -56,21 +56,21 @@ describe("Column order functionality", function()
 				   [4] = "secondColumn",
 				   [3] = "thirdColumn"}
 
-		assert.is.error(function() a:load_table{data=data, column_order=c_order} end)
+		assert.is.error(function() a:load_table{data=Df_Dict(data), column_order=c_order} end)
 
 		c_order = {[1] = "firstColumn",
 				   [3] = "thirdColumn"}
 
-		assert.is.error(function() a:load_table{data=data, column_order=c_order} end)
-		
+		assert.is.error(function() a:load_table{data=Df_Dict(data), column_order=c_order} end)
+
 		c_order = {[1] = "firstColumn",
 				   [2] = "secondColumn",
 				   [3] = "thirdColumn"}
 
-		a:load_table{data=data, column_order=c_order}
+		a:load_table{data=Df_Dict(data), column_order=c_order}
 		a:to_csv{path = "tricky_csv.csv"}
 		a:load_csv{path = "tricky_csv.csv", verbose = false}
-		
+
 		assert.are.same(a.dataset, data)
 		assert.are.same(a.column_order, c_order)
 
@@ -91,15 +91,15 @@ describe("Column order functionality", function()
 				   [2] = "2nd",
 				   [3] = "3rd"}
 
-		a:load_table{data=data, column_order=c_order}
+		a:load_table{data=Df_Dict(data), column_order=c_order}
 		tnsr = a:to_tensor()
-		
+
 		assert.is.equal(tnsr:size(1),a:shape()["rows"])
 		assert.is.equal(tnsr:size(2),a:shape()["cols"] - 1)
 
 		sum = 0
 		col_no = a:get_column_order{column_name='1st', as_tensor = true}
-		
+
 		for i=1,tnsr:size(1) do
 			sum = math.abs(tnsr[i][col_no] - a:get_column('1st')[i])
 		end
@@ -108,11 +108,11 @@ describe("Column order functionality", function()
 
 		sum = 0
 		col_no = a:get_column_order{column_name='3rd', as_tensor = true}
-		
+
 		for i=1,tnsr:size(1) do
 			sum = math.abs(tnsr[i][col_no] - a:get_column('3rd')[i])
 		end
-		
+
 		assert.is_true(sum < 10^-5)
 
 		assert.is.equal(a:get_column_order{'2nd', as_tensor = true}, nil)

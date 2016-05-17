@@ -36,13 +36,13 @@ function co_tests.table_check_load_no()
   local data = {['firstColumn']=first,
                  ['secondColumn']=second,
                  ['thirdColumn']=third}
-  a:load_table{data=data,
+  a:load_table{data=Df_Dict(data),
                column_order = column_order}
   tester:eq(a.column_order, column_order)
 
   column_order[2] = nil
   tester:assertError(function()
-                    a:load_table{data=data,
+                    a:load_table{data=Df_Dict(data),
                                  column_order = column_order}
                     end)
 end
@@ -74,14 +74,14 @@ function co_tests.to_csv()
   c_order = {[1] = "firstColumn",
              [4] = "secondColumn",
              [3] = "thirdColumn"}
-  tester:assertError(function()   a:load_table{data=data, column_order=c_order} end)
+  tester:assertError(function()   a:load_table{data=Df_Dict(data), column_order=c_order} end)
   c_order = {[1] = "firstColumn",
              [3] = "thirdColumn"}
-  tester:assertError(function()   a:load_table{data=data, column_order=c_order} end)
+  tester:assertError(function()   a:load_table{data=Df_Dict(data), column_order=c_order} end)
   c_order = {[1] = "firstColumn",
              [2] = "secondColumn",
              [3] = "thirdColumn"}
-  a:load_table{data=data, column_order=c_order}
+  a:load_table{data=Df_Dict(data), column_order=c_order}
   a:to_csv{path = "tricky_csv.csv"}
   a:load_csv{path = "tricky_csv.csv", verbose = false}
   tester:assertTableEq(a.dataset, data)
@@ -100,7 +100,7 @@ function co_tests.to_tensor()
   c_order = {[1] = "1st",
              [2] = "2nd",
              [3] = "3rd"}
-  a:load_table{data=data, column_order=c_order}
+  a:load_table{data=Df_Dict(data), column_order=c_order}
   tnsr = a:to_tensor()
   tester:eq(tnsr:size(1),
             a:shape()["rows"])

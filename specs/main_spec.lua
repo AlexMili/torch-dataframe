@@ -15,7 +15,7 @@ lfs.chdir("specs")
 describe("Dataframe class", function()
 
 	describe("On initialization",function()
-		
+
 		it("Sets all class variables to default values",function()
 			local df = Dataframe()
 
@@ -85,13 +85,13 @@ describe("Dataframe class", function()
 		local first = {1,2,3}
 		local second = {"2","1","3"}
 		local third = {"2","a","3"}
-		
+
 		data = {['firstColumn']=first,
 				['secondColumn']=second,
 				['thirdColumn']=third}
-		
-		a:load_table{data=data}
-		
+
+		a:load_table{data=Df_Dict(data)}
+
 		assert.is.equal(a.schema["firstColumn"], 'number')
 		assert.is.equal(a.schema["secondColumn"], 'number')
 		assert.is.equal(a.schema["thirdColumn"], 'string')
@@ -106,7 +106,7 @@ describe("Dataframe class", function()
 		verbose = false}
 		assert.are.same(a:shape(), {rows = 3, cols = 3})
 
-		a:load_table{data = {test = {1,nil,3}}}
+		a:load_table{data = Df_Dict({test = {1,nil,3}})}
 		assert.are.same(a:shape(), {rows = 3, cols = 1})
 	end)
 
@@ -145,9 +145,9 @@ describe("Dataframe class", function()
 		local a = Dataframe("./data/advanced_short.csv")
 
 		a.dataset['Col A'][3] = nil
-		
+
 		assert.are.same(a:count_na(), {["Col A"]= 1, ["Col B"]= 0, ["Col C"]=1})
-		
+
 		a:fill_all_na(-1)
 
 		assert.are.same(a:count_na(), {["Col A"]= 0, ["Col B"]= 0, ["Col C"]=0})
@@ -164,7 +164,7 @@ describe("Dataframe class", function()
 		local no_elmnts = 0
 		for k,v in pairs(head.dataset) do
 			local l = table.exact_length(v)
-			
+
 			if (l > no_elmnts) then
 				no_elmnts = l
 			end
