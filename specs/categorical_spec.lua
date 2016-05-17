@@ -47,7 +47,7 @@ describe("Categorical column", function()
 		end)
 
 		it("Should handle table input",function()
-			assert.are.same(a:to_categorical({2, 1}, 'Col B'), {'B', 'A'})
+			assert.are.same(a:to_categorical(Df_Array(2, 1), 'Col B'), {'B', 'A'})
 		end)
 
 		it("Should handle tensor input",function()
@@ -71,12 +71,12 @@ describe("Categorical column", function()
 		end)
 
 		it("Should handle a table as input",function()
-			assert.are.same(a:from_categorical({'A', 'B'}, 'Col B'), {1, 2})
+			assert.are.same(a:from_categorical(Df_Array('A', 'B'), 'Col B'), {1, 2})
 		end)
 
 		it("Should handle a tensor as input",function()
-			assert.is.equal(a:from_categorical{data = {'A', 'B'}, column_name = 'Col B', as_tensor = true}[1], torch.Tensor({1, 2})[1])
-			assert.is.equal(a:from_categorical{data = {'A', 'B'}, column_name = 'Col B', as_tensor = true}[2], torch.Tensor({1, 2})[2])
+			assert.is.equal(a:from_categorical{data = Df_Array('A', 'B'), column_name = 'Col B', as_tensor = true}[1], torch.Tensor({1, 2})[1])
+			assert.is.equal(a:from_categorical{data = Df_Array('A', 'B'), column_name = 'Col B', as_tensor = true}[2], torch.Tensor({1, 2})[2])
 			-- tester:eq(a:from_categorical{data = {'A', 'B'}, column_name = 'Col B', as_tensor = true}, torch.Tensor({1, 2}))
 		end)
 
@@ -242,7 +242,7 @@ describe("Categorical column", function()
 		a:as_categorical('Col B')
 		local ret_val = a:where('Col B', 'A')
 		assert.are.same(ret_val:shape(), {rows = 1, cols = 3})
-		assert.are.same(ret_val:from_categorical({'A', 'B'}, 'Col B'),
+		assert.are.same(ret_val:from_categorical(Df_Array('A', 'B'), 'Col B'),
 		{1, 2})-- "The categorical values shouldn't change due to subsetting"
 
 		ret_val = a:where('Col B', 'B')
@@ -253,9 +253,9 @@ describe("Categorical column", function()
 			["Col B"] = "C",
 			["Col C"] = 10
 		}
-		
+
 		ret_val:insert(new_data)
-		assert.are.same(ret_val:from_categorical({'A', 'B', 'C'}, 'Col B'),
+		assert.are.same(ret_val:from_categorical(Df_Array('A', 'B', 'C'), 'Col B'),
 		{1, 2, 3})-- "The categorical should add the new value as the last number"
 
 		ret_val = a:where('Col B', 'A')

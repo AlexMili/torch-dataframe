@@ -9,13 +9,13 @@ function da:__init(...)
 		arg = arg[1]
 	end
 
-	tmp = {}
+	local array_data = {}
 	for i=1,#arg do
 		assert(type(arg[i]) ~= "table", "The Dataframe array cannot contain tables")
-		tmp[i] = arg[i]
+		array_data[i] = arg[i]
 	end
 
-	self.data = tmp
+	self.data = array_data
 end
 
 return da

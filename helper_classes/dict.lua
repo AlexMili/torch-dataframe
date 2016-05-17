@@ -4,13 +4,13 @@ require 'torch'
 local dict = torch.class('Df_Dict')
 
 function dict:__init(table)
-	tmp = {}
+	local dict_data = {}
 	for k,v in pairs(table) do
 		assert(type(v) ~= "table", "The Dataframe dictionary cannot be a nested table")
-		tmp[k] = v
+		dict_data[k] = v
 	end
 
-	self.data = tmp
+	self.data = dict_data
 end
 
 return dict
