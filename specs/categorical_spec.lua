@@ -183,11 +183,11 @@ describe("Categorical column", function()
 		local a = Dataframe()
 		a:load_csv{path = "./data/advanced_short.csv"}
 		a:as_categorical('Col B')
-		a:set('A', 'Col B', {['Col B'] = 'C'})
+		a:set('A', 'Col B', Df_Dict({['Col B'] = 'C'}))
 
 		assert.are.same(a:get_cat_keys('Col B'), {A=1, B=2, C=3})
 
-		a:set('C', 'Col B', {['Col B'] = 'B'})
+		a:set('C', 'Col B', Df_Dict({['Col B'] = 'B'}))
 		assert.are.same(a:get_cat_keys('Col B'), {A=1, B=2, C=3})
 		a:clean_categorical('Col B')
 		assert.are.same(a:get_cat_keys('Col B'), {B=2})

@@ -16,8 +16,8 @@ _Return value_: void
 ]],
 	{name="self", type="Dataframe"},
 	{name='html', type='boolean', doc='If the output should be in html format', default=itorch ~= nil},
-	{name='max_rows', type='integer', doc='Limit the maximum number of printed rows', default=20},
-	{name='digits', type='integer',
+	{name='max_rows', type='number', doc='Limit the maximum number of printed rows', default=20},
+	{name='digits', type='number|boolean',
 	 doc='Set this to an integer >= 0 in order to reduce the number of integers shown',
 	 default=false},
 	call=function(self, html, max_rows, digits)
@@ -49,7 +49,7 @@ Prints the top  and bottom section of the table for better overview. Uses itorch
 _Return value_: void
 ]],
 	{name="self", type="Dataframe"},
-	{name='digits', type='number',
+	{name='digits', type='number|boolean',
 	 doc='Set this to an integer >= 0 in order to reduce the number of integers shown',
 	 default=false},
 	call=function(self, digits)
@@ -120,7 +120,7 @@ Converts table to a string representation that follows standard markdown syntax
 _Return value_: string
 ]],
 	{name="self", type="Dataframe"},
-	{name='digits', type='number',
+	{name='digits', type='number|boolean',
 	 doc='Set this to an integer >= 0 in order to reduce the number of integers shown',
 	 default=false},
 	call=function(self, digits)
@@ -247,8 +247,10 @@ _Return value_: string
 		the initial '<table>'. The 'all' removes both but retains the header while
 		the 'top' has no header.
 	]], default='none'},
-	{name='offset', type='integer', doc="The line index offset", default=0},
-	{name='digits', type='number', doc='Set this to an integer >= 0 in order to reduce the number of integers shown', default=false},
+	{name='offset', type='number', doc="The line index offset", default=0},
+	{name='digits', type='number|boolean',
+	 doc='Set this to an integer >= 0 in order to reduce the number of integers shown',
+	 default=false},
 	call=function(self, digits)
 
 	if (digits) then

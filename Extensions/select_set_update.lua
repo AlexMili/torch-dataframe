@@ -1,7 +1,6 @@
 local params = {...}
 local Dataframe = params[1]
 
-
 local argcheck = require "argcheck"
 
 Dataframe.sub = argcheck{
@@ -23,12 +22,12 @@ _Return value_: Dataframe
 		stop = self.n_rows
 	end
 
-	assert(args.start <= args.stop, "Stop argument can't be less than the start argument")
-	assert(args.start > 0, "Start position can't be less than 1")
-	assert(args.stop <= self.n_rows, "Stop position can't be more than available rows")
+	assert(start <= stop, "Stop argument can't be less than the start argument")
+	assert(start > 0, "Start position can't be less than 1")
+	assert(stop <= self.n_rows, "Stop position can't be more than available rows")
 
 	local indexes = {}
-	for i = args.start,args.stop do
+	for i = start,stop do
 		table.insert(indexes, i)
 	end
 
@@ -97,7 +96,7 @@ _Return value_: Dataframe
 	{name='n_items', type='number', doc='Number of rows to retrieve', default=10},
 	call = function(self, n_items)
 
-	start_pos = math.max(1, self.n_rows - args.n_items + 1)
+	start_pos = math.max(1, self.n_rows - n_items + 1)
 	tail = self:sub(start_pos)
 
 	return tail
@@ -184,65 +183,103 @@ You can also provide a function for more advanced matching
 @ARGT
 
 ]],
+	overload=Dataframe.where,
 	{name="self", type="Dataframe"},
 	{name='match_fn', type='function',
 	 doc='Function that takes a row as an argument and returns boolean'},
-	call = function(self, column, item_to_find)
-	local matches = _where_search(self, condition_function)
+	call = function(self, match_fn)
+	local matches = self:_where_search(match_fn)
 	return self:_create_subset(Df_Array(matches))
 end}
 
-local _where_search = argcheck{
-	{name="self", "Dataframe"},
-	{name="condition_function", "function",
+Dataframe._where_search = argcheck{
+	{name="self", type="Dataframe"},
+	{name="condition_function", type="function",
 	 doc="Function to test if the current row will be updated"},
 	call=function(self, condition_function)
-		local matches = {}
-		for i = 1, self.n_rows do
-			local row = self:get_row(i)
-			if condition_function(row) then
-				table.insert(matches, i)
-			end
+	local matches = {}
+	for i = 1, self.n_rows do
+		local row = self:get_row(i)
+		if condition_function(row) then
+			table.insert(matches, i)
 		end
-
-		return matches
 	end
-}
 
---
--- update(function(row) row['column'] == 'test' end, function(row) row['other_column'] = 'new_value' return row end) : Update according to condition
---
--- ARGS: - condition_function 	(required) [func] : function to test if the current row will be updated
---		 - update_function 		(required) [func] : function to update the row
---
--- RETURNS : nothing
---
-function Dataframe:update(condition_function, update_function)
-	local matches = _where_search(self, condition_function)
+	return matches
+end}
+
+Dataframe.update = argcheck{
+	doc =  [[
+<a name="Dataframe.update">
+### Dataframe.update(@ARGP)
+
+@ARGT
+
+_Return value_: void
+]],
+	{name="self", type="Dataframe"},
+	{name='condition_function', type='function',
+	 doc='Function that tests if the row should be updated. It should accept a row table as an argument and return boolean'},
+	{name='update_function', type='function',
+	 doc='Function that updates the row. Takes the entire row as an argument, modifies it and returns the same.'},
+	call = function(self, condition_function, update_function)
+	local matches = self:_where_search(condition_function)
 	for _, i in pairs(matches) do
 		row = self:get_row(i)
-		new_row = update_function(row)
-		self:_update_single_row(i, new_row)
+		new_row = update_function(clone(row))
+		self:_update_single_row(i, Df_Tbl(new_row), Df_Tbl(row))
 	end
-end
+end}
 
---
--- set('my_value', 'column_name', 'new_value') : change value for a line
---
--- ARGS: - item_to_find 	(required)	[any]		: value to search
--- 		 - column_name 		(required) 	[string] 	: column where to search
---		 - new_value 		(required) 	[table]		: new value to set for the line
---
--- RETURNS: nothing
---
-function Dataframe:set(item_to_find, column_name, new_value)
+-- Internal function to update a single row from data and index
+Dataframe._update_single_row = argcheck{
+	{name="self", type="Dataframe"},
+	{name="index_row", type="number"},
+	{name="new_row", type="Df_Tbl"},
+	{name="old_row", type="Df_Tbl"},
+	call=function(self, index_row, new_row, old_row)
+	for i=1,#self.columns do
+		local key = self.columns[i]
+		if (new_row.data[key] ~= old_row.data[key] or
+		    (isnan(new_row.data[key]) or
+		     isnan(old_row.data[key]))) then
+			if (self:is_categorical(key)) then
+				new_row.data[key] = self:_get_raw_cat_key(key, new_row.data[key])
+			end
+			self.dataset[key][index_row] = new_row.data[key]
+		end
+	end
+end}
+
+Dataframe.set = argcheck{
+	doc =  [[
+<a name="Dataframe.set">
+### Dataframe.set(@ARGP)
+
+@ARGT
+
+Change value for a line where a column has a certain value
+
+_Return value_: void
+]],
+	{name="self", type="Dataframe"},
+	{name='item_to_find', type='number|string|boolean',
+	 doc='Value to search'},
+	{name='column_name', type='string',
+ 	 doc='The name of the column'},
+	 {name='new_value', type='Df_Dict',
+ 	 doc='Value to replace with'},
+	call = function(self, item_to_find, column_name, new_value)
 	assert(self:has_column(column_name), "Could not find column: " .. tostring(column_name))
+	new_value = new_value.data
+
 	temp_converted_cat_cols = {}
 	column_data = self:get_column(column_name)
 	for i = 1, self.n_rows do
 		if column_data[i] == item_to_find then
 			for _,k in pairs(self.columns) do
-				-- If the column is being updated by the user
+				-- If the column shoul be updated then the user should have set the key
+				-- in the new_key table
 				if new_value[k] ~= nil then
 					if (self:is_categorical(k)) then
 						new_value[k] = self:_get_raw_cat_key(column_name, new_value[k])
@@ -253,16 +290,4 @@ function Dataframe:set(item_to_find, column_name, new_value)
 			break
 		end
 	end
-end
-
--- Internal function to update a single row from data and index
-function Dataframe:_update_single_row(index_row, new_row)
-	for _,key in pairs(self.columns) do
-		if (self:is_categorical(key)) then
-			new_row[key] = self:_get_raw_cat_key(key, new_row[key])
-		end
-		self.dataset[key][index_row] = new_row[key]
-	end
-
-	return row
-end
+end}
