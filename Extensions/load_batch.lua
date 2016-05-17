@@ -1,7 +1,5 @@
-require 'dok'
 local params = {...}
 local Dataframe = params[1]
-
 
 local argcheck = require "argcheck"
 

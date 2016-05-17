@@ -269,7 +269,7 @@ describe("Categorical column", function()
 		local ret_val = a:sub(1,2)
 		assert.are.same(ret_val:shape(), {rows = 2, cols = 3})
 
-		a:add_column("Col D", {0/0, "B", "C"})
+		a:add_column("Col D", Df_Array({0/0, "B", "C"}))
 		ret_val = a:sub(1,2)
 		assert.is_true(isnan(ret_val:get_column('Col D')[1]))-- "Should retain nan value"
 		assert.is.equal(ret_val:get_column('Col D')[2], 'B')-- "Should retain string value"

@@ -72,7 +72,7 @@ describe("Column operations", function()
 
 		it("Allows to use a table as the default value",function()
 			d_col = {0,1,2,3}
-			a:add_column('Col D', d_col)
+			a:add_column('Col D', Df_Array(d_col))
 			assert.are.same(a:get_column('Col D'), d_col)-- "Col D isn't the expected value"
 			assert.are.same(a:shape(), {rows=4, cols=4})-- "The simple_short.csv is 4x3 after add should be 4x4"
 		end)
