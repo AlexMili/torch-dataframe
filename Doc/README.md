@@ -580,13 +580,14 @@ Gets the size of the current batch type.
 
 _Return value_: number of rows/lines (integer)
 <a name="Dataframe.init_batch">
-### Dataframe.init_batch([data_types][, shuffle])
+### Dataframe.init_batch(self[, data_types][, shuffle])
 
 ```
-{
-  [data_types = table]    -- Types of data with corresponding proportions to to split to. [has default value]
-  [shuffle    = boolean]  -- Whether the rows should be shuffled before laoding [default=true]
-}
+({
+   self       = Dataframe  -- 
+  [data_types = Df_Dict]   -- Types of data with corresponding proportions to to split to. [default=false]
+  [shuffle    = boolean]   -- Whether the rows should be shuffled before laoding [default=true]
+})
 ```
 
 Initializes the metadata needed for batch loading. This creates the different
@@ -595,6 +596,11 @@ three are generally the most common choices you are free to define your own data
 
 _Note_: This function must be called prior to load_batch as it needs the
 information for loading correct rows.
+
+The default data split is:
+{['train'] = 0.7,
+ ['validate'] = 0.2,
+ ['test'] = 0.1}
 
 _Return value_: void
 <a name="Dataframe._add_2_batch_datasets">

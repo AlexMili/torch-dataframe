@@ -141,7 +141,7 @@ function _add_single_first_dim(data)
   return data
 end
 
-local check_init = argcheck{
+Dataframe.init_batch = argcheck{
 	doc = [[
 <a name="Dataframe.init_batch">
 ### Dataframe.init_batch(@ARGP)
@@ -155,34 +155,38 @@ three are generally the most common choices you are free to define your own data
 _Note_: This function must be called prior to load_batch as it needs the
 information for loading correct rows.
 
+The default data split is:
+{['train'] = 0.7,
+ ['validate'] = 0.2,
+ ['test'] = 0.1}
+
 _Return value_: void
 ]],
-	noordered=true,
+  {name='self', type='Dataframe'},
 	{name='data_types', type='Df_Dict',
 	 doc='Types of data with corresponding proportions to to split to.',
-	 default=Df_Dict({['train'] = 0.7,
-	          ['validate'] = 0.2,
-	          ['test'] = 0.1})},
+	 default=false},
 	{name='shuffle', type='boolean',
-	 doc="Whether the rows should be shuffled before laoding", default=true}}
-function Dataframe:init_batch(...)
-	if (... == nil) then
-		data_types, shuffle = check_init({})
+	 doc="Whether the rows should be shuffled before laoding", default=true},
+	call=function(self, data_types, shuffle)
+	if (not data_types) then
+		data_types = {['train'] = 0.7,
+		              ['validate'] = 0.2,
+ 		              ['test'] = 0.1}
 	else
-		data_types, shuffle = check_init(...)
+		data_types = data_types.data
 	end
-  data_types = data_types.data
 
 	-- Check data_type for inconcistencies
-  local total = 0
-  for v,p in pairs(data_types) do
-    assert(type(v) == 'string', "The data types keys should be strings")
-    assert(type(p) == 'number', "The data types values should be numbers")
-    total = total + p
-  end
+	local total = 0
+	for v,p in pairs(data_types) do
+		assert(type(v) == 'string', "The data types keys should be strings")
+		assert(type(p) == 'number', "The data types values should be numbers")
+		total = total + p
+	end
 
-  -- Adjust to proportions
-  if (math.abs(total - 1) > 1e-4) then
+	-- Adjust to proportions
+	if (math.abs(total - 1) > 1e-4) then
 		print("Warning: You have provided a total ~= 1 (".. total .. ")")
 		for v,p in pairs(data_types) do
 			data_types[v] = data_types[v]/total
@@ -246,7 +250,7 @@ function Dataframe:init_batch(...)
 			                           shuffle = shuffle}
 		end
 	end
-end
+end}
 
 Dataframe._add_2_batch_datasets = argcheck{
 	doc = [[
