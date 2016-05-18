@@ -115,7 +115,7 @@ describe("Dataframe class", function()
 	it("Inserts new data",function()
 		local a = Dataframe("./data/simple_short.csv")
 
-		a:insert({['Col A']={15},['Col B']={25},['Col C']={35}})
+		a:insert(Df_Dict({['Col A']={15},['Col B']={25},['Col C']={35}}))
 		assert.are.same(a:shape(), {rows=5, cols=3})-- "The simple_short.csv is 4x3 after insert should be 5x3"
 	end)
 

@@ -127,7 +127,7 @@ describe("Column operations", function()
 		end)
 
 		it("Resets multiple columns at once",function()
-			a:reset_column({'Col A', 'Col B'}, 444)
+			a:reset_column(Df_Array('Col A', 'Col B'), 444)
 			assert.are.same(a:get_column('Col A'), {444, 444, 444, 444})
 			assert.are.same(a:get_column('Col B'), {444, 444, 444, 444})
 		end)

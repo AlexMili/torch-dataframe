@@ -2,6 +2,13 @@ local params = {...}
 local Dataframe = params[1]
 
 local argcheck = require "argcheck"
+local doc = require "argcheck.doc"
+
+doc[[
+
+## Missing data functions
+
+]]
 
 Dataframe.count_na = argcheck{
 	doc =  [[

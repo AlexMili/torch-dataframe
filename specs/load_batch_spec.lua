@@ -13,7 +13,7 @@ paths.dofile('init.lua')
 lfs.chdir("specs")
 
 describe("Loading batch process", function()
-		
+
 	it("Should force a call to init_batch",function()
 		local a = Dataframe("./data/realistic_29_row_data.csv")
 		assert.is.error(function() a:load_batch() end)
@@ -55,7 +55,7 @@ describe("Loading batch process", function()
 
 		it("Loads categorical columns",function()
 			a:as_categorical('Gender')
-			data, label, names = a:load_batch(5, 0,function(row) return torch.Tensor({1, 2}) end,'train')
+			data, label, names = a:load_batch(5, 0, function(row) return torch.Tensor({1, 2}) end,'train')
 			assert.is.equal(data:size(1), 5)-- "The data with gender has invalid rows"
 			assert.is.equal(data:size(2), 2)-- "The data with gender has invalid columns"
 			assert.is.equal(label:size(1), 5)-- "The labels with gender have invalid size"
@@ -91,4 +91,3 @@ describe("Loading batch process", function()
 		end)
 	end)
 end)
-

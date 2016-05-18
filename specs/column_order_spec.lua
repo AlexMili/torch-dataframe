@@ -115,6 +115,6 @@ describe("Column order functionality", function()
 
 		assert.is_true(sum < 10^-5)
 
-		assert.is.equal(a:get_column_order{'2nd', as_tensor = true}, nil)
+		assert.is.equal(a:get_column_order{column_name = '2nd', as_tensor = true}, nil)
 	end)
 end)

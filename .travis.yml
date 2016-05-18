@@ -20,7 +20,7 @@ before_install:
   - export PATH=$PATH:$PWD/lua_install/bin
 
 install:
-  - luarocks --from=$TORCH_SERVER install dok
+  - luarocks --from=$TORCH_SERVER install argcheck
   - luarocks --from=$TORCH_SERVER install torch
   - luarocks --from=$TORCH_SERVER install csvigo
   - luarocks install luafilesystem

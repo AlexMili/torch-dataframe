@@ -132,7 +132,7 @@ df:get_random(10):output()
 You can manipulate it:
 
 ```lua
-df:insert({['first_column']={7,8,9},['second_column']={10,11,12}})
+df:insert(Df_Dict({['first_column']={7,8,9},['second_column']={10,11,12}}))
 
 df:drop('image') -- delete column
 df:rename_column('x', 'y') -- rename column 'x' in 'y'
@@ -165,7 +165,7 @@ while displayed as strings. The numeric representation is retained when exportin
 ```lua
 df:as_categorical('my string column') -- converts a column to categorical
 df:get_cat_keys('my string column') -- retreives the keys used to converts
-df:to_categorical({1,2,1}, 'my string column') -- converts numbers to the categories
+df:to_categorical(Df_Array({1,2,1}), 'my string column') -- converts numbers to the categories
 ```
 
 ### Subsetting
