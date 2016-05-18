@@ -1,6 +1,5 @@
 	-- Main Dataframe file
 require 'torch'
-require 'dok'
 
 local argcheck = require "argcheck"
 local doc = require "argcheck.doc"
