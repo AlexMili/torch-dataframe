@@ -132,31 +132,6 @@ describe("Dataframe class", function()
 		assert.are.same(a:shape(), {rows=0, cols=3})
 	end)
 
-	it("Counts and fill missing values of a specific column", function()
-		local a = Dataframe("./data/advanced_short.csv")
-
-		assert.are.same(a:count_na(), {["Col A"]= 0, ["Col B"]= 0, ["Col C"]=1})
-		a:fill_na("Col A", 1)
-		assert.are.same(a:count_na(), {["Col A"]= 0, ["Col B"]= 0, ["Col C"]=1})
-		a:fill_na("Col C", 1)
-		assert.are.same(a:count_na(), {["Col A"]= 0, ["Col B"]= 0, ["Col C"]=0})
-		assert.are.same(a:get_column("Col C"), {8, 1, 9})
-	end)
-
-	it("Fills all Dataframe's missing values", function()
-		local a = Dataframe("./data/advanced_short.csv")
-
-		a.dataset['Col A'][3] = nil
-
-		assert.are.same(a:count_na(), {["Col A"]= 1, ["Col B"]= 0, ["Col C"]=1})
-
-		a:fill_all_na(-1)
-
-		assert.are.same(a:count_na(), {["Col A"]= 0, ["Col B"]= 0, ["Col C"]=0})
-		assert.are.same(a:get_column('Col A'), {1,2,-1})
-	end)
-
-
 	it("Returns first elements of the dataframe",function()
 		local a = Dataframe("./data/simple_short.csv")
 
