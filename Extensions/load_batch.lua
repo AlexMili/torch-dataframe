@@ -158,11 +158,11 @@ information for loading correct rows.
 _Return value_: void
 ]],
 	noordered=true,
-	{name='data_types', type='table',
+	{name='data_types', type='Df_Dict',
 	 doc='Types of data with corresponding proportions to to split to.',
-	 default={['train'] = 0.7,
+	 default=Df_Dict({['train'] = 0.7,
 	          ['validate'] = 0.2,
-	          ['test'] = 0.1}},
+	          ['test'] = 0.1})},
 	{name='shuffle', type='boolean',
 	 doc="Whether the rows should be shuffled before laoding", default=true}}
 function Dataframe:init_batch(...)
@@ -171,6 +171,7 @@ function Dataframe:init_batch(...)
 	else
 		data_types, shuffle = check_init(...)
 	end
+  data_types = data_types.data
 
 	-- Check data_type for inconcistencies
   local total = 0
