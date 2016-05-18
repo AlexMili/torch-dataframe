@@ -117,7 +117,7 @@ _Return value_: void
 	{name="self", type="Dataframe"},
 	{name="default_value", type="number|string|boolean", doc="The default missing value", default=0},
 	call=function(self, default_value)
-	for _,key in pairs(self.columns) do
-		self:fill_na(key, default_value)
+	for i=1,#self.columns do
+		self:fill_na(self.columns[i], default_value)
 	end
 end}

@@ -8,7 +8,7 @@ package = "torch-dataframe"
     summary = "A Dataframe class for Torch",
     detailed = [[
        Dataframe is a Torch7 class to load and manipulate
-       Kaggle-style CSVs inspired from R and pandas Dataframes.
+       Kaggle-style CSVs inspired from R's and pandas' Dataframes.
     ]],
     homepage = "https://github.com/alexmili/torch-dataframe",
     license = "MIT/X11",
@@ -17,6 +17,7 @@ package = "torch-dataframe"
  dependencies = {
     "lua ~> 5.1",
     "torch >= 7.0",
+    "argcheck >= 2.0",
     "luafilesystem >= 1.6.3"
  }
  build = {
@@ -24,13 +25,14 @@ package = "torch-dataframe"
   modules = {
       ["Dataframe.init"] = 'init.lua',
       ["Dataframe.utils"] = 'utils.lua',
+      ["Dataframe.argcheck"] = 'argcheck.lua',
       ["Dataframe.main"] = 'main.lua',
       ["Dataframe.Extensions.categorical"] = 'Extensions/categorical.lua',
       ["Dataframe.Extensions.load_batch"] = 'Extensions/load_batch.lua',
       ["Dataframe.Extensions.load_data"] = 'Extensions/load_data.lua',
       ["Dataframe.Extensions.missing_data"] = 'Extensions/missing_data.lua',
       ["Dataframe.Extensions.output"] = 'Extensions/output.lua',
-      ["Dataframe.Extensions.save_data"] = 'Extensions/save_data.lua',
+      ["Dataframe.Extensions.export_data"] = 'Extensions/export_data.lua',
       ["Dataframe.Extensions.select_set_update"] = 'Extensions/select_set_update.lua',
       ["Dataframe.Extensions.statistics"] = 'Extensions/statistics.lua'
   }

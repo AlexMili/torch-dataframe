@@ -32,80 +32,90 @@ _Return value_: data, label tensors, table with tensor column names
 	 doc='The columns that are to be the label. If omitted defaults to all numerical.',
 	 default=false},
 	call = function(self, no_lines, offset, load_row_fn, type, label_columns)
-  assert(self.batch ~= nil and
-         self.batch.datasets ~= nil,
-         "You must call init_batch before calling load_batch")
-  -- Check argument integrity
-  assert(self.batch.datasets[type] ~= nil, "There is no batch dataset group corresponding to '".. type .."'")
-  assert(isint(no_lines) and
-         (no_lines > 0 or
-          no_lines == -1) and
-          no_lines <= self:batch_size(type),
-         "The number of files to load has to be either -1 for all files or " ..
-         " a positive integer less or equeal to the number of observations in that category " ..
-         self:batch_size(type) .. "." ..
-         " You provided " .. tostring(no_lines))
-  if (no_lines == -1) then no_lines = self:batch_size(type) end
-  assert(isint(offset) and
-         offset >= 0,
-         "The offset has to be a positive integer, you provided " .. tostring(offset))
-  assert(torch.type(load_row_fn) == 'function',
-         "You haven't provided a function that will load the data")
-  if (not label_columns) then
-    label_columns = {}
-  	for k,_ in pairs(self.dataset) do
-  		if (self:is_numerical(k)) then
-  			table.insert(label_columns, k)
-  		end
-  	end
-  else
-    if (type(label_columns) ~= 'table') then
-      label_columns = {label_columns}
-    end
-    for _,k in pairs(label_columns) do
-      assert(dataset[k] ~= nil, "Could not find column " .. tostring(k))
-      assert(self:is_numerical(k), "Column " .. tostring(k) .. " is not numerical")
-    end
-  end
+	assert(self.batch ~= nil and
+	       self.batch.datasets ~= nil,
+	       "You must call init_batch before calling load_batch")
+	-- Check argument integrity
+	assert(self.batch.datasets[type] ~= nil, "There is no batch dataset group corresponding to '".. type .."'")
+	assert(isint(no_lines) and
+	       (no_lines > 0 or
+	        no_lines == -1) and
+	        no_lines <= self:batch_size(type),
+	       "The number of files to load has to be either -1 for all files or " ..
+	       " a positive integer less or equeal to the number of observations in that category " ..
+	       self:batch_size(type) .. "." ..
+	       " You provided " .. tostring(no_lines))
+
+	if (no_lines == -1) then no_lines = self:batch_size(type) end
+
+	assert(isint(offset) and
+	       offset >= 0,
+	       "The offset has to be a positive integer, you provided " .. tostring(offset))
+	assert(torch.type(load_row_fn) == 'function',
+	       "You haven't provided a function that will load the data")
+
+	if (not label_columns) then
+	  label_columns = {}
+		for i=1,#self.columns do
+			if (self:is_numerical(self.columns[i])) then
+				table.insert(label_columns, self.columns[i])
+			end
+		end
+	else
+		if (type(label_columns) ~= 'table') then
+			label_columns = {label_columns}
+		end
+
+		for i=1,#label_columns do
+			assert(args.dataset[label_columns[i]] ~= nil, "Could not find column " .. tostring(k))
+			assert(self:is_numerical(label_columns[i]), "Column " .. tostring(label_columns[i]) .. " is not numerical")
+		end
+	end
 
   local rows = {}
   local start_position = (offset + 1) % self:batch_size(type)
   local stop_position = (no_lines + offset) % self:batch_size(type)
-  if (stop_position == 0) then
-    stop_position = self:batch_size(type)
-  end
-  assert(stop_position ~= start_position and
-         no_lines ~= 1,
-         [[
-         It seems that the start and stop positions are identical. This is most
-         likely due to an unintentional loop where the batch is the size of the
-         self:batch_size(type) + 1
-         ]])
-  -- If we loop and restart the loading then we need to load the last examples
-  --  and then restart from 1
-  if (start_position > stop_position) then
-    for i=start_position,self:batch_size(type) do
-      table.insert(rows, self.batch.datasets[type][i])
-    end
-    start_position = 1
-  end
-  for i=start_position,stop_position do
-    table.insert(rows, self.batch.datasets[type][i])
-  end
-  local dataset_2_load = self:_create_subset(Df_Array(rows))
-  tensor_label, tensor_col_names = dataset_2_load:to_tensor{columns = Df_Array(label_columns)}
-  single_data = load_row_fn(dataset_2_load:get_row(1))
-  single_data = _add_single_first_dim(single_data)
-  tensor_data = single_data
-  if (#rows > 1) then
-    for i = 2,#rows do
-      single_data = load_row_fn(dataset_2_load:get_row(i))
-      single_data = _add_single_first_dim(single_data)
-      tensor_data = torch.cat(tensor_data, single_data, 1)
-    end
-  end
 
-  return tensor_data, tensor_label, tensor_col_names
+	if (stop_position == 0) then
+		stop_position = self:batch_size(type)
+	end
+
+	assert(stop_position ~= start_position and
+	       no_lines ~= 1,
+	       [[
+	       It seems that the start and stop positions are identical. This is most
+	       likely due to an unintentional loop where the batch is the size of the
+	       self:batch_size(type) + 1
+	       ]])
+
+	-- If we loop and restart the loading then we need to load the last examples
+	--  and then restart from 1
+	if (start_position > stop_position) then
+
+		for i=start_position,self:batch_size(type) do
+			table.insert(rows, self.batch.datasets[type][i])
+		end
+
+		start_position = 1
+	end
+
+	for i=start_position,stop_position do
+		table.insert(rows, self.batch.datasets[type][i])
+	end
+	local dataset_2_load = self:_create_subset(Df_Array(rows))
+	tensor_label, tensor_col_names = dataset_2_load:to_tensor{columns = Df_Array(label_columns)}
+	single_data = load_row_fn(dataset_2_load:get_row(1))
+	single_data = _add_single_first_dim(single_data)
+	tensor_data = single_data
+	if (#rows > 1) then
+		for i = 2,#rows do
+			single_data = load_row_fn(dataset_2_load:get_row(i))
+			single_data = _add_single_first_dim(single_data)
+			tensor_data = torch.cat(tensor_data, single_data, 1)
+		end
+	end
+
+	return tensor_data, tensor_label, tensor_col_names
 end}
 
 Dataframe.batch_size = argcheck{
