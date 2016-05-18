@@ -34,7 +34,7 @@ describe("Column order functionality", function()
 					  ['secondColumn']=second,
 					  ['thirdColumn']=third}
 
-		a:load_table{data=Df_Dict(data), column_order = column_order}
+		a:load_table{data=Df_Dict(data), column_order = Df_Array(column_order)}
 
 		assert.are.same(a.column_order, column_order)
 
@@ -56,18 +56,18 @@ describe("Column order functionality", function()
 				   [4] = "secondColumn",
 				   [3] = "thirdColumn"}
 
-		assert.is.error(function() a:load_table{data=Df_Dict(data), column_order=c_order} end)
+		assert.is.error(function() a:load_table{data=Df_Dict(data), column_order=Df_Array(c_order)} end)
 
 		c_order = {[1] = "firstColumn",
 				   [3] = "thirdColumn"}
 
-		assert.is.error(function() a:load_table{data=Df_Dict(data), column_order=c_order} end)
+		assert.is.error(function() a:load_table{data=Df_Dict(data), column_order=Df_Array(c_order)} end)
 
 		c_order = {[1] = "firstColumn",
 				   [2] = "secondColumn",
 				   [3] = "thirdColumn"}
 
-		a:load_table{data=Df_Dict(data), column_order=c_order}
+		a:load_table{data=Df_Dict(data), column_order=Df_Array(c_order)}
 		a:to_csv{path = "tricky_csv.csv"}
 		a:load_csv{path = "tricky_csv.csv", verbose = false}
 
@@ -91,7 +91,7 @@ describe("Column order functionality", function()
 				   [2] = "2nd",
 				   [3] = "3rd"}
 
-		a:load_table{data=Df_Dict(data), column_order=c_order}
+		a:load_table{data=Df_Dict(data), column_order=Df_Array(c_order)}
 		tnsr = a:to_tensor()
 
 		assert.is.equal(tnsr:size(1),a:shape()["rows"])
