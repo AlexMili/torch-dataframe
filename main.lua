@@ -1,63 +1,93 @@
--- Main Dataframe file
+	-- Main Dataframe file
 require 'torch'
 require 'dok'
+
+local argcheck = require "argcheck"
 
 -- create class object
 local Dataframe = torch.class('Dataframe')
 
--- construct a new Dataframe
---
--- ARGS: -csv_or_data (optional) [string|table] : Path to CSV file or a data table for loading initial data
---
--- Returns: a new Dataframe object
-function Dataframe:__init(csv_or_data)
-	-- See https://github.com/torch/dok/issues/13
-	--
-	-- local args = dok.unpack(
-	-- 	{...},
-	-- 	'Dataframe.__init',
-	-- 	'Initializes dataframe object',
-	-- 	{arg='csv_or_data', type='string|table', help='Path to CSV file or a data table for loading initial data', req=false})
+Dataframe.__init = argcheck{
+	doc =  [[
+<a name="Dataframe.__init">
+### Dataframe.__init(@ARGP)
 
+Creates and initializes a Dataframe class. Envoked through `local my_dataframe = Dataframe()`
+
+@ARGT
+
+_Return value_: Dataframe
+]],
+	{name="self", type="Dataframe"},
+	call=function(self)
 	self:_clean()
 	self.print = {no_rows = 10, max_col_width = 20}
+end}
 
-	if (csv_or_data) then
-		if (type(csv_or_data) == 'string') then
-			self:load_csv{path=csv_or_data,verbose=false}
-		elseif(type(csv_or_data) == 'table') then
-			self:load_table{data=Df_Dict(csv_or_data)}
-		else
-			error("Invalid data field type: " .. type(args.csv_or_data))
-		end
-	end
-end
+Dataframe.__init = argcheck{
+	doc =  [[
+Read in an csv-file
+
+@ARGT
+
+_Return value_: Dataframe
+]],
+	overload=Dataframe.__init,
+	{name="self", type="Dataframe"},
+	{name="csv_file", type="string", doc="The file path to the CSV"},
+	call=function(self, csv_file)
+	self:__init()
+	self:load_csv{path=csv_file,verbose=false}
+end}
+
+Dataframe.__init = argcheck{
+	doc =  [[
+Directly input a table
+
+@ARGT
+
+_Return value_: Dataframe
+]],
+	overload=Dataframe.__init,
+	{name="self", type="Dataframe"},
+	{name="data", type="Df_Dict", doc="The data to read in"},
+	call=function(self, data)
+	self:__init()
+	self:load_table{data=data,verbose=false}
+end}
 
 -- Private function for cleaning and reseting all data and meta data
-function Dataframe:_clean()
+Dataframe._clean = argcheck{
+	{name="self", type="Dataframe"},
+	call=function(self)
 	self.dataset = {}
 	self.columns = {}
 	self.column_order = {}
 	self.n_rows = 0
 	self.categorical = {}
 	self.schema = {}
-end
+end}
 
 -- Private function for copying core settings to new Dataframe
-function Dataframe:_copy_meta(to)
+Dataframe._copy_meta = argcheck{
+	{name="self", type="Dataframe"},
+	{name="to", type="Dataframe", doc="The Dataframe to copy to"},
+	call=function(self, to)
 	to.column_order = clone(self.column_order)
 	to.schema = clone(self.schema)
 	to.print = clone(self.print)
 	to.categorical = clone(self.categorical)
 
 	return to
-end
+end}
 
 -- Internal function to collect columns names
-function Dataframe:_refresh_metadata()
-	keyset={}
-	rows = -1
+Dataframe._refresh_metadata = argcheck{
+	{name="self", type="Dataframe"},
+	call=function(self)
 
+	local keyset={}
+	local rows = -1
 	for k,v in pairs(self.dataset) do
 		table.insert(keyset, k)
 
@@ -72,21 +102,24 @@ function Dataframe:_refresh_metadata()
 		else
 		 	assert(rows == no_rows_in_v,
 			       "It seems that the number of elements in row " ..
-						 k .. " (# " .. no_rows_in_v .. ")" ..
-						 " don't match the number of elements in other rows #" .. rows)
+			       k .. " (# " .. no_rows_in_v .. ")" ..
+			       " don't match the number of elements in other rows #" .. rows)
 		 end
 	end
 
 	self.columns = keyset
 	self.n_rows = rows
-end
+end}
 
 -- Internal function to detect columns types
-function Dataframe:_infer_schema(max_rows)
-	rows_to_explore = math.min(max_rows or 1e3, self.n_rows)
+Dataframe._infer_schema = argcheck{
+	{name="self", type="Dataframe"},
+	{name="max_rows", type="number", doc="The maximum number of rows to traverse", default=1e3},
+	call=function(self, max_rows)
+	local rows_to_explore = math.min(max_rows, self.n_rows)
 
 	for _,key in pairs(self.columns) do
-		is_a_numeric_column = true
+		local is_a_numeric_column = true
 		self.schema[key] = 'string'
 		if (self:is_categorical(key)) then
 			self.schema[key] = 'number'
@@ -112,7 +145,7 @@ function Dataframe:_infer_schema(max_rows)
 			end
 		end
 	end
-end
+end}
 
 --
 -- shape() : give the number of rows and columns
@@ -121,9 +154,58 @@ end
 --
 -- RETURNS: {rows=x,cols=y}
 --
-function Dataframe:shape()
+Dataframe.shape = argcheck{
+	doc =  [[
+<a name="Dataframe.shape">
+### Dataframe.shape(@ARGP)
+
+Returns the number of rows and columns in a table
+
+@ARGT
+
+_Return value_: table
+]],
+	{name="self", type="Dataframe"},
+	call=function(self)
 	return {rows=self.n_rows,cols=#self.columns}
-end
+end}
+
+Dataframe.size = argcheck{
+	doc =  [[
+<a name="Dataframe.size">
+### Dataframe.size(@ARGP)
+
+Returns the number of rows and columns in a tensor
+
+@ARGT
+
+_Return value_: tensor (rows, columns)
+]],
+	{name="self", type="Dataframe"},
+	call=function(self)
+	return torch.IntTensor({self.n_rows,#self.columns})
+end}
+
+Dataframe.size = argcheck{
+	doc =  [[
+By providing dimension you can get only that dimension, row == 1, col == 2
+
+@ARGT
+
+_Return value_: integer
+]],
+	overload=Dataframe.size,
+	{name="self", type="Dataframe"},
+	{name="dim", type="number", doc="The dimension of interest"},
+	call=function(self, dim)
+	assert(isint(dim), "The dimension isn't an integer: " .. tostring(dim))
+	assert(dim == 1 or dim == 2, "The dimension can only be between 1 and 2 - you've provided: " .. dim)
+	if (dim == 1) then
+		return self.n_rows
+	end
+
+	return #self.columns
+end}
 
 --
 -- insert({['first_column']={6,7,8,9},['second_column']={6,7,8,9}}) : insert values to dataset

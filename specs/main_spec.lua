@@ -34,10 +34,11 @@ describe("Dataframe class", function()
 		end)
 
 		it("Loads a table if passed in argument",function()
-			local df = Dataframe({
+			local df = Dataframe()
+			df:load_table(Df_Dict({
 				['first_column']={3,4,5},
 				['second_column']={10,11,12}
-			})
+			}))
 
 			assert.are.same(df:get_column("first_column"), {3,4,5})
 			assert.are.same(df:get_column("second_column"), {10,11,12})
@@ -47,10 +48,11 @@ describe("Dataframe class", function()
 	describe("When using internal functions",function()
 
 		it("Resets all class-variables to default values ",function()
-			local df = Dataframe({
+			local df = Dataframe()
+			df:load_table(Df_Dict({
 				['first_column']={3,4,5},
 				['second_column']={10,11,12}
-			})
+			}))
 
 			df:_clean()
 

@@ -70,11 +70,14 @@ _Return value_: void
 	{name="data", type="Df_Dict", doc="Table (dictionary) to import. Max depth 2."},
 	{name="infer_schema", type="boolean", default=true,
 	 doc="automatically detect columns' type"},
-	{name="column_order", type="table", default=false,
+	{name="column_order", type="Df_Array", default=false,
 	 doc="The order of the column (has to be array and _not_ a dictionary)"},
 	call=function(self, data, infer_schema, column_order)
 	self:_clean()
 	data = data.data
+	if (column_order) then
+		column_order = column_order.data
+	end
 
 	-- Check that all columns with a length > 1 has the same number of rows (length)
 	local length = -1

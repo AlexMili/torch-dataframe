@@ -97,7 +97,7 @@ describe("Loading data process", function()
 			df:load_table{data=Df_Dict({
 				['        first_column']={3,5,8},
 				['second_column       ']={10,11,12}
-			}),column_order={'first_column     ','      second_column'}}
+			}),column_order=Df_Array('first_column     ','      second_column')}
 
 			assert.are.same(df.column_order,{'first_column','second_column'})
 			assert.has.no_error(function() df:get_column('first_column') end)
