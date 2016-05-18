@@ -89,6 +89,11 @@ table.collapse_to_string = function(tbl)
 			if (ret ~= "") then
 				ret = ret .. ", "
 			end
+
+			if (type(v) == "table") then
+				v = ("[%s]"):format(table.collapse_to_string(v))
+			end
+
 			ret = ret .. "'" .. v .."'"
 		end
 	else
@@ -96,9 +101,15 @@ table.collapse_to_string = function(tbl)
 			if (ret ~= "") then
 				ret = ret .. ", "
 			end
+
+			if (type(v) == "table") then
+				v = ("[%s]"):format(table.collapse_to_string(v))
+			end
+
 			ret = ret .. "'" .. k .. "'=>'" .. v .. "'"
 		end
 	end
+	
 	return ret
 end
 
