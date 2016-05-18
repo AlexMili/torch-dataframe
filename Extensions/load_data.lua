@@ -3,6 +3,13 @@ local params = {...}
 local Dataframe = params[1]
 
 local argcheck = require "argcheck"
+local doc = require "argcheck.doc"
+
+doc[[
+
+## Data loader functions
+
+]]
 
 Dataframe.load_csv = argcheck{
 	doc =  [[

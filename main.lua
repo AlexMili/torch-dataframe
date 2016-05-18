@@ -3,6 +3,13 @@ require 'torch'
 require 'dok'
 
 local argcheck = require "argcheck"
+local doc = require "argcheck.doc"
+
+doc[[
+
+## Core functions
+
+]]
 
 -- create class object
 local Dataframe = torch.class('Dataframe')
@@ -207,17 +214,27 @@ _Return value_: integer
 	return #self.columns
 end}
 
---
--- insert({['first_column']={6,7,8,9},['second_column']={6,7,8,9}}) : insert values to dataset
---
--- ARGS: - rows (required) [table] : data to inset
---
--- RETURNS: nothing
---
-function Dataframe:insert(rows)
-	assert(type(rows) == 'table')
-	no_rows_2_insert = 0
-	new_columns = {}
+Dataframe.insert = argcheck{
+	doc =  [[
+<a name="Dataframe.insert">
+### Dataframe.insert(@ARGP)
+
+Inserts a row or multiple rows into database. Automatically appends to the Dataframe.
+
+@ARGT
+
+_Return value_: void
+]],
+	{name="self", type="Dataframe"},
+	{name="rows", type="Df_Dict", doc="Insert values to the dataset"},
+	call=function(self, rows)
+	rows = rows.data
+	if (self:size(1) == 0) then
+		return self:load_table{data = Df_Dict(rows)}
+	end
+
+	local no_rows_2_insert = 0
+	local new_columns = {}
 	for k,v in pairs(rows) do
 		-- Force all input into tables
 		if (type(v) ~= 'table') then
@@ -231,26 +248,13 @@ function Dataframe:insert(rows)
 		else
 			assert(no_rows_2_insert == table.maxn(v),
 			       "The rows aren't the same between the columns." ..
-						 " The " .. k .. " column has " .. " " .. table.maxn(v) .. " rows" ..
-						 " while previous columns had " .. no_rows_2_insert .. " rows")
+			       " The " .. k .. " column has " .. " " .. table.maxn(v) .. " rows" ..
+			       " while previous columns had " .. no_rows_2_insert .. " rows")
 		end
 
-		-- Check if we need to add this column to the existing Dataframe
-		found = false
-		for _,column_name in pairs(self.columns) do
-			if (column_name == k) then
-				found = true
-				break
-			end
+		if (not table.has_element(self.columns, k)) then
+			self:add_column(k)
 		end
-		if (not found) then
-			table.insert(new_columns, k)
-		end
-	end
-
-	if (#self.columns == 0) then
-		self:load_table{data = Df_Dict(rows)}
-		return nil
 	end
 
 	for _, column_name in pairs(self.columns) do
@@ -271,121 +275,133 @@ function Dataframe:insert(rows)
 			end
 		end
 	end
-	-- We need to add columns previously not present
-	for _, column_name in pairs(new_columns) do
-		self.dataset[column_name] = {}
-		for j = 1,self.n_rows do
-			self.dataset[column_name][j] = 0/0
-		end
-		for j = 1,no_rows_2_insert do
-			self.dataset[column_name][self.n_rows + j] = rows[column_name][j]
-		end
-	end
+
 	self:_refresh_metadata()
 	self:_infer_schema()
-end
+end}
 
---
--- remove_index('index') : deletes a row
---
--- ARGS: - index (required) [integer] : delete a row number
---
--- RETURNS: nothing
---
-function Dataframe:remove_index(index)
+Dataframe.remove_index = argcheck{
+	doc =  [[
+<a name="Dataframe.remove_index">
+### Dataframe.remove_index(@ARGP)
+
+Deletes a given row
+
+@ARGT
+
+_Return value_: void
+]],
+	{name="self", type="Dataframe"},
+	{name="index", type="number", doc="The row index to remove"},
+	call=function(self, index)
 	assert(isint(index), "The index should be an integer, you've provided " .. tostring(index))
+	assert(index > 0 and index <= self.n_rows, ("The index (%d) is outside the bounds 1-%d"):format(index, self.n_rows))
+
 	for i = 1,#self.columns do
 		table.remove(self.dataset[self.columns[i]],index)
 	end
+	self.n_rows = self.n_rows - 1
+
 	self:_refresh_metadata()
-end
+end}
 
---
--- unique() : get unique elements given a column name
---
--- ARGS: - see dok.unpack
---
--- RETURNS : table with unique values or if as_keys == true then the unique value
---           as key with an incremental integer value => {'unique1':1, 'unique2':2, 'unique6':3}
---
-function Dataframe:unique(...)
-	local args = dok.unpack(
-		{...},
-		'Dataframe.unique',
-		'get unique elements given a column name',
-		{arg='column_name', type='string', help='column to inspect', req=true},
-		{arg='as_keys', type='boolean',
-		 help='return table with unique as keys and a count for frequency',
-		 default=false},
-		{arg='as_raw', type='boolean',
- 		 help='return table with raw data without categorical transformation',
- 		 default=false}
-	)
-	assert(self:has_column(args.column_name),
-	       "Invalid column name: " .. tostring(args.column_name))
-	unique = {}
-	unique_values = {}
-	count = 0
+Dataframe.unique = argcheck{
+	doc =  [[
+<a name="Dataframe.unique">
+### Dataframe.unique(@ARGP)
 
-	column_values = self:get_column{column_name = args.column_name,
-																	as_raw = args.as_raw}
+Get unique elements given a column name
+
+@ARGT
+
+_Return value_:  table with unique values or if as_keys == true then the unique
+	value as key with an incremental integer value => {'unique1':1, 'unique2':2, 'unique6':3}
+]],
+	{name="self", type="Dataframe"},
+	{name='column_name', type='string', help='column to inspect', req=true},
+	{name='as_keys', type='boolean',
+	 help='return table with unique as keys and a count for frequency',
+	 default=false},
+	{name='as_raw', type='boolean',
+	 help='return table with raw data without categorical transformation',
+	 default=false},
+	call=function(self, column_name, as_keys, as_raw)
+	assert(self:has_column(column_name),
+	       "Invalid column name: " .. tostring(column_name))
+	local unique = {}
+	local unique_values = {}
+	local count = 0
+
+	local column_values = self:get_column{column_name = column_name,
+																	as_raw = as_raw}
 	for i = 1,self.n_rows do
-		current_key_value = column_values[i]
+		local current_key_value = column_values[i]
 		if (current_key_value ~= nil and
 		    not isnan(current_key_value)) then
 			if (unique[current_key_value] == nil) then
 				count = count + 1
 				unique[current_key_value] = count
 
-				if args.as_keys == false then
+				if as_keys == false then
 					table.insert(unique_values, current_key_value)
 				end
 			end
 		end
 	end
 
-	if args.as_keys == false then
+	if as_keys == false then
 		return unique_values
 	else
 		return unique
 	end
-end
+end}
 
 -- Internal function for getting raw value for a categorical variable
-function Dataframe:_get_raw_cat_key(column_name, key)
+Dataframe._get_raw_cat_key = argcheck{
+	{name="self", type="Dataframe"},
+	{name="column_name", type="string", doc="The name of the column"},
+	{name="key", type="number|string|boolean|nan"},
+	call=function(self, column_name, key)
 	if (isnan(key)) then
 		return key
 	end
-	keys = self:get_cat_keys(column_name)
+
+	local keys = self:get_cat_keys(column_name)
 	if (keys[key] ~= nil) then
 		return keys[key]
 	end
 
 	return self:add_cat_key(column_name, key)
-end
+end}
 
---
--- get_row(index_row): gets a single row from the Dataframe
---
--- ARGS: - index_row (required) (integer) The row to fetch
---
--- RETURNS: A table with the row content
-function Dataframe:get_row(index_row)
-	assert(index_row > 0 and
-	      index_row <= self:shape()["rows"],
-				"Cannot fetch rows outside the matrix, i.e. " .. index_row .. " should be <= " .. self:shape()["rows"] .. " and positive")
-	row = {}
+Dataframe.get_row = argcheck{
+	doc =  [[
+<a name="Dataframe.get_row">
+### Dataframe.get_row(@ARGP)
 
-	for index,key in pairs(self.columns) do
+Gets a single row from the Dataframe
+
+@ARGT
+
+_Return value_: A table with the row content
+]],
+	{name="self", type="Dataframe"},
+	{name='index', type='number', doc='The row index to retrieve'},
+	call=function(self, index)
+	assert(isint(index), "The index should be an integer, you've provided " .. tostring(index))
+	assert(index > 0 and index <= self.n_rows, ("The index (%d) is outside the bounds 1-%d"):format(index, self.n_rows))
+
+	local row = {}
+	for _,key in pairs(self.columns) do
 		if (self:is_categorical(key)) then
-			row[key] = self:to_categorical(self.dataset[key][index_row],
+			row[key] = self:to_categorical(self.dataset[key][index],
 			                               key)
 		else
-			row[key] = self.dataset[key][index_row]
+			row[key] = self.dataset[key][index]
 		end
 	end
 
 	return row
-end
+end}
 
 return Dataframe

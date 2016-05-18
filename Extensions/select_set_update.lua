@@ -2,6 +2,13 @@ local params = {...}
 local Dataframe = params[1]
 
 local argcheck = require "argcheck"
+local doc = require "argcheck.doc"
+
+doc[[
+
+## Subsetting and manipulation functions
+
+]]
 
 Dataframe.sub = argcheck{
 	doc =  [[
@@ -135,7 +142,7 @@ _Return value_: Dataframe
 	local ret = Dataframe.new()
 	for _,i in pairs(index_items) do
 		local val = self:get_row(i)
-		ret:insert(val)
+		ret:insert(Df_Dict(val))
 	end
 	self.categorical = tmp
 	ret = self:_copy_meta(ret)

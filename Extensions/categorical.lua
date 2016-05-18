@@ -2,6 +2,13 @@ local params = {...}
 local Dataframe = params[1]
 
 local argcheck = require "argcheck"
+local doc = require "argcheck.doc"
+
+doc[[
+
+## Categorical functions
+
+]]
 
 Dataframe.as_categorical = argcheck{
 	doc =  [[
@@ -38,9 +45,8 @@ Dataframe.as_categorical = argcheck{
 	for _,cn in pairs(column_array) do
 		assert(self:has_column(cn), "Could not find column: " .. cn)
 		assert(not self:is_categorical(cn), "Column already categorical")
-		keys = self:unique{column_name = cn,
-											 as_keys = true,
-											 trim_values = true}
+
+		keys = self:unique(cn, true, true)
 		-- drop '' as a key
 		keys[''] = nil
 		column_data = self:get_column(cn)

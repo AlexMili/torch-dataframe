@@ -174,7 +174,7 @@ end
 function df_tests.insert()
   local a = Dataframe("simple_short.csv")
 
-  a:insert({['Col A']={15},['Col B']={25},['Col C']={35}})
+  a:insert(Df_Dict({['Col A']={15},['Col B']={25},['Col C']={35}}))
   tester:eq(a:shape(), {rows=5, cols=3},
     "The simple_short.csv is 4x3 after insert should be 5x3")
 end

@@ -121,7 +121,7 @@ function cat_tests.insert()
   local new_data = {["Col A"] = 1,
                     ["Col B"] = "C",
                     ["Col C"] = 10}
-  a:insert(new_data)
+  a:insert(Df_Dict(new_data))
   tester:eq(a:get_cat_keys('Col B'), {A=1, B=2, C=3})
 end
 
@@ -263,7 +263,7 @@ function cat_tests.where()
   local new_data = {["Col A"] = 1,
                     ["Col B"] = "C",
                     ["Col C"] = 10}
-  ret_val:insert(new_data)
+  ret_val:insert(Df_Dict(new_data))
   tester:eq(ret_val:from_categorical({'A', 'B', 'C'}, 'Col B'),
             {1, 2, 3},
             "The categorical should add the new value as the last number")

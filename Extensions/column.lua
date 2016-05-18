@@ -2,6 +2,13 @@ local params = {...}
 local Dataframe = params[1]
 
 local argcheck = require "argcheck"
+local doc = require "argcheck.doc"
+
+doc[[
+
+## Column functions
+
+]]
 
 Dataframe.is_numerical = argcheck{
 	doc = [[
@@ -165,72 +172,99 @@ _Return value_: void
 	self:_refresh_metadata()
 end}
 
---
--- get_column('column_name') : get column content
---
--- ARGS: - column_name (required) [string] : column requested
---       - as_raw      (optional) [boolean]: if data should be converted to actual values
---
--- RETURNS: column in table format
---
-function Dataframe:get_column(...)
-	local args = dok.unpack(
-		{...},
-		'Dataframe.get_column',
-		'Gets the column data from the self.dataset',
-		{arg='column_name', type='table', help='column requested', req=true},
-		{arg='as_raw', type='boolean', help='convert categorical values to original', default=false},
-		{arg='as_tensor', type='boolean', help='convert to tensor', default=false}
-	)
-	assert(self:has_column(args.column_name), "Could not find column: " .. tostring(args.column_name))
-	assert(not args.as_tensor or
-	       self:is_numerical(args.column_name),
+Dataframe.get_column = argcheck{
+	doc = [[
+<a name="Dataframe.get_column">
+### Dataframe.get_column(@ARGP)
+
+@ARGT
+
+Gets the column from the `self.dataset`
+
+_Return value_: table or tensor
+]],
+	{name="self", type="Dataframe"},
+	{name='column_name', type='string', doc='The column requested'},
+	{name='as_raw', type='boolean', doc='Convert categorical values to original', default=false},
+	{name='as_tensor', type='boolean', doc='Convert to tensor', default=false},
+	call=function(self, column_name, as_raw, as_tensor)
+	assert(self:has_column(column_name), "Could not find column: " .. tostring(column_name))
+	assert(not as_tensor or
+	       self:is_numerical(column_name),
 				 "Converting to tensor requires a numerical/categorical variable." ..
-				 " The column " .. tostring(args.column_name) ..
-				 " is of type " .. tostring(self.schema[args.column_name]))
+				 " The column " .. tostring(column_name) ..
+				 " is of type " .. tostring(self.schema[column_name]))
 
-	column_data = self.dataset[args.column_name]
+	column_data = self.dataset[column_name]
 
-	if (not args.as_tensor and not args.as_raw and
-	    self:is_categorical(args.column_name)) then
-		return self:to_categorical(Df_Array(column_data), args.column_name)
-	elseif (args.as_tensor) then
+	if (not as_tensor and not as_raw and
+	    self:is_categorical(column_name)) then
+		return self:to_categorical(Df_Array(column_data), column_name)
+	elseif (as_tensor) then
 		return torch.Tensor(column_data)
 	else
 		return column_data
 	end
-end
+end}
 
---
--- reset_column('column_name', 'new_value') : change value of a whole column
---
--- ARGS: - column_name 	(required)	[string or table]	: column(s) name to change
---		 - new_value 	(required) 	[any]				: new value to set
---
--- RETURNS: nothing
---
-function Dataframe:reset_column(column_name, new_value)
-	if type(column_name) == 'string' then
-		column_name = {column_name}
+
+
+
+
+Dataframe.reset_column = argcheck{
+	doc = [[
+<a name="Dataframe.reset_column">
+### Dataframe.reset_column(@ARGP)
+
+Change value of a whole column or columns
+
+@ARGT
+
+_Return value_: void
+]],
+	{name="self", type="Dataframe"},
+	{name='columns', type='Df_Array', doc='The columns to reset'},
+	{name='new_value', type='number|string|boolean', doc='New value to set', default=0/0},
+	call=function(self, columns, new_value)
+	columns = columns.data
+	for i=1,#columns do
+		self:reset_column(columns[i], new_value)
 	end
+end}
 
-	for _,k in pairs(column_name) do
-		assert(self:has_column(k), "Could not find column: " .. tostring(k))
-		for i = 1,self.n_rows do
-			self.dataset[k][i] = new_value
-		end
+Dataframe.reset_column = argcheck{
+	doc = [[
+
+@ARGT
+
+]],
+	overload=Dataframe.reset_column,
+	{name="self", type="Dataframe"},
+	{name='column_name', type='string', doc='The column requested'},
+	{name='new_value', type='number|string|boolean|nan', doc='New value to set', default=0/0},
+	call=function(self, column_name, new_value)
+
+	assert(self:has_column(k), "Could not find column: " .. tostring(k))
+	for i = 1,self.n_rows do
+		self.dataset[k][i] = new_value
 	end
-end
+end}
 
---
--- rename_column('oldname', 'newName') : rename column
---
--- ARGS: - old_column_name 		(required)	[string]	: current column name
---		 - new_default_value 	(required) 	[string]	: new column name
---
--- RETURNS: nothing
---
-function Dataframe:rename_column(old_column_name, new_column_name)
+Dataframe.rename_column = argcheck{
+	doc = [[
+<a name="Dataframe.rename_column">
+### Dataframe.rename_column(@ARGP)
+
+Rename a column
+
+@ARGT
+
+_Return value_: void
+]],
+	{name="self", type="Dataframe"},
+	{name='old_column_name', type='string', doc='The old column name'},
+	{name='new_column_name', type='string', doc='The new column name'},
+	call=function(self, old_column_name, new_column_name)
 	assert(self:has_column(old_column_name), "Could not find column: " .. tostring(old_column_name))
 	assert(not self:has_column(new_column_name), "There is already a column named: " .. tostring(new_column_name))
 	assert(type(new_column_name) == "string" or
@@ -261,18 +295,22 @@ function Dataframe:rename_column(old_column_name, new_column_name)
 
 	self:_refresh_metadata()
 	self:_infer_schema()
-end
+end}
 
---
--- get_numerical_colnames() : Gets the names of all the columns that are numerical
---
--- ARGS: none
---
--- RETURNS: table
---
-function Dataframe:get_numerical_colnames()
-	columns = {}
+Dataframe.get_numerical_colnames = argcheck{
+	doc = [[
+<a name="Dataframe.get_numerical_colnames">
+### Dataframe.get_numerical_colnames(@ARGP)
 
+Gets the names of all the columns that are numerical
+
+@ARGT
+
+_Return value_: table
+]],
+	{name="self", type="Dataframe"},
+	call=function(self)
+	local columns = {}
 	for i = 1,#self.column_order do
 		k = self.column_order[i]
 		if (self:is_numerical(k)) then
@@ -281,25 +319,25 @@ function Dataframe:get_numerical_colnames()
 	end
 
 	return columns
-end
+end}
 
---
--- get_column_order : Gets the column index of the provided column
---
--- ARGS: - column_name (required) [string] : the name of the column
---       - as_tensor (optional) [boolaen] : if return index position in tensor
---
--- RETURNS: integer
-function Dataframe:get_column_order(...)
-	local args = dok.unpack(
-		{...},
-		'Dataframe.get_column_order',
-		'Gets the index number of the column name',
-		{arg='column_name', type='string', help='the name of the column', req=true},
-		{arg='as_tensor', type='boolean', help='if return index position in tensor', default=false}
-	)
+Dataframe.get_column_order = argcheck{
+	doc = [[
+<a name="Dataframe.get_column_order">
+### Dataframe.get_column_order(@ARGP)
 
-	assert(self:has_column(column_name), "Could not find column: " .. tostring(args.column_name))
+Gets the column order index
+
+@ARGT
+
+_Return value_: integer
+]],
+	{name="self", type="Dataframe"},
+	{name="column_name", type="string", doc="The name of the column"},
+	{name="as_tensor", type="boolean", doc="If return index position in tensor", default=false},
+	call=function(self, column_name, as_tensor)
+
+	assert(self:has_column(column_name), "Could not find column: " .. tostring(column_name))
 
 	number_count = 0
 	for i = 1,#self.column_order do
@@ -309,11 +347,11 @@ function Dataframe:get_column_order(...)
 			number_count = number_count + 1
 		end
 
-		if (args.column_name == column_name) then
-			if (args.as_tensor and
+		if (column_name == column_name) then
+			if (as_tensor and
 			    self:is_numerical(column_name)) then
 				return number_count
-			elseif (not args.as_tensor) then
+			elseif (not as_tensor) then
 				return i
 			else
 				-- Defaults to nil since the variable isn't in the tensor and therefore
@@ -324,4 +362,162 @@ function Dataframe:get_column_order(...)
 	end
 
 	return nil
-end
+end}
+
+
+
+
+
+Dataframe.reset_column = argcheck{
+	doc = [[
+<a name="Dataframe.reset_column">
+### Dataframe.reset_column(@ARGP)
+
+Change value of a whole column or columns
+
+@ARGT
+
+_Return value_: void
+]],
+	{name="self", type="Dataframe"},
+	{name='columns', type='Df_Array', doc='The columns to reset'},
+	{name='new_value', type='number|string|boolean', doc='New value to set', default=0/0},
+	call=function(self, columns, new_value)
+	columns = columns.data
+	for i=1,#columns do
+		self:reset_column(columns[i], new_value)
+	end
+end}
+
+Dataframe.reset_column = argcheck{
+	doc = [[
+
+@ARGT
+
+]],
+	overload=Dataframe.reset_column,
+	{name="self", type="Dataframe"},
+	{name='column_name', type='string', doc='The column requested'},
+	{name='new_value', type='number|string|boolean|nan', doc='New value to set', default=0/0},
+	call=function(self, column_name, new_value)
+	assert(self:has_column(column_name), "Could not find column: " .. tostring(k))
+
+	for i = 1,self.n_rows do
+		self.dataset[column_name][i] = new_value
+	end
+
+end}
+
+Dataframe.rename_column = argcheck{
+	doc = [[
+<a name="Dataframe.rename_column">
+### Dataframe.rename_column(@ARGP)
+
+Rename a column
+
+@ARGT
+
+_Return value_: void
+]],
+	{name="self", type="Dataframe"},
+	{name='old_column_name', type='string', doc='The old column name'},
+	{name='new_column_name', type='string', doc='The new column name'},
+	call=function(self, old_column_name, new_column_name)
+	assert(self:has_column(old_column_name), "Could not find column: " .. tostring(old_column_name))
+	assert(not self:has_column(new_column_name), "There is already a column named: " .. tostring(new_column_name))
+	assert(type(new_column_name) == "string" or
+	       type(new_column_name) == "number",
+				 "The column name can only be a number or a string value, yours is: " .. type(new_column_name))
+
+	temp_dataset = {}
+
+	for k,v in pairs(self.dataset) do
+		if k ~= old_column_name then
+			temp_dataset[k] = v
+		else
+			temp_dataset[new_column_name] = v
+		end
+	end
+
+	self.dataset = temp_dataset
+	if (self:is_categorical(old_column_name)) then
+		self.categorical[new_column_name] = self.categorical[old_column_name]
+		self.categorical[old_column_name] = nil
+	end
+
+	for k,v in pairs(self.column_order) do
+		if v == old_column_name then
+			self.column_order[k] = new_column_name
+		end
+	end
+
+	self:_refresh_metadata()
+	self:_infer_schema()
+end}
+
+Dataframe.get_numerical_colnames = argcheck{
+	doc = [[
+<a name="Dataframe.get_numerical_colnames">
+### Dataframe.get_numerical_colnames(@ARGP)
+
+Gets the names of all the columns that are numerical
+
+@ARGT
+
+_Return value_: table
+]],
+	{name="self", type="Dataframe"},
+	call=function(self)
+	local columns = {}
+	for i = 1,#self.column_order do
+		k = self.column_order[i]
+		if (self:is_numerical(k)) then
+			table.insert(columns, k)
+		end
+	end
+
+	return columns
+end}
+
+Dataframe.get_column_order = argcheck{
+	doc = [[
+<a name="Dataframe.get_column_order">
+### Dataframe.get_column_order(@ARGP)
+
+Gets the column order index
+
+@ARGT
+
+_Return value_: integer
+]],
+	{name="self", type="Dataframe"},
+	{name="column_name", type="string", doc="The name of the column"},
+	{name="as_tensor", type="boolean", doc="If return index position in tensor", default=false},
+	call=function(self, column_name, as_tensor)
+
+	assert(self:has_column(column_name), "Could not find column: " .. tostring(column_name))
+
+	local number_count = 0
+	for i = 1,#self.column_order do
+		local cn = self.column_order[i]
+
+		if (self:is_numerical(cn)) then
+			number_count = number_count + 1
+		end
+
+		if (cn == column_name) then
+			if (as_tensor and
+			    self:is_numerical(cn)) then
+				return number_count
+			elseif (not as_tensor) then
+				return i
+			else
+				-- Defaults to nil since the variable isn't in the tensor and therefore
+				-- irrelevant
+				return nil
+			end
+		end
+	end
+
+	return nil
+end}
