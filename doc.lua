@@ -1,7 +1,5 @@
 require "lfs"
-argdoc = require 'argcheck.doc'
-
-argdoc.record()
+local argdoc = require 'argcheck.doc'
 
 local file_exists = function(name)
    local f=io.open(name,"r")
@@ -34,16 +32,31 @@ assert(loadfile(utils_file))()
 local argcheck_file = string.gsub(dataframe_path,"?", "argcheck")
 assert(loadfile(argcheck_file))()
 
+-- Documentation
+local mainfile = io.open("Doc/main.md", "w")
+argdoc.record()
+
 local main_file = string.gsub(dataframe_path,"?", "main")
 local Dataframe = assert(loadfile(main_file))()
+
+mainfile:write(argdoc.stop())
+mainfile:close()
 
 -- Load all extensions, i.e. .lua files in Extensions directory
 ext_path = string.gsub(dataframe_path, "[^/]+$", "") .. "Extensions/"
 for extension_file,_ in lfs.dir (ext_path) do
   if (string.match(extension_file, "[.]lua$")) then
     local file = ext_path .. extension_file
+
+    -- Documentation
+    local doc_filename = extension_file:gsub(".lua","")
+    local doc_file = io.open("Doc/"..doc_filename..".md", "w")
+    argdoc.record()
+    
     assert(loadfile(file))(Dataframe)
+
+    doc_file:write(argdoc.stop())
+    doc_file:close()
   end
 end
 
-print(argdoc.stop())
