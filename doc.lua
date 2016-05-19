@@ -32,6 +32,10 @@ assert(loadfile(utils_file))()
 local argcheck_file = string.gsub(dataframe_path,"?", "argcheck")
 assert(loadfile(argcheck_file))()
 
+-- README file
+local readmefile = io.open("Doc/README.md", "w")
+readmefile:write("# Documentation\n\n")
+
 -- Documentation
 local mainfile = io.open("Doc/main.md", "w")
 argdoc.record()
@@ -39,7 +43,12 @@ argdoc.record()
 local main_file = string.gsub(dataframe_path,"?", "main")
 local Dataframe = assert(loadfile(main_file))()
 
-mainfile:write(argdoc.stop())
+content = argdoc.stop()
+title = content:split("\n")[1]
+title = trim(title:gsub("#",""))
+readmefile:write("- ["..title.."](main.md)\n")
+
+mainfile:write(content)
 mainfile:close()
 
 -- Load all extensions, i.e. .lua files in Extensions directory
@@ -49,14 +58,22 @@ for extension_file,_ in lfs.dir (ext_path) do
     local file = ext_path .. extension_file
 
     -- Documentation
-    local doc_filename = extension_file:gsub(".lua","")
-    local doc_file = io.open("Doc/"..doc_filename..".md", "w")
+    local doc_filename = extension_file:gsub(".lua",".md")
+    local doc_file = io.open("Doc/"..doc_filename, "w")
     argdoc.record()
     
     assert(loadfile(file))(Dataframe)
 
-    doc_file:write(argdoc.stop())
+    content = argdoc.stop()
+    title = content:split("\n")[1]
+    title = trim(title:gsub("#",""))
+    readmefile:write("- ["..title.."]("..doc_filename..")\n")
+
+    doc_file:write(content)
     doc_file:close()
   end
 end
+
+
+readmefile:close()
 
