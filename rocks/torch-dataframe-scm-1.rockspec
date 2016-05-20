@@ -28,6 +28,7 @@ package = "torch-dataframe"
       ["Dataframe.argcheck"] = 'argcheck.lua',
       ["Dataframe.main"] = 'main.lua',
       ["Dataframe.Extensions.categorical"] = 'Extensions/categorical.lua',
+			["Dataframe.Extensions.column"] = 'Extensions/column.lua',
       ["Dataframe.Extensions.load_batch"] = 'Extensions/load_batch.lua',
       ["Dataframe.Extensions.load_data"] = 'Extensions/load_data.lua',
       ["Dataframe.Extensions.missing_data"] = 'Extensions/missing_data.lua',
