@@ -35,8 +35,8 @@ package = "torch-dataframe"
       ["Dataframe.Extensions.export_data"] = 'Extensions/export_data.lua',
       ["Dataframe.Extensions.select_set_update"] = 'Extensions/select_set_update.lua',
       ["Dataframe.Extensions.statistics"] = 'Extensions/statistics.lua',
-			["Dataframe.helper_classes.array"] = 'helper_classes.array',
-			["Dataframe.helper_classes.dict"] = 'helper_classes.dict',
-			["Dataframe.helper_classes.tbl"] = 'helper_classes.tbl'
+			["Dataframe.helper_classes.array"] = 'helper_classes/array.lua',
+			["Dataframe.helper_classes.dict"] = 'helper_classes/dict.lua',
+			["Dataframe.helper_classes.tbl"] = 'helper_classes/tbl.lua'
   }
  }
