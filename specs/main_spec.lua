@@ -110,6 +110,10 @@ describe("Dataframe class", function()
 
 		a:load_table{data = Df_Dict({test = {1,nil,3}})}
 		assert.are.same(a:shape(), {rows = 3, cols = 1})
+
+		assert.is_true(torch.all(torch.eq(a:size(), torch.IntTensor({3, 1}))))
+		assert.are.same(a:size(1), 3)
+		assert.are.same(a:size(2), 1)
 	end)
 
 	it("Returns first elements of the dataframe",function()
