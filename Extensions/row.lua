@@ -62,13 +62,14 @@ _Return value_: void
 	assert(isint(index), "The index should be an integer, you've provided " .. tostring(index))
 	assert(index > 0 and index <= self.n_rows, ("The index (%d) is outside the bounds 1-%d"):format(index, self.n_rows))
 
-	rows = self:_check_and_prep_row_argmnt{rows = rows,
-		add_new_columns = true,
-		add_old_columns = true}
+	rows, no_rows_2_insert =
+		self:_check_and_prep_row_argmnt{rows = rows,
+		                                add_new_columns = true,
+		                                add_old_columns = true}
 
 	for _, column_name in pairs(self.columns) do
-		for j = index,(index + no_rows_2_insert) do
-			value = rows[column_name][j]
+		for j = index,(index + no_rows_2_insert - 1) do
+			value = rows[column_name][j-index + 1]
 			if (self:is_categorical(column_name) and
 			    not isnan(value)) then
 				vale = self:_get_raw_cat_key(column_name, value)
@@ -76,7 +77,6 @@ _Return value_: void
 			table.insert(self.dataset[column_name], j, value)
 		end
 	end
-
 	self:_refresh_metadata()
 	self:_infer_schema()
 end}
@@ -161,7 +161,7 @@ Dataframe._check_and_prep_row_argmnt  = argcheck{
 		end
 	end
 
-	return rows
+	return rows, no_rows_2_insert
 end}
 
 Dataframe.append = argcheck{
