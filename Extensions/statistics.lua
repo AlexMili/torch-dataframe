@@ -10,6 +10,57 @@ doc[[
 
 ]]
 
+Dataframe.unique = argcheck{
+	doc =  [[
+<a name="Dataframe.unique">
+### Dataframe.unique(@ARGP)
+
+Get unique elements given a column name
+
+@ARGT
+
+_Return value_:  table with unique values or if as_keys == true then the unique
+	value as key with an incremental integer value => {'unique1':1, 'unique2':2, 'unique6':3}
+]],
+	{name="self", type="Dataframe"},
+	{name='column_name', type='string', help='column to inspect', req=true},
+	{name='as_keys', type='boolean',
+	 help='return table with unique as keys and a count for frequency',
+	 default=false},
+	{name='as_raw', type='boolean',
+	 help='return table with raw data without categorical transformation',
+	 default=false},
+	call=function(self, column_name, as_keys, as_raw)
+	assert(self:has_column(column_name),
+	       "Invalid column name: " .. tostring(column_name))
+	local unique = {}
+	local unique_values = {}
+	local count = 0
+
+	local column_values = self:get_column{column_name = column_name,
+																	as_raw = as_raw}
+	for i = 1,self.n_rows do
+		local current_key_value = column_values[i]
+		if (current_key_value ~= nil and
+		    not isnan(current_key_value)) then
+			if (unique[current_key_value] == nil) then
+				count = count + 1
+				unique[current_key_value] = count
+
+				if as_keys == false then
+					table.insert(unique_values, current_key_value)
+				end
+			end
+		end
+	end
+
+	if as_keys == false then
+		return unique_values
+	else
+		return unique
+	end
+end}
+
 Dataframe.value_counts = argcheck{
 	doc =  [[
 <a name="Dataframe.value_counts">
