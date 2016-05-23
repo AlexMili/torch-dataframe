@@ -27,6 +27,31 @@ describe("Row functions", function()
 		assert.are.same(a:shape(), {rows=5, cols=4})-- "The simple_short.csv is 4x3 after insert should be 5x3"
 	end)
 
+	it("Appends dataframe",function()
+		local a = Dataframe("./data/simple_short.csv")
+
+		b = Dataframe()
+		b:load_table{data = Df_Dict({['Col A']={15},['Col B']={25},['Col C']={35}})}
+		a:append(b)
+		assert.are.same(a:shape(), {rows=5, cols=3})-- "The simple_short.csv is 4x3 after insert should be 5x3"
+	end)
+
+	it("Check rbind new columns together with new data",function()
+		local a = Dataframe("./data/simple_short.csv")
+
+		a:rbind(Df_Dict({['Col A']={15},['Col D']={25},['Col C']={35}}))
+		assert.are.same(a:shape(), {rows=5, cols=4})-- "The simple_short.csv is 4x3 after insert should be 5x3"
+	end)
+
+	it("Check rbind with dataframe",function()
+		local a = Dataframe("./data/simple_short.csv")
+
+		b = Dataframe()
+		b:load_table{data = Df_Dict({['Col A']={15},['Col B']={25},['Col C']={35}})}
+		a:rbind(b)
+		assert.are.same(a:shape(), {rows=5, cols=3})-- "The simple_short.csv is 4x3 after insert should be 5x3"
+	end)
+
 	it("Inserts a row", function()
 		local a = Dataframe("./data/simple_short.csv")
 
