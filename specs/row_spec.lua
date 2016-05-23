@@ -25,7 +25,6 @@ describe("Row functions", function()
 
 		a:append(Df_Dict({['Col A']={15},['Col D']={25},['Col C']={35}}))
 		assert.are.same(a:shape(), {rows=5, cols=4})-- "The simple_short.csv is 4x3 after insert should be 5x3"
-
 	end)
 
 	it("Inserts a row", function()
@@ -43,9 +42,9 @@ describe("Row functions", function()
 	it("Inserts three rows", function()
 		local a = Dataframe("./data/simple_short.csv")
 
-		a:insert(2, Df_Dict({['Col A']={15, 15, 15}}))
+		a:insert(2, Df_Dict({['Col A']={15, 16, 17}}))
 		assert.are.same(a:shape(), {rows=7, cols=3})
-		assert.are.same(a:get_column('Col A'), {1, 15, 15, 15, 2, 3, 4})
+		assert.are.same(a:get_column('Col A'), {1, 15, 16, 17, 2, 3, 4})
 		assert.is_true(isnan(a:get_column('Col B')[2]))
 		assert.is_true(isnan(a:get_column('Col B')[3]))
 		assert.is_true(isnan(a:get_column('Col B')[4]))
