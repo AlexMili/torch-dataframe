@@ -161,7 +161,7 @@ describe("Column operations", function()
 	end)
 
 	describe("Other functionalities",function()
-			local a = Dataframe("./data/advanced_short.csv")
+		local a = Dataframe("./data/advanced_short.csv")
 
 		it("Returns all numerical columns names", function()
 			assert.are.same(a:get_numerical_colnames(), {'Col A', 'Col C'})
@@ -179,4 +179,37 @@ describe("Column operations", function()
 		end)
 	end)
 
+	describe("Bind columns",function()
+		it("Equal correct cbind and dataframe", function()
+			local a = Dataframe("./data/advanced_short.csv")
+
+			local b = Dataframe()
+			b:load_table(Df_Dict({Test = {1,2,3}}))
+			a:cbind(b)
+
+			assert.are.same(a:get_column('Test'),
+			                b:get_column('Test'))
+		end)
+
+		it("Equal correct cbind with Df_Dict", function()
+			local a = Dataframe("./data/advanced_short.csv")
+
+			a:cbind(Df_Dict({Test = {1,2,3}}))
+
+			assert.are.same(a:get_column('Test'),
+			                {1,2,3})
+		end)
+
+		it("Checks input", function()
+			local a = Dataframe("./data/advanced_short.csv")
+
+			local b = Dataframe()
+			b:load_table(Df_Dict({Test = {1,2,3,4}}))
+			assert.has_error(function() a:cbind(b) end)
+
+			local c = Dataframe()
+			c:load_table(Df_Dict({['Col A'] = {1,2,3}}))
+			assert.has_error(function() a:cbind(c) end)
+		end)
+	end)
 end)
