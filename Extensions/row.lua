@@ -178,51 +178,23 @@ _Return value_: void
 	{name="self", type="Dataframe"},
 	{name="rows", type="Df_Dict", doc="Values to append to the Dataframe"},
 	call=function(self, rows)
-	rows = rows.data
 	if (self:size(1) == 0) then
-		return self:load_table{data = Df_Dict(rows)}
+		return self:load_table{data = rows}
 	end
 
-	local no_rows_2_insert = 0
-	local new_columns = {}
-	for k,v in pairs(rows) do
-		-- Force all input into tables
-		if (type(v) ~= 'table') then
-			v = {v}
-			rows[k] = v
-		end
-
-		-- Check input size
-		if (no_rows_2_insert == 0) then
-			no_rows_2_insert = table.maxn(v)
-		else
-			assert(no_rows_2_insert == table.maxn(v),
-			       "The rows aren't the same between the columns." ..
-			       " The " .. k .. " column has " .. " " .. table.maxn(v) .. " rows" ..
-			       " while previous columns had " .. no_rows_2_insert .. " rows")
-		end
-
-		if (not table.has_element(self.columns, k)) then
-			self:add_column(k)
-		end
-	end
+	rows, no_rows_2_insert =
+		self:_check_and_prep_row_argmnt{rows = rows,
+		                                add_new_columns = true,
+		                                add_old_columns = true}
 
 	for _, column_name in pairs(self.columns) do
-		-- If the column is not currently inserted by the user
-		if rows[column_name] == nil then
-			-- Default rows are inserted with nan values (0/0)
-			for j = 1,no_rows_2_insert do
-				table.insert(self.dataset[column_name], 0/0)
-			end
-		else
-			for j = 1,no_rows_2_insert do
-				value = rows[column_name][j]
-				if (self:is_categorical(column_name) and
-				    not isnan(value)) then
-					vale = self:_get_raw_cat_key(column_name, value)
-				end -- TODO: Should we convert string columns with '' to nan?
-				self.dataset[column_name][self.n_rows + j] = value
-			end
+		for j = 1,no_rows_2_insert do
+			value = rows[column_name][j]
+			if (self:is_categorical(column_name) and
+			    not isnan(value)) then
+				vale = self:_get_raw_cat_key(column_name, value)
+			end -- TODO: Should we convert string columns with '' to nan?
+			self.dataset[column_name][self.n_rows + j] = value
 		end
 	end
 
@@ -243,6 +215,39 @@ be the ones that are kept
 	{name="rows", type="Dataframe", doc="A Dataframe that you want to append"},
 	call=function(self, rows)
 	self:append(Df_Dict(rows.dataset))
+end}
+
+
+Dataframe.rbind = argcheck{
+	doc =  [[
+<a name="Dataframe.rbind">
+### Dataframe.rbind(@ARGP)
+
+Alias to Dataframe.append
+
+@ARGT
+
+_Return value_: void
+]],
+	{name="self", type="Dataframe"},
+	{name="rows", type="Df_Dict", doc="Values to append to the Dataframe"},
+	call=function(self, rows)
+	return self:append(rows)
+end}
+
+Dataframe.rbind = argcheck{
+	doc =  [[
+Note, if you provide a Dataframe the primary dataframes meta-information will
+be the ones that are kept
+
+@ARGT
+
+]],
+	overload=Dataframe.rbind,
+	{name="self", type="Dataframe"},
+	{name="rows", type="Dataframe", doc="A Dataframe that you want to append"},
+	call=function(self, rows)
+	return self:append(rows)
 end}
 
 Dataframe.remove_index = argcheck{
