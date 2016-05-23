@@ -107,7 +107,7 @@ You can discover your dataset with the following functions:
 ```lua
 -- you can either view the data as a plain text output or itorch html table
 df:output() -- prints html if in itorch otherwise prints plain table
-df:to_html() -- forces html output
+df:output{html=true} -- forces html output
 print(df) -- prints a plain table using the tostring() output
 
 df:show() -- prints the head + tail of the table
