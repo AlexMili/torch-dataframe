@@ -258,7 +258,7 @@ _Return value_: string
 	{name='digits', type='number|boolean',
 	 doc='Set this to an integer >= 0 in order to reduce the number of integers shown',
 	 default=false},
-	call=function(self, digits)
+	call=function(self, split_table,  offset, digits)
 
 	if (digits) then
 		assert(digits >= 0, "The digits argument must be positive")
