@@ -285,7 +285,9 @@ _Return value_: string
 		for col_no = 1,#self.column_order do
 			k = self.column_order[col_no]
 			val = self:get_column(k)[row_no]
-			if (digits and self:is_numerical(k)) then
+			if (digits and
+			    self:is_numerical(k) and
+			    not self:is_categorical(k)) then
 				val = _numeric2string(val, digits)
 			else
 				val = tostring(val)
