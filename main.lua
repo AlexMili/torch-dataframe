@@ -59,7 +59,7 @@ _Return value_: Dataframe
 	{name="data", type="Df_Dict", doc="The data to read in"},
 	call=function(self, data)
 	self:__init()
-	self:load_table{data=data,verbose=false}
+	self:load_table{data=data}
 end}
 
 -- Private function for cleaning and reseting all data and meta data

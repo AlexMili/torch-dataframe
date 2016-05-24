@@ -34,8 +34,7 @@ describe("Dataframe class", function()
 		end)
 
 		it("Loads a table if passed in argument",function()
-			local df = Dataframe()
-			df:load_table(Df_Dict({
+			local df = Dataframe(Df_Dict({
 				['first_column']={3,4,5},
 				['second_column']={10,11,12}
 			}))
