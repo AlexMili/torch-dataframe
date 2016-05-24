@@ -113,6 +113,7 @@ Dataframe._refresh_metadata = argcheck{
 		 end
 	end
 
+
 	self.columns = keyset
 	self.n_rows = rows
 end}

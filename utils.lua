@@ -84,18 +84,6 @@ table.collapse_to_string = function(tbl)
 		ret = "No table provided"
 	elseif(table.exact_length(tbl) == 0) then
 		ret = "Empty table"
-	elseif (tbl[1] ~=  nil) then
-		for _,v in pairs(tbl) do
-			if (ret ~= "") then
-				ret = ret .. ", "
-			end
-
-			if (type(v) == "table") then
-				v = ("[%s]"):format(table.collapse_to_string(v))
-			end
-
-			ret = ret .. "'" .. v .."'"
-		end
 	else
 		for k,v in pairs(tbl) do
 			if (ret ~= "") then
@@ -109,7 +97,7 @@ table.collapse_to_string = function(tbl)
 			ret = ret .. "'" .. k .. "'=>'" .. v .. "'"
 		end
 	end
-	
+
 	return ret
 end
 

@@ -110,26 +110,10 @@ describe("Dataframe class", function()
 
 		a:load_table{data = Df_Dict({test = {1,nil,3}})}
 		assert.are.same(a:shape(), {rows = 3, cols = 1})
-	end)
 
-	it("Inserts new data",function()
-		local a = Dataframe("./data/simple_short.csv")
-
-		a:insert(Df_Dict({['Col A']={15},['Col B']={25},['Col C']={35}}))
-		assert.are.same(a:shape(), {rows=5, cols=3})-- "The simple_short.csv is 4x3 after insert should be 5x3"
-	end)
-
-	it("Removes a row given an index",function()
-		local a = Dataframe("./data/simple_short.csv")
-
-		a:remove_index(1)
-		assert.are.same(a:shape(), {rows=3, cols=3})-- "The simple_short.csv is 4x3"
-		assert.are.same(a:get_column('Col A'), {2,3,4})
-
-		a:remove_index(1)
-		a:remove_index(1)
-		a:remove_index(1)
-		assert.are.same(a:shape(), {rows=0, cols=3})
+		assert.is_true(torch.all(torch.eq(a:size(), torch.IntTensor({3, 1}))))
+		assert.are.same(a:size(1), 3)
+		assert.are.same(a:size(2), 1)
 	end)
 
 	it("Returns first elements of the dataframe",function()

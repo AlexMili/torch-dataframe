@@ -124,7 +124,7 @@ describe("Categorical column", function()
 			["Col B"] = "C",
 			["Col C"] = 10
 		}
-		a:insert(Df_Dict(new_data))
+		a:append(Df_Dict(new_data))
 		assert.are.same(a:get_cat_keys('Col B'), {A=1, B=2, C=3})
 	end)
 
