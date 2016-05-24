@@ -232,4 +232,20 @@ Dataframe._get_raw_cat_key = argcheck{
 	return self:add_cat_key(column_name, key)
 end}
 
+Dataframe.version = argcheck{
+	doc =  [[
+<a name="Dataframe.version">
+### Dataframe.version(@ARGP)
+
+Returns the current data-frame version
+
+@ARGT
+
+_Return value_: string
+]],
+	{name="self", type="Dataframe"},
+	call=function(self)
+	return "1.1.dev"
+end}
+
 return Dataframe
