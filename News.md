@@ -6,6 +6,9 @@ Version: development
 * Changed insert to insert with an index
 * Added append that does the same as index previously did
 * Added rbind as an append alias
+* Added cbind
+* Fixed bug with outputting categorical columns
+* Added a version function
 
 Version: 1.1
 -----------
