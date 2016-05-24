@@ -142,7 +142,7 @@ _Return value_: Dataframe
 	local ret = Dataframe.new()
 	for _,i in pairs(index_items) do
 		local val = self:get_row(i)
-		ret:insert(Df_Dict(val))
+		ret:append(Df_Dict(val))
 	end
 	self.categorical = tmp
 	ret = self:_copy_meta(ret)

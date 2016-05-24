@@ -172,6 +172,44 @@ _Return value_: void
 	self:_refresh_metadata()
 end}
 
+Dataframe.cbind =  argcheck{
+	doc = [[
+Bind data columnwise together
+
+@ARGT
+
+_Return value_: void
+]],
+	{name="self", type="Dataframe"},
+	{name="data", type="Dataframe", doc="The other dataframe to bind"},
+	call=function(self, data)
+	assert(self.n_rows == data.n_rows, ("The number of rows don't match %d ~= %d"):format(self.n_rows, data.n_rows))
+	for i=1,#data.column_order do
+		assert(not self:has_column(data.column_order[i]),
+		       "Column " .. data.column_order[i] .. " already present in the original dataset." ..
+		       " Note that the function is not a join that matches on columns")
+	end
+
+	for i=1,#data.column_order do
+		self:add_column(data.column_order[i], Df_Array(data:get_column(data.column_order[i])))
+	end
+end}
+
+Dataframe.cbind =  argcheck{
+	doc = [[
+
+@ARGT
+
+]],
+	overload=Dataframe.cbind,
+	{name="self", type="Dataframe"},
+	{name="data", type="Df_Dict", doc="The other data to bind"},
+	call=function(self, data)
+	local df = Dataframe.new()
+	df:load_table(data)
+	return self:cbind(df)
+end}
+
 Dataframe.get_column = argcheck{
 	doc = [[
 <a name="Dataframe.get_column">
