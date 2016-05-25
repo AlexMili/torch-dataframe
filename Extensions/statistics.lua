@@ -74,7 +74,7 @@ column counts with column name as key.
 
 @ARGT
 
-_Return value_: Table
+_Return value_: Dataframe or nested table
 ]],
 	{name="self", type="Dataframe"},
 	{name='column_name', type='string', doc='column to inspect'},
@@ -84,7 +84,9 @@ _Return value_: Table
 		the unique values.]]},
 	{name='dropna', type='boolean', default=true,
 	 doc="Don’t include counts of NaN (missing values)."},
-	call=function(self, column_name, normalize, dropna)
+ {name='as_dataframe', type='boolean', default=true,
+	doc="Return a dataframe"},
+	call=function(self, column_name, normalize, dropna, as_dataframe)
 	assert(self:has_column(column_name),
 				 "Invalid column name: " .. tostring(column_name))
 
@@ -131,7 +133,19 @@ _Return value_: Table
 			count[i] = n/total
 		end
 	end
-	return count
+
+	if (not as_dataframe) then
+		return count
+	end
+
+	local data = {values  = {}, count = {}}
+	local i = 0
+	for v,c in pairs(count) do
+		i = i + 1
+		data.values[i] = v
+		data.count[i] = c
+	end
+	return Dataframe.new(Df_Dict(data))
 end}
 
 Dataframe.value_counts = argcheck{
@@ -149,8 +163,10 @@ If columns is left out then all numerical columns are used
 		the unique values.]]},
 	{name='dropna', type='boolean', default=true,
 	 doc="Don’t include counts of NaN (missing values)."},
-	call=function(self, normalize, dropna)
-	return self:value_counts(Df_Array(self:get_numerical_colnames()), normalize, dropna)
+	{name='as_dataframe', type='boolean', default=true,
+	 doc="Return a dataframe"},
+	call=function(self, normalize, dropna, as_dataframe)
+	return self:value_counts(Df_Array(self:get_numerical_colnames()), normalize, dropna, as_dataframe)
 end}
 
 Dataframe.value_counts = argcheck{
@@ -170,17 +186,31 @@ _Return value_: Table
 		the unique values.]]},
 	{name='dropna', type='boolean', default=true,
 	 doc="Don’t include counts of NaN (missing values)."},
-	call=function(self, columns, normalize, dropna)
+	{name='as_dataframe', type='boolean', default=true,
+	 doc="Return a dataframe"},
+	call=function(self, columns, normalize, dropna, as_dataframe)
 	columns = columns.data
 	assert(#columns > 0, "You haven't provided any columns")
 
-	value_counts = {}
+	local value_counts = {}
+	if (as_dataframe) then
+		value_counts = Dataframe.new()
+	end
+
 	for _,cn in pairs(columns) do
-		value_counts[cn] = self:value_counts{
+		local ret = self:value_counts{
 			column_name = cn,
 			normalize = normalize,
-			dropna = dropna
+			dropna = dropna,
+			as_dataframe = as_dataframe
 		}
+
+		if (as_dataframe) then
+			ret:add_column('column', cn)
+			value_counts:append(ret)
+		else
+			value_counts[cn] = ret
+		end
 	end
 
 	return value_counts

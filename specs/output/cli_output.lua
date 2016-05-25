@@ -59,4 +59,6 @@ print(a:head(4))
 a:as_categorical("Side")
 print(a:head(4))
 
+print(a:value_counts())
+
 print(a:version())
