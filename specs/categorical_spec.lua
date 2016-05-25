@@ -36,6 +36,16 @@ describe("Categorical column", function()
 		assert.is_true(not a:is_categorical('Col A'))
 	end)
 
+	it("Check that reversion works",function()
+		a:as_string('Col C')
+
+		assert.is_false(a:is_categorical('Col C'))
+		assert.are.same(a:get_column{column_name='Col C'}[1], 8)
+		assert.is_true(isnan(a:get_column{column_name='Col C'}[2]))
+		assert.are.same(a:get_column{column_name='Col C'}[3], 9)
+	end)
+
+
 	describe("Conversion",function()
 		local a = Dataframe("./data/advanced_short.csv")
 		a:as_categorical('Col B')
