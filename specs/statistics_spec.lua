@@ -36,6 +36,14 @@ describe("Usual statistics functions", function()
 				{[8]=1, [9]=1, ["_missing_"] = 1})
 		end)
 
+		it("Doesn't count missing values when categorical",function()
+			df:as_categorical('Col C')
+			assert.are.same(df:value_counts('Col C'), {[8]=1, [9]=1})
+
+			df:as_string('Col C')
+			assert.are.same(df:value_counts('Col C'), {[8]=1, [9]=1})
+		end)
+
 		it("Count integer frequencies when 'normalize' argument is set to true",function()
 			assert.are.same(df:value_counts{column_name ='Col A',normalize = true},
 				{[1] = 1/3, [2] = 1/3, [3] = 1/3})

@@ -93,8 +93,11 @@ table.collapse_to_string = function(tbl)
 			if (type(v) == "table") then
 				v = ("[%s]"):format(table.collapse_to_string(v))
 			end
-
-			ret = ret .. "'" .. k .. "'=>'" .. v .. "'"
+			if (isnan(v)) then
+				ret = ret .. "'" .. k .. "'=>nan"
+			else
+				ret = ret .. "'" .. k .. "'=>'" .. v .. "'"
+			end
 		end
 	end
 
