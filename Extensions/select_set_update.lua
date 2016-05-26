@@ -195,20 +195,66 @@ You can also provide a function for more advanced matching
 	{name='match_fn', type='function',
 	 doc='Function that takes a row as an argument and returns boolean'},
 	call = function(self, match_fn)
-	local matches = self:_where_search(match_fn)
+	local matches = self:which(match_fn)
 	return self:_create_subset(Df_Array(matches))
 end}
 
-Dataframe._where_search = argcheck{
+Dataframe.which = argcheck{
+	doc =  [[
+<a name="Dataframe.which">
+### Dataframe.whic(@ARGP)
+
+@ARGT
+
+Finds the rows that match the arguments
+
+_Return value_: table
+]],
 	{name="self", type="Dataframe"},
 	{name="condition_function", type="function",
-	 doc="Function to test if the current row will be updated"},
+	 doc="Function that returns true if a condition is met. Received the entire row as a table argument."},
 	call=function(self, condition_function)
+
 	local matches = {}
 	for i = 1, self.n_rows do
 		local row = self:get_row(i)
 		if condition_function(row) then
 			table.insert(matches, i)
+		end
+	end
+
+	return matches
+end}
+
+Dataframe.which = argcheck{
+	doc =  [[
+If you provide a value and a column it will look for identical matches
+
+@ARGT
+
+_Return value_: table
+]],
+	overload=Dataframe.which,
+	{name="self", type="Dataframe"},
+	{name="column_name", type="string",
+	 doc="The column with the value"},
+	{name="value", type="number|string|boolean|nan"},
+	call=function(self, column_name, value)
+
+	local values = self:get_column(column_name)
+	local matches = {}
+	if (isnan(value)) then
+		for i = 1, self.n_rows do
+			if isnan(values[i]) then
+				table.insert(matches, i)
+			end
+		end
+	else
+		for i = 1, self.n_rows do
+			local row = self:get_row(i)
+			if values[i] == value then
+				table.insert(matches, i)
+			end
 		end
 	end
 
@@ -230,7 +276,7 @@ _Return value_: void
 	{name='update_function', type='function',
 	 doc='Function that updates the row. Takes the entire row as an argument, modifies it and returns the same.'},
 	call = function(self, condition_function, update_function)
-	local matches = self:_where_search(condition_function)
+	local matches = self:which(condition_function)
 	for _, i in pairs(matches) do
 		row = self:get_row(i)
 		new_row = update_function(clone(row))

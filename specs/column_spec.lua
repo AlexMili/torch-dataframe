@@ -160,6 +160,36 @@ describe("Column operations", function()
 		end)
 	end)
 
+	describe("Search functionalities",function()
+		local a = Dataframe("./data/advanced_short.csv")
+		it("Finds the value in Col B", function()
+			assert.are.same(a:which('Col B', 'A'), {1})
+			assert.are.same(a:which('Col B', 'B'), {2,3})
+		end)
+
+		it("Finds the value in Col A", function()
+			assert.are.same(a:which('Col A', 'A'), {})
+			assert.are.same(a:which('Col A', 1), {1})
+		end)
+
+		it("Finds the value in Col C", function()
+			assert.are.same(a:which('Col C', 0/0), {2})
+			assert.are.same(a:which('Col C', 9), {3})
+		end)
+
+		it("Finds the max value", function()
+			assert.are.same(a:which_max('Col A'), {3})
+			assert.are.same(a:which_max('Col C'), {3})
+			assert.has_error(function() a:which_max('Col B') end)
+		end)
+
+		it("Finds the min value", function()
+			assert.are.same(a:which_min('Col A'), {1})
+			assert.are.same(a:which_min('Col C'), {1})
+			assert.has_error(function() a:which_min('Col B') end)
+		end)
+	end)
+
 	describe("Other functionalities",function()
 		local a = Dataframe("./data/advanced_short.csv")
 
