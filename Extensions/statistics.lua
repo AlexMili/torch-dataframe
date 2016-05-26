@@ -216,6 +216,66 @@ _Return value_: Table
 	return value_counts
 end}
 
+Dataframe.which_max = argcheck{
+	doc =  [[
+<a name="Dataframe.which_max">
+### Dataframe.which_max(@ARGP)
+
+Retrieves the index for the rows with the highest value. Can be > 1 rows that
+share the highest value.
+
+@ARGT
+
+_Return value_: Table
+]],
+	{name="self", type="Dataframe"},
+	{name='column_name', type='string', doc='column to inspect'},
+	call=function(self, column_name)
+	assert(self:has_column(column_name))
+	assert(self:is_numerical(column_name) and not self:is_categorical(column_name))
+
+	local highest = false
+	local values = self:get_column(column_name)
+	for i=1,self.n_rows do
+		local v = values[i]
+		if (not highest or highest < v) then
+			highest = v
+		end
+	end
+
+	return self:which(column_name, highest)
+end}
+
+Dataframe.which_min = argcheck{
+	doc =  [[
+<a name="Dataframe.which_min">
+### Dataframe.which_min(@ARGP)
+
+Retrieves the index for the rows with the lowest value. Can be > 1 rows that
+share the lowest value.
+
+@ARGT
+
+_Return value_: Table
+]],
+	{name="self", type="Dataframe"},
+	{name='column_name', type='string', doc='column to inspect'},
+	call=function(self, column_name)
+	assert(self:has_column(column_name))
+	assert(self:is_numerical(column_name) and not self:is_categorical(column_name))
+
+	local lowest = false
+	local values = self:get_column(column_name)
+	for i=1,self.n_rows do
+		local v = values[i]
+		if (not lowest or lowest > v) then
+			lowest = v
+		end
+	end
+
+	return self:which(column_name, lowest)
+end}
+
 Dataframe.get_mode = argcheck{
 	doc =  [[
 <a name="Dataframe.get_mode">
@@ -233,11 +293,14 @@ _Return value_: Table
 		the unique values.]]},
 	{name='dropna', type='boolean', default=true,
 	 doc="Don’t include counts of NaN (missing values)."},
-	call=function(self, column_name, normalize, dropna)
+	{name='as_dataframe', type='boolean', default=true,
+	 doc="Return a dataframe"},
+	call=function(self, column_name, normalize, dropna, as_dataframe)
 
 	local counts = self:value_counts{column_name = column_name,
 	                                 normalize = normalize,
-	                                 dropna = dropna}
+	                                 dropna = dropna,
+	                                 as_dataframe = false}
 	local max_val = 0/0
 	for _,v in pairs(counts) do
 		if (isnan(max_val) or max_val < v) then

@@ -19,58 +19,58 @@ describe("Usual statistics functions", function()
 	describe("Value counting",function()
 
 		it("Counts integer occurrences",function()
-			assert.are.same(df:value_counts('Col A'),
+			assert.are.same(df:value_counts{column_name='Col A', as_dataframe=false},
 				{[1] = 1, [2] = 1, [3] = 1})
 		end)
 
 		it("Counts string occurrences",function()
-			assert.are.same(df:value_counts('Col B'), {A=1, B=2})
+			assert.are.same(df:value_counts{column_name='Col B', as_dataframe=false}, {A=1, B=2})
 		end)
 
 		it("Doesn't count missing values",function()
-			assert.are.same(df:value_counts('Col C'), {[8]=1, [9]=1})
+			assert.are.same(df:value_counts{column_name='Col C', as_dataframe=false}, {[8]=1, [9]=1})
 		end)
 
 		it("Count missing values when specified",function()
-			assert.are.same(df:value_counts{column_name='Col C',dropna=false},
+			assert.are.same(df:value_counts{column_name='Col C', dropna=false, as_dataframe=false},
 				{[8]=1, [9]=1, ["_missing_"] = 1})
 		end)
 
 		it("Doesn't count missing values when categorical",function()
 			df:as_categorical('Col C')
-			assert.are.same(df:value_counts('Col C'), {[8]=1, [9]=1})
+			assert.are.same(df:value_counts{column_name='Col C', as_dataframe=false}, {[8]=1, [9]=1})
 
 			df:as_string('Col C')
-			assert.are.same(df:value_counts('Col C'), {[8]=1, [9]=1})
+			assert.are.same(df:value_counts{column_name='Col C', as_dataframe=false}, {[8]=1, [9]=1})
 		end)
 
 		it("Count integer frequencies when 'normalize' argument is set to true",function()
-			assert.are.same(df:value_counts{column_name ='Col A',normalize = true},
+			assert.are.same(df:value_counts{column_name ='Col A',normalize = true, as_dataframe=false},
 				{[1] = 1/3, [2] = 1/3, [3] = 1/3})
 		end)
 
 		it("Count string frequencies when 'normalize' argument is set to true",function()
-			assert.are.same(df:value_counts{column_name ='Col B',normalize = true},
+			assert.are.same(df:value_counts{column_name ='Col B',normalize = true, as_dataframe=false},
 				{A = 1/3, B = 2/3})
 		end)
 
 		it("Count frequencies avoiding missing values when 'normalize' argument is set to true",function()
-			assert.are.same(df:value_counts{column_name ='Col C',normalize = true},
+			assert.are.same(df:value_counts{column_name ='Col C',normalize = true, as_dataframe=false},
 				{[8]=0.5, [9]=0.5})
 		end)
 
 		it("Count frequencies with missing values when 'normalize' argument is set to true",function()
-			assert.are.same(df:value_counts{column_name ='Col C',normalize = true,dropna=false},
+			assert.are.same(df:value_counts{column_name ='Col C',normalize = true,dropna=false, as_dataframe=false},
 				{[8]=1/3, [9]=1/3, ["_missing_"] = 1/3})
 		end)
 
 		it("Count all columns values",function()
-			assert.are.same(df:value_counts(),{['Col C'] = {[8]=1, [9]=1},
+			assert.are.same(df:value_counts{as_dataframe=false},{['Col C'] = {[8]=1, [9]=1},
 		         ['Col A'] = {[1] = 1, [2] = 1, [3] = 1}})
 		end)
 
 		it("Count all colmns values with missing values",function()
-			assert.are.same(df:value_counts{dropna=false},
+			assert.are.same(df:value_counts{dropna=false, as_dataframe=false},
 		         {['Col C'] = {[8]=1, [9]=1, ["_missing_"] = 1},
 		         ['Col A'] = {[1] = 1, [2] = 1, [3] = 1, ["_missing_"] = 0}})
 		end)
