@@ -226,24 +226,29 @@ share the highest value.
 
 @ARGT
 
-_Return value_: Table
+_Return value_: Table, value
 ]],
 	{name="self", type="Dataframe"},
 	{name='column_name', type='string', doc='column to inspect'},
 	call=function(self, column_name)
-	assert(self:has_column(column_name))
-	assert(self:is_numerical(column_name) and not self:is_categorical(column_name))
+	assert(self:has_column(column_name), "Could not find column: " .. tostring(k))
+	assert(self:is_numerical(column_name) and not self:is_categorical(column_name),
+	       "Column has to be numerical")
 
+	local highest_indx = {}
 	local highest = false
 	local values = self:get_column(column_name)
 	for i=1,self.n_rows do
 		local v = values[i]
 		if (not highest or highest < v) then
 			highest = v
+			highest_indx = {i}
+		elseif (highest == v) then
+			table.insert(highest_indx, i)
 		end
 	end
 
-	return self:which(column_name, highest)
+	return highest_indx, highest
 end}
 
 Dataframe.which_min = argcheck{
@@ -256,24 +261,29 @@ share the lowest value.
 
 @ARGT
 
-_Return value_: Table
+_Return value_: Table, value
 ]],
 	{name="self", type="Dataframe"},
 	{name='column_name', type='string', doc='column to inspect'},
 	call=function(self, column_name)
-	assert(self:has_column(column_name))
-	assert(self:is_numerical(column_name) and not self:is_categorical(column_name))
+	assert(self:has_column(column_name), "Could not find column: " .. tostring(k))
+	assert(self:is_numerical(column_name) and not self:is_categorical(column_name),
+	       "Column has to be numerical")
 
+	local lowest_indx = {}
 	local lowest = false
 	local values = self:get_column(column_name)
 	for i=1,self.n_rows do
 		local v = values[i]
 		if (not lowest or lowest > v) then
 			lowest = v
+			lowest_indx = {i}
+		elseif (lowest == v) then
+			table.insert(lowest_indx, i)
 		end
 	end
 
-	return self:which(column_name, lowest)
+	return lowest_indx, lowest
 end}
 
 Dataframe.get_mode = argcheck{
