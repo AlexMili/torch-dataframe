@@ -290,24 +290,25 @@ describe("Categorical column", function()
 
 		a:as_categorical('Col B')
 		local ret = a:value_counts('Col B')
-		assert.is.equal(ret["B"],2)
-		assert.is.equal(ret["A"],1)
+		assert.is.equal(ret:where('values', 'B'):get_column('count')[1], 2)
+		assert.is.equal(ret:where('values', 'A'):get_column('count')[1], 1)
+
 		local ret = a:value_counts('Col A')
-		assert.are.same(ret, {[1] = 1,
-		[2] = 1,
-		[3] = 1})
-		a:as_categorical('Col A')
-		local ret = a:value_counts('Col A')
-		assert.are.same(ret, {[1] = 1,
-		[2] = 1,
-		[3] = 1})
+		assert.are.same(ret:get_column('count'), {1,1,1})
+		assert.are.same(ret:get_column('values'), {1,2,3})
+
 		local ret = a:value_counts('Col C')
-		assert.are.same(ret, {[8] = 1,
-		[9] = 1})
+		assert.are.same(ret:get_column('count'), {1,1})
+		local tmp = ret:get_column('values')
+		table.sort(tmp)
+		assert.are.same(tmp, {8,9})
+
 		a:as_categorical('Col C')
 		local ret = a:value_counts('Col C')
-		assert.are.same(ret, {[8] = 1,
-		[9] = 1})
+		assert.are.same(ret:get_column('count'), {1,1})
+		local tmp = ret:get_column('values')
+		table.sort(tmp)
+		assert.are.same(tmp, {8,9})
 	end)
 
 	it(" Exports to tensor",function()
