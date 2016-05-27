@@ -81,20 +81,27 @@ describe("Usual statistics functions", function()
 		local df = Dataframe("./data/advanced_short.csv")
 
 		it("Get the mode for a specific column",function()
-			assert.are.same(df:get_mode{column_name ='Col A', normalize = false},
+			assert.are.same(df:get_mode{column_name ='Col A', normalize = false, as_dataframe = false},
 		                   {[1] = 1, [2] = 1, [3] = 1})
 		end)
 
+		it("Check that mode with dataframe",function()
+			local mode_df = df:get_mode{column_name ='Col A', normalize = false, as_dataframe = true}
+			assert.are.same(mode_df:get_column('key'), {1, 2, 3})
+			assert.are.same(mode_df:get_column('value'), {1, 1, 1})
+			assert.are.same(df:get_mode():size(1), 3 + 0 + 2, "The mode for Col B shouldn't appear")
+		end)
+
 		it("Get the mode for a specific column with 'normalize' option",function()
-			assert.are.same(df:get_mode{column_name ='Col A', normalize = true},
+			assert.are.same(df:get_mode{column_name ='Col A', normalize = true, as_dataframe = false},
 			                   {[1] = 1/3, [2] = 1/3, [3] = 1/3})
-			assert.are.same(df:get_mode{column_name ='Col B', normalize = true},
+			assert.are.same(df:get_mode{column_name ='Col B', normalize = true, as_dataframe = false},
 			                   {B = 2/3})
 		end)
 
 		it("Get mode for multiple columns",function()
 			df:load_table{data=Df_Dict({['A']={3,3,2},['B']={10,11,12}})}
-			assert.are.same(df:get_mode{normalize = true},
+			assert.are.same(df:get_mode{normalize = true, as_dataframe = false},
 			                {A ={[3] = 2/3},
 			                 B ={[10] = 1/3, [11] = 1/3, [12] = 1/3}})
 		end)

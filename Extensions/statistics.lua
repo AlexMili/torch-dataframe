@@ -226,7 +226,7 @@ share the highest value.
 
 @ARGT
 
-_Return value_: Table, value
+_Return value_: Table, max value
 ]],
 	{name="self", type="Dataframe"},
 	{name='column_name', type='string', doc='column to inspect'},
@@ -261,7 +261,7 @@ share the lowest value.
 
 @ARGT
 
-_Return value_: Table, value
+_Return value_: Table, lowest value
 ]],
 	{name="self", type="Dataframe"},
 	{name='column_name', type='string', doc='column to inspect'},
@@ -324,6 +324,16 @@ _Return value_: Table
 			modes[key] = v
 		end
 	end
+
+	if (as_dataframe) then
+		local tmp = {value={}, key={}}
+		for key, value in pairs(modes) do
+			table.insert(tmp.value, value)
+			table.insert(tmp.key, key)
+		end
+		modes = Dataframe.new(Df_Dict(tmp))
+	end
+
 	return modes
 end}
 
@@ -343,8 +353,10 @@ _Return value_: Table
 		the unique values.]]},
 	{name='dropna', type='boolean', default=true,
 	 doc="Don’t include counts of NaN (missing values)."},
-	 call=function(self, normalize, dropna)
-	return self:get_mode(Df_Array(self:get_numerical_colnames()), normalize, dropna)
+	{name='as_dataframe', type='boolean', default=true,
+	 doc="Return a dataframe"},
+	 call=function(self, normalize, dropna, as_dataframe)
+	return self:get_mode(Df_Array(self:get_numerical_colnames()), normalize, dropna, as_dataframe)
 end}
 
 Dataframe.get_mode = argcheck{
@@ -362,17 +374,28 @@ Dataframe.get_mode = argcheck{
 		the unique values.]]},
 	{name='dropna', type='boolean', default=true,
 	 doc="Don’t include counts of NaN (missing values)."},
-	call=function(self, columns, normalize, dropna)
+	{name='as_dataframe', type='boolean', default=true,
+	 doc="Return a dataframe"},
+	call=function(self, columns, normalize, dropna, as_dataframe)
 	columns = columns.data
 
 	local modes = {}
+	if (as_dataframe) then
+		modes = Dataframe.new()
+	end
 	for i = 1,#columns do
 		local cn = columns[i]
-		local key, value =
+		local value =
 			self:get_mode{column_name = cn,
 			              normalize = normalize,
-			              dropna = dropna}
-		modes[cn] = key
+			              dropna = dropna,
+			              as_dataframe = as_dataframe}
+		if (as_dataframe) then
+			value:add_column('Column', cn)
+			modes:append(value)
+		else
+			modes[cn] = value
+		end
 	end
 
 	return modes
