@@ -24,7 +24,11 @@ _Return value_: data, label tensors, table with tensor column names
 ]],
 	{name="self", type="Dataframe"},
 	{name='no_lines', type='number', doc='The number of lines/rows to include (-1 for all)'},
-	{name='offset', type='number', doc='The number of lines/rows to skip before starting load', default=0},
+	{name='offset', type='number', default=-1,
+		doc=[[The number of lines/rows to skip before starting load.
+		The offset has an internal parameter that it defaults to if this is left empty.
+		Note that this will be forgotten in a parallel setting and you should in that case
+		always provide a manual offset.]]},
 	{name='load_row_fn', type='function',
 	 doc='Receives a row and returns a tensor assumed to be the data'},
 	{name='type', type='string', doc='Type of data to load', default="train"},
@@ -36,7 +40,7 @@ _Return value_: data, label tensors, table with tensor column names
 	       self.batch.datasets ~= nil,
 	       "You must call init_batch before calling load_batch")
 	-- Check argument integrity
-	assert(self.batch.datasets[type] ~= nil, "There is no batch dataset group corresponding to '".. type .."'")
+	assert(self:has_batch(type), "There is no batch dataset group corresponding to '".. type .."'")
 	assert(isint(no_lines) and
 	       (no_lines > 0 or
 	        no_lines == -1) and
@@ -48,6 +52,7 @@ _Return value_: data, label tensors, table with tensor column names
 
 	if (no_lines == -1) then no_lines = self:batch_size(type) end
 
+	if (offset == -1) then offset = self.batch.offset[type] end
 	assert(isint(offset) and
 	       offset >= 0,
 	       "The offset has to be a positive integer, you provided " .. tostring(offset))
@@ -102,17 +107,25 @@ _Return value_: data, label tensors, table with tensor column names
 	for i=start_position,stop_position do
 		table.insert(rows, self.batch.datasets[type][i])
 	end
+
 	local dataset_2_load = self:_create_subset(Df_Array(rows))
 	tensor_label, tensor_col_names = dataset_2_load:to_tensor{columns = Df_Array(label_columns)}
 	single_data = load_row_fn(dataset_2_load:get_row(1))
 	single_data = _add_single_first_dim(single_data)
 	tensor_data = single_data
+
 	if (#rows > 1) then
 		for i = 2,#rows do
 			single_data = load_row_fn(dataset_2_load:get_row(i))
 			single_data = _add_single_first_dim(single_data)
 			tensor_data = torch.cat(tensor_data, single_data, 1)
 		end
+	end
+
+	-- Update offset
+	self.batch.offset[type] = stop_position
+	if (self.batch.offset[type] >= self:batch_size(type)) then
+		self.batch.offset[type] = 0
 	end
 
 	return tensor_data, tensor_label, tensor_col_names
@@ -325,16 +338,23 @@ _Return value_: void
 	end
 	local count = 0
 	local last_key = -1
+
+	self.batch.offset = {}
 	for k,prop in pairs(self.batch.data_types) do
 		last_key = k
 		num_observations = math.max(math.ceil(prop * number), 1)
 		if (count + num_observations > number) then
 			num_observations = number - count
 		end
+
+		-- Initi empty dataset with 0 offset
 		self.batch.datasets[k] = {}
+		self.batch.offset[k] = 0
+
 		for i = 1,num_observations do
 			table.insert(self.batch.datasets[k], offset + row_indexes[count + i])
 		end
+
 		count = count + num_observations
 	end
 
@@ -342,6 +362,7 @@ _Return value_: void
 	assert(number + offset - count < 2 * table.exact_length(self.batch.datasets),
 	       "An error must have occurred during recruitment into the batch datasets" ..
 	       " as the difference was larger than expected: " .. number + offset - count)
+
 	if (count < number) then
 		for i = (count + 1),number do
 			table.insert(self.batch.datasets[last_key], offset + row_indexes[i])
