@@ -118,6 +118,44 @@ _Return value_: data, label tensors, table with tensor column names
 	return tensor_data, tensor_label, tensor_col_names
 end}
 
+Dataframe.has_batch = argcheck{
+	doc = [[
+<a name="Dataframe.has_batch">
+### Dataframe.has_batch(@ARGP)
+
+@ARGT
+
+Checks if batch is available
+
+_Return value_: boolean
+]],
+	{name="self", type="Dataframe"},
+	{name='type', type='string', doc='Type of data to load'},
+	call = function(self, type)
+	return(self.batch ~= nil and
+	       self.batch.datasets ~= nil and
+	       self.batch.datasets[type] ~= nil)
+end}
+
+Dataframe.get_batch = argcheck{
+	doc = [[
+<a name="Dataframe.get_batch">
+### Dataframe.get_batch(@ARGP)
+
+@ARGT
+
+Returns the entire batch as a new Dataframe
+
+_Return value_: Dataframe
+]],
+	{name="self", type="Dataframe"},
+	{name='type', type='string', doc='Type of data to load'},
+	call = function(self, type)
+	assert(self:has_batch(type), "There is no batch named " .. type)
+
+	return self:_create_subset(Df_Array(self.batch.datasets[type]))
+end}
+
 Dataframe.batch_size = argcheck{
 	doc = [[
 <a name="Dataframe.batch_size">

@@ -38,6 +38,11 @@ describe("Loading batch process", function()
 		end
 
 		assert.is.equal(order, 0)
+
+		assert.is_true(a:has_batch("train"))
+		assert.is_true(a:get_batch("train"):size(1) > 0)
+		assert.is_true(a:get_batch("train"):size(1) < a:size(1))
+		assert.are.same(a:get_batch("train"):size(2), a:size(2))
 	end)
 
 	describe("In action",function()
