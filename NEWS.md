@@ -9,6 +9,9 @@ Version: development
 * Added cbind
 * Fixed bug with outputting categorical columns
 * Added a version function
+* The statistics can now return dataframe that is also the default (allows nicer printing)
+* The add_column can now take a position argument
+* The init with a table can now also accept column_order argument
 
 Version: 1.1
 -----------
