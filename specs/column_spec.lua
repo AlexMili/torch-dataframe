@@ -95,6 +95,13 @@ describe("Column operations", function()
 			assert.has.error(function() a:add_column('Col G', {0,1,2,3,5}) end)
 		end)
 
+		it("Add positioning",function()
+			a:add_column('Position 1', 1, 1)
+			assert.are.same(a:get_column_order('Position 1'), 1)
+
+			a:add_column('Position 3', 3, 'A')
+			assert.are.same(a:get_column_order('Position 3'), 3)
+		end)
 	end)
 
 	describe("Get a column functionality",function()

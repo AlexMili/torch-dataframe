@@ -115,43 +115,70 @@ Dataframe.add_column = argcheck{
 <a name="Dataframe.add_column">
 ### Dataframe.add_column(@ARGP)
 
-@ARGT
+Add new column to Dataframe. Automatically orders the column last, i.e. furthest to
+the right.
 
-Add new column to Dataframe
+@ARGT
 
 _Return value_: void
 ]],
 	{name="self", type="Dataframe"},
 	{name="column_name", type="string", doc="The column to add"},
-	{name="default_value", type="number|string|boolean", doc="The default_value", default=0/0},
 	call=function(self, column_name, default_value)
-	-- Use nan as missing values
-	if (default_value == nil) then
-		default_value =  0/0
-	end
+	return self:add_column(column_name, -1, 0/0)
+end}
+
+Dataframe.add_column = argcheck{
+	doc = [[
+The default_value argument will fill the new column. If omitted will be 0/0
+
+@ARGT
+]],
+	{name="self", type="Dataframe"},
+	{name="column_name", type="string", doc="The column to add"},
+	{name="default_value", type="number|string|boolean", doc="The default_value"},
+	overload=Dataframe.add_column,
+	call=function(self, column_name, default_value)
+	self:add_column(column_name, -1, default_value)
+end}
+
+Dataframe.add_column = argcheck{
+	doc = [[
+You can also specify the position of the new column by using the pos argument. When
+specifying the position you also must provide the default_value.
+
+@ARGT
+]],
+	{name="self", type="Dataframe"},
+	{name="column_name", type="string", doc="The column to add"},
+	{name="pos", type="number", doc="The position to input the column at, 1 == furthest to the left"},
+	{name="default_value", type="number|string|boolean", doc="The default_value"},
+	overload=Dataframe.add_column,
+	call=function(self, column_name, pos, default_value)
+	assert(isint(pos), "The pos should be an integer, you provided: " .. tostring(pos))
 
 	local default_values = {}
 	for i=1,self.n_rows do
 		table.insert(default_values, default_value)
 	end
-	self:add_column(column_name, Df_Array(default_values))
+	self:add_column(column_name, pos, Df_Array(default_values))
 end}
 
 Dataframe.add_column = argcheck{
 	doc = [[
-If you have a column with values to add then use the Df_Array
+If you have a column with values to add then use the Df_Array together with
+default_value
 
 @ARGT
 
-Add new column to Dataframe
-
-_Return value_: void
 ]],
 	overload=Dataframe.add_column,
 	{name="self", type="Dataframe"},
 	{name="column_name", type="string", doc="The column to add"},
+	{name="pos", type="number", doc="The position to input the column at, 1 == furthest to the left", default=-1},
 	{name="default_values", type="Df_Array", doc="The default values"},
-	call=function(self, column_name, default_values)
+	call=function(self, column_name, pos, default_values)
+	assert(isint(pos), "The pos should be an integer, you provided: " .. tostring(pos))
 	assert(not self:has_column(column_name), "The column " .. column_name .. " already exists in the dataset")
 	default_values = default_values.data
 
@@ -168,7 +195,11 @@ _Return value_: void
 	end
 
 	-- Append column order
-	table.insert(self.column_order, column_name)
+	if (pos > 0 and pos <= self.n_rows) then
+		table.insert(self.column_order, pos, column_name)
+	else
+		table.insert(self.column_order, column_name)
+	end
 	self:_refresh_metadata()
 end}
 
