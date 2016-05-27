@@ -91,6 +91,30 @@ You can also provide a function for more advanced matching
 })
 ```
 
+<a name="Dataframe.which">
+### Dataframe.whic(self, condition_function)
+
+```
+({
+   self               = Dataframe  -- 
+   condition_function = function   -- Function that returns true if a condition is met. Received the entire row as a table argument.
+})
+```
+
+Finds the rows that match the arguments
+
+_Return value_: table
+If you provide a value and a column it will look for identical matches
+
+```
+({
+   self        = Dataframe                  -- 
+   column_name = string                     -- The column with the value
+   value       = number|string|boolean|nan  -- 
+})
+```
+
+_Return value_: table
 <a name="Dataframe.update">
 ### Dataframe.update(self, condition_function, update_function)
 
