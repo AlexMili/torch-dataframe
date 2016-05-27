@@ -42,6 +42,15 @@ describe("Dataframe class", function()
 			assert.are.same(df:get_column("first_column"), {3,4,5})
 			assert.are.same(df:get_column("second_column"), {10,11,12})
 		end)
+
+		it("Loads a table if passed in argument with column_order",function()
+			local df = Dataframe(Df_Dict({
+				['first']={3,4,5},
+				['second']={10,11,12}
+			}), Df_Array("second", "first"))
+
+			assert.are.same(df.column_order, {"second", "first"})
+		end)
 	end)
 
 	describe("When using internal functions",function()

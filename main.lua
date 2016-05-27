@@ -57,9 +57,15 @@ _Return value_: Dataframe
 	overload=Dataframe.__init,
 	{name="self", type="Dataframe"},
 	{name="data", type="Df_Dict", doc="The data to read in"},
-	call=function(self, data)
+	{name="column_order", type="Df_Array", default=false,
+	 doc="The order of the column (has to be array and _not_ a dictionary)"},
+	call=function(self, data, column_order)
 	self:__init()
-	self:load_table{data=data}
+	if (column_order) then
+		self:load_table{data=data, column_order=column_order}
+	else
+		self:load_table{data=data}
+	end
 end}
 
 -- Private function for cleaning and reseting all data and meta data
