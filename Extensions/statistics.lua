@@ -326,15 +326,29 @@ _Return value_: Table or Dataframe
 	end
 
 	if (as_dataframe) then
-		local tmp = {value={}, key={}}
-		for key, value in pairs(modes) do
-			table.insert(tmp.value, value)
-			table.insert(tmp.key, key)
-		end
-		modes = Dataframe.new(Df_Dict(tmp))
+		modes = self:_convert_table_2_dataframe(Df_Tbl(modes))
 	end
 
 	return modes
+end}
+
+Dataframe._convert_table_2_dataframe = argcheck{
+	{name="self", type="Dataframe"},
+	{name="tbl", type="Df_Tbl"},
+	{name="value_name", type="string", default="value",
+	 doc="The name of the value column"},
+	{name="key_name", type="string", default="key",
+	 doc="The name of the key column"},
+	call=function(self, tbl, value_name, key_name)
+	tbl = tbl.data
+
+	local tmp = {[value_name]={}, [key_name]={}}
+	for key, value in pairs(tbl) do
+		table.insert(tmp[value_name], value)
+		table.insert(tmp[key_name], key)
+	end
+
+	return Dataframe.new(Df_Dict(tmp), Df_Array(key_name, value_name))
 end}
 
 Dataframe.get_mode = argcheck{
@@ -437,6 +451,11 @@ _Return value_: number
 		end
 	end
 
+	if (isnan(max)) then
+	print(self:is_categorical(column_name))
+		self:output()
+		print(column_name, max)
+	end
 	return max
 end}
 
@@ -446,13 +465,15 @@ You can in addition choose or supplying a Df_Array with the columns of interest
 
 @ARGT
 
-_Return value_: Table
+_Return value_: Table or Dataframe
 ]],
 	overload=Dataframe.get_max_value,
 	{name="self", type="Dataframe"},
 	{name='columns', type='Df_Array', doc='The names of the columns of interest'},
 	{name='with_named_keys', type='boolean', doc='If the index should be named keys', default=false},
-	call=function(self, columns, with_named_keys)
+	{name='as_dataframe', type='boolean', default=true,
+	 doc="Return a dataframe"},
+	call=function(self, columns, with_named_keys, as_dataframe)
 	columns = columns.data
 
 	ret = {}
@@ -468,7 +489,15 @@ _Return value_: Table
 		end
 	end
 
-  return ret
+	if (as_dataframe) then
+		if (with_named_keys) then
+			ret = self:_convert_table_2_dataframe(Df_Tbl(ret))
+		else
+			ret = Dataframe.new(Df_Dict({value=ret}))
+		end
+	end
+
+	return ret
 end}
 
 Dataframe.get_max_value = argcheck{
@@ -476,14 +505,14 @@ Dataframe.get_max_value = argcheck{
 You can in addition choose all numerical columns by skipping the column name
 
 @ARGT
-
-_Return value_: Table
 ]],
 	overload=Dataframe.get_max_value,
 	{name="self", type="Dataframe"},
 	{name='with_named_keys', type='boolean', doc='If the index should be named keys', default=false},
-	call=function(self, with_named_keys)
-	return self:get_max_value(Df_Array(self:get_numerical_colnames()), with_named_keys)
+	{name='as_dataframe', type='boolean', default=true,
+	 doc="Return a dataframe"},
+	call=function(self, with_named_keys, as_dataframe)
+	return self:get_max_value(Df_Array(self:get_numerical_colnames()), with_named_keys, as_dataframe)
 end}
 
 Dataframe.get_min_value = argcheck{
@@ -533,13 +562,15 @@ You can in addition choose or supplying a Df_Array with the columns of interest
 
 @ARGT
 
-_Return value_: Table
+_Return value_: Table or Dataframe
 ]],
 	overload=Dataframe.get_min_value,
 	{name="self", type="Dataframe"},
 	{name='columns', type='Df_Array', doc='The names of the columns of interest'},
 	{name='with_named_keys', type='boolean', doc='If the index should be named keys', default=false},
-	call=function(self, columns, with_named_keys)
+	{name='as_dataframe', type='boolean', default=true,
+	 doc="Return a dataframe"},
+	call=function(self, columns, with_named_keys, as_dataframe)
 	columns = columns.data
 
 	ret = {}
@@ -555,7 +586,15 @@ _Return value_: Table
 		end
 	end
 
-  return ret
+	if (as_dataframe) then
+		if (with_named_keys) then
+			ret = self:_convert_table_2_dataframe(Df_Tbl(ret))
+		else
+			ret = Dataframe.new(Df_Dict({value=ret}))
+		end
+	end
+
+	return ret
 end}
 
 Dataframe.get_min_value = argcheck{
@@ -563,12 +602,12 @@ Dataframe.get_min_value = argcheck{
 You can in addition choose all numerical columns by skipping the column name
 
 @ARGT
-
-_Return value_: Table
 ]],
 	overload=Dataframe.get_min_value,
 	{name="self", type="Dataframe"},
 	{name='with_named_keys', type='boolean', doc='If the index should be named keys', default=false},
-	call=function(self, with_named_keys)
-	return self:get_min_value(Df_Array(self:get_numerical_colnames()), with_named_keys)
+	{name='as_dataframe', type='boolean', default=true,
+	 doc="Return a dataframe"},
+	call=function(self, with_named_keys, as_dataframe)
+	return self:get_min_value(Df_Array(self:get_numerical_colnames()), with_named_keys, as_dataframe)
 end}

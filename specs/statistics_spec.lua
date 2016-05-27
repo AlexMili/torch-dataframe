@@ -108,17 +108,16 @@ describe("Usual statistics functions", function()
 	end)
 
 	describe("Max value",function()
+		df = Dataframe("./data/advanced_short.csv")
 		it("Retrieves the max value of all numerical columns",function()
-			df = Dataframe("./data/advanced_short.csv")
-
-			assert.are.same(df:get_max_value(), {3, 9})
-			assert.are.same(dfs:get_max_value(), {4, .5, 9999999999})
+			assert.are.same(df:get_max_value{as_dataframe = false}, {3, 9})
+			assert.are.same(dfs:get_max_value{as_dataframe = false}, {4, .5, 9999999999})
 
 			df:as_categorical('Col B')
-			assert.are.same(df:get_max_value(), {3, 2, 9})
+			assert.are.same(df:get_max_value{as_dataframe = false}, {3, 2, 9})
 
 			df:as_categorical('Col C')
-			assert.are.same(df:get_max_value(), {3, 2, 2})
+			assert.are.same(df:get_max_value{as_dataframe = false}, {3, 2, 2})
 		end)
 
 		it("Retrieves the max value of a specific column",function()
@@ -131,17 +130,18 @@ describe("Usual statistics functions", function()
 	end)
 
 	describe("Min value",function()
-		it("Retrieves the min value of all numerical columns",function()
-			df = Dataframe("./data/advanced_short.csv")
+		df = Dataframe("./data/advanced_short.csv")
 
-			assert.are.same(df:get_min_value(), {1, 8})
-			assert.are.same(dfs:get_min_value(), {1, .2, -222})
+		it("Retrieves the min value of all numerical columns",function()
+
+			assert.are.same(df:get_min_value{as_dataframe = false}, {1, 8})
+			assert.are.same(dfs:get_min_value{as_dataframe = false}, {1, .2, -222})
 
 			df:as_categorical('Col B')
-			assert.are.same(df:get_min_value(), {1, 1, 8})
+			assert.are.same(df:get_min_value{as_dataframe = false}, {1, 1, 8})
 
 			df:as_categorical('Col C')
-			assert.are.same(df:get_min_value(), {1, 1, 1})
+			assert.are.same(df:get_min_value{as_dataframe = false}, {1, 1, 1})
 		end)
 
 		it("Retrieves the min value of a specific column",function()
