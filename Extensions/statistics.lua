@@ -175,7 +175,7 @@ Use the columns argument together with a Df_Array for specifying columns
 
 @ARGT
 
-_Return value_: Table
+_Return value_: Table or Dataframe
 ]],
 	overload=Dataframe.value_counts,
 	{name="self", type="Dataframe"},
@@ -206,7 +206,7 @@ _Return value_: Table
 		}
 
 		if (as_dataframe) then
-			ret:add_column('column', cn)
+			ret:add_column('column', 1, cn)
 			value_counts:append(ret)
 		else
 			value_counts[cn] = ret
@@ -293,7 +293,7 @@ Dataframe.get_mode = argcheck{
 
 @ARGT
 
-_Return value_: Table
+_Return value_: Table or Dataframe
 ]],
 	{name="self", type="Dataframe"},
 	{name='column_name', type='string', doc='column to inspect'},
@@ -343,7 +343,6 @@ If you provide no column name then all numerical columns will be used
 
 @ARGT
 
-_Return value_: Table
 ]],
 	overload=Dataframe.get_mode,
 	{name="self", type="Dataframe"},
@@ -391,7 +390,7 @@ Dataframe.get_mode = argcheck{
 			              dropna = dropna,
 			              as_dataframe = as_dataframe}
 		if (as_dataframe) then
-			value:add_column('Column', cn)
+			value:add_column('Column', 1, cn)
 			modes:append(value)
 		else
 			modes[cn] = value
