@@ -78,6 +78,7 @@ Dataframe._clean = argcheck{
 	self.n_rows = 0
 	self.categorical = {}
 	self.schema = {}
+	self.__version = "1.1.dev"
 end}
 
 -- Private function for copying core settings to new Dataframe
@@ -183,43 +184,6 @@ _Return value_: table
 	return {rows=self.n_rows,cols=#self.columns}
 end}
 
-Dataframe.size = argcheck{
-	doc =  [[
-<a name="Dataframe.size">
-### Dataframe.size(@ARGP)
-
-Returns the number of rows and columns in a tensor
-
-@ARGT
-
-_Return value_: tensor (rows, columns)
-]],
-	{name="self", type="Dataframe"},
-	call=function(self)
-	return torch.IntTensor({self.n_rows,#self.columns})
-end}
-
-Dataframe.size = argcheck{
-	doc =  [[
-By providing dimension you can get only that dimension, row == 1, col == 2
-
-@ARGT
-
-_Return value_: integer
-]],
-	overload=Dataframe.size,
-	{name="self", type="Dataframe"},
-	{name="dim", type="number", doc="The dimension of interest"},
-	call=function(self, dim)
-	assert(isint(dim), "The dimension isn't an integer: " .. tostring(dim))
-	assert(dim == 1 or dim == 2, "The dimension can only be between 1 and 2 - you've provided: " .. dim)
-	if (dim == 1) then
-		return self.n_rows
-	end
-
-	return #self.columns
-end}
-
 -- Internal function for getting raw value for a categorical variable
 Dataframe._get_raw_cat_key = argcheck{
 	{name="self", type="Dataframe"},
@@ -251,7 +215,7 @@ _Return value_: string
 ]],
 	{name="self", type="Dataframe"},
 	call=function(self)
-	return "1.1.dev"
+	return torch.version(self)
 end}
 
 return Dataframe
