@@ -25,7 +25,6 @@ describe("Indexing the dataframe", function()
 		-- Wait until https://github.com/torch/torch7/issues/693 is resolved
 		it("Retrieves a single row",function()
 			local subset = df[1]
-			table._dump(subset)
 			assert.is.truthy(subset, "Fails to subset row")
 			assert.are.same(subset["Col A"], 1)
 			assert.are.same(subset["Col C"], 1000)
@@ -47,22 +46,22 @@ describe("Indexing the dataframe", function()
 	end)
 
 	describe("Set row via the newindex",function()
-		local df = Dataframe()
+		local df = Dataframe("./data/simple_short.csv")
 
 		it("Set a single row",function()
-		end)
-
-		it("Set multiple rows",function()
+			df[1]= {["Col A"] = "new value"}
+			assert.are.same(df[1]["Col A"], "new value")
 		end)
 	end)
 
 	describe("Create a copy of the table",function()
-		local df = Dataframe()
+		local df = Dataframe(Df_Dict({a={1,2,3}}))
 
-		it("Set a single row",function()
-		end)
-
-		it("Set multiple rows",function()
+		it("Check that it's a true copy and not a reference",function()
+			local new_df = df:copy()
+			new_df[1] = {a=2}
+			assert.is_true(torch.all(torch.eq(new_df:size(), df:size())))
+			assert.is_false(new_df[1].a == df[1].a)
 		end)
 	end)
 
@@ -80,7 +79,14 @@ describe("Indexing the dataframe", function()
 		it("The torch.version goes to version()",function()
 			assert.are.same(torch.version(df), df:version())
 		end)
+	end)
 
+	describe("Check the __len",function()
+		local df = Dataframe(Df_Dict{a={1,2,3,4,5}})
+
+		it("Should return the n_rows",function()
+			assert.are.same(#df, df.n_rows)
+		end)
 	end)
 
 end)
