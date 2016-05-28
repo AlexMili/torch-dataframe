@@ -47,7 +47,6 @@ _Return value_: integer
 	return #self.columns
 end}
 
--- Wait until https://github.com/torch/torch7/issues/693 is resolved
 doc =  [[
 <a name="Dataframe.[]">
 ### Dataframe.[]
@@ -93,3 +92,54 @@ function Dataframe:__index__(index)
 
 	return false
 end
+
+doc =  [[
+<a name="Dataframe.[] =">
+### Dataframe.[] =
+
+The `__newindex__` allows easy updating of a single row (see `_update_single_row()`)
+
+]]
+
+function Dataframe:__newindex__(index, value)
+	if (torch.type(index) == "number") then
+		self:_update_single_row(index, Df_Tbl(value), Df_Tbl(self:get_row(index)))
+		return true
+	end
+
+	return false
+end
+
+Dataframe.copy = argcheck{
+	doc =  [[
+<a name="Dataframe.copy">
+### Dataframe.copy(@ARGP)
+
+Copies the table together with all metadata
+
+@ARGT
+
+_Return value_: Dataframe
+]],
+	{name="self", type="Dataframe"},
+	call=function(self)
+	local new_df = Dataframe.new(Df_Dict(self.dataset))
+	new_df = self:_copy_meta(new_df)
+	return new_df
+end}
+
+
+Dataframe.__len__ = argcheck{
+	doc =  [[
+<a name="Dataframe.#">
+### Dataframe.#
+
+Returns the number of rows
+
+_Return value_: integer
+]],
+	{name="self", type="Dataframe"},
+	{name="other", type="Dataframe"},
+	call=function(self, other)
+	return self.n_rows
+end}
