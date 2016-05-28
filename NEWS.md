@@ -3,6 +3,7 @@ News file for torch-dataframe
 
 Version: development
 --------------------
+* Added metatable functionality (issue #18)
 * Changed insert to insert with an index
 * Added append that does the same as index previously did
 * Added rbind as an append alias
