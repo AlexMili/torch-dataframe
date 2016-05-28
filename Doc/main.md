@@ -46,28 +46,6 @@ Returns the number of rows and columns in a table
 ```
 
 _Return value_: table
-<a name="Dataframe.size">
-### Dataframe.size(self)
-
-Returns the number of rows and columns in a tensor
-
-```
-({
-   self = Dataframe  -- 
-})
-```
-
-_Return value_: tensor (rows, columns)
-By providing dimension you can get only that dimension, row == 1, col == 2
-
-```
-({
-   self = Dataframe  -- 
-   dim  = number     -- The dimension of interest
-})
-```
-
-_Return value_: integer
 <a name="Dataframe.version">
 ### Dataframe.version(self)
 

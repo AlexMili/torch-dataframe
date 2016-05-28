@@ -117,6 +117,8 @@ General dataset information can be found using:
 
 ```lua
 df:shape() -- print {rows=3, cols=3}
+#df -- gets the number of rows
+df:size() -- returns a tensor with the size rows, columns
 df.columns -- table of columns names
 df:count_na() -- print all the missing values by column name
 ```
@@ -133,13 +135,16 @@ You can manipulate it:
 
 ```lua
 df:insert(Df_Dict({['first_column']={7,8,9},['second_column']={10,11,12}}))
-
-df:drop('image') -- delete column
-df:rename_column('x', 'y') -- rename column 'x' in 'y'
-df:add_column('z', 0) -- Add column with default value 0
-df:get_column('x') -- return column x as table
-df:has_column('x') -- return true if the column exist
 df:remove_index(3) -- remove line 3 of the entire dataset
+
+df:has_column('x') -- return true if the column exist
+df:get_column('y') -- return column x as table
+df["$y"] -- alias for get_column
+
+df:add_column('z', 0) -- Add column with default value 0 at the end (right side of the table)
+df:add_column('first_column', 1, 2) -- Add column with default value 2 at the beginning (left side of the table)
+df:drop('x') -- delete column
+df:rename_column('x', 'y') -- rename column 'x' in 'y'
 
 df:reset_column('my_col', 0) -- reset the given column with 0
 df:fill_na('x', 0) -- replace missing values in 'x' column with 0
@@ -176,6 +181,11 @@ You can subset your data using:
 df:head(20) -- print 20 first elements (10 by default)
 df:tail(5) -- print 5 last elements (10 by default)
 df:show() -- print 10 first and 10 last elements
+
+df[13] -- returns a table with the row values
+df["13:17"] -- returns a Dataframe with values in that span
+df["13:"] -- returns a Dataframe with values starting from index 13
+df[Df_Array(1,3,4)] -- returns a Dataframe with values index 1,3 and 4
 ```
 
 ### Exporting
@@ -214,9 +224,10 @@ cd specs/
 
 ## Documentation
 
-The package relies on self-documenting functions via the [argcheck](https://github.com/torch/argcheck) package and [GitHub Wiki](https://github.com/AlexMili/torch-dataframe/wiki) for more extensive documentation.
+The package relies on self-documenting functions via the [argcheck](https://github.com/torch/argcheck) package that reside in the [Doc](https://github.com/AlexMili/torch-dataframe/tree/master/Doc) folder. The [GitHub Wiki](https://github.com/AlexMili/torch-dataframe/wiki) is intended for more extensive in detail documentation.
 
-To generate the documentation please run :
+To generate the documentation please run:
+
 ```bash
 th doc.lua > /dev/null
 ```
