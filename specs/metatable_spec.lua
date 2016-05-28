@@ -16,11 +16,15 @@ describe("Indexing the dataframe", function()
 
 	describe("Retrieving index",function()
 		local df = Dataframe("./data/simple_short.csv")
+		assert.are.same(df["$Col A"], df:get_column('Col A'))
+		assert.are.same(df["$Col C"], df:get_column('Col C'))
+	end)
+
+	describe("Retrieving index",function()
+		local df = Dataframe("./data/simple_short.csv")
 		-- Wait until https://github.com/torch/torch7/issues/693 is resolved
-		if (false) then
 		it("Retrieves a single row",function()
 			local subset = df[1]
-			print(torch.type(subset))
 			assert.is.truthy(subset, "Fails to subset row")
 			assert.are.same(subset:size(1), 1)
 		end)
@@ -38,7 +42,6 @@ describe("Indexing the dataframe", function()
 			assert.are.same(subset:size(1), 4)
 			assert.are.same(subset:size(2), df:size(2))
 		end)
-		end
 	end)
 
 	describe("Set row via the newindex",function()
