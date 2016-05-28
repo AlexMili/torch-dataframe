@@ -27,6 +27,7 @@ package = "torch-dataframe"
 			["Dataframe.utils"] = 'utils.lua',
 			["Dataframe.argcheck"] = 'argcheck.lua',
 			["Dataframe.main"] = 'main.lua',
+			["Dataframe.Extensions.metatable"] = 'Extensions/metatable.lua',
 			["Dataframe.Extensions.categorical"] = 'Extensions/categorical.lua',
 			["Dataframe.Extensions.column"] = 'Extensions/column.lua',
 			["Dataframe.Extensions.row"] = 'Extensions/row.lua',
