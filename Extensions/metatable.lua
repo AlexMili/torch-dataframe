@@ -52,40 +52,30 @@ doc =  [[
 <a name="Dataframe.[]">
 ### Dataframe.[]
 
-Subsets rows. You can either use integers corresponding to valid row numbers,
-or you can provide a Df_Array() with multiple values or you can provide a
-row span "2:5"
+The `__index__` function is a powerful tool that allows quick access to regular functions
 
-_Return value_: Dataframe
+- _Single integer_: it returns the raw row table (see `get_row()`)
+- _Df_Array()_: select rows of interest (see `_create_subset()`)
+- _"start:stop"_: get a row span using start/stop index, e.g. "2:5" (see `sub()`)
+- _"$column_name"_: get a column by prepending the name with $, e.g. "$a column name" (see `get_column`)
+
+_Return value_: Table or Dataframe
 ]]
 
 function Dataframe:__index__(index)
 	if (torch.type(index) == "number") then
-		local tmp = self:_create_subset(Df_Array(index))
-		return tmp, true
+		return self:get_row(index), true
 	end
 
 	if (torch.type(index) == "string") then
 		if (index:match("^[0-9]+:[0-9]+$")) then
 			-- Get the core data
-			local first = index:gsub(":.*", "")
-			first = tonumber(first)
-			local last = index:gsub("[^:]+:", "")
-			last = tonumber(last)
+			local start = index:gsub(":.*", "")
+			start = tonumber(start)
+			local stop = index:gsub("[^:]+:", "")
+			stop = tonumber(stop)
 
-			local indexes = {}
-			if (first <= last) then
-				for i=first,last do
-					table.insert(indexes, i)
-				end
-			else
-				-- insert in reverse order
-				for i=last,first do
-					table.insert(indexes, 1, i)
-				end
-			end
-
-			return self[Df_Array(indexes)], true
+			return self:sub{start=start, stop=stop}, true
 		end
 
 		-- Index a column using a $ at the beginning of a string

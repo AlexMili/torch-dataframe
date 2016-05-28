@@ -25,8 +25,10 @@ describe("Indexing the dataframe", function()
 		-- Wait until https://github.com/torch/torch7/issues/693 is resolved
 		it("Retrieves a single row",function()
 			local subset = df[1]
+			table._dump(subset)
 			assert.is.truthy(subset, "Fails to subset row")
-			assert.are.same(subset:size(1), 1)
+			assert.are.same(subset["Col A"], 1)
+			assert.are.same(subset["Col C"], 1000)
 		end)
 
 		it("Retrieves a several rows",function()
