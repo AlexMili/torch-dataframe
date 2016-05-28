@@ -48,7 +48,6 @@ _Return value_: integer
 end}
 
 -- Wait until https://github.com/torch/torch7/issues/693 is resolved
-if (false) then
 doc =  [[
 <a name="Dataframe.[]">
 ### Dataframe.[]
@@ -61,13 +60,12 @@ _Return value_: Dataframe
 ]]
 
 function Dataframe:__index__(index)
-	if (type(index) == "number") then
+	if (torch.type(index) == "number") then
 		local tmp = self:_create_subset(Df_Array(index))
-		print(torch.type(tmp))
-		return tmp
+		return tmp, true
 	end
 
-	if (false and type(index) == "string") then
+	if (torch.type(index) == "string") then
 		if (index:match("^[0-9]+:[0-9]+$")) then
 			-- Get the core data
 			local first = index:gsub(":.*", "")
@@ -87,12 +85,21 @@ function Dataframe:__index__(index)
 				end
 			end
 
-			return self:_create_subset(Df_Array(indexes))
+			return self[Df_Array(indexes)], true
 		end
 
-		return rawget(self, index)
+		-- Index a column using a $ at the beginning of a string
+		if (index:match("^[$]")) then
+			local column_name = index:gsub("^[$]", "")
+			return self:get_column(column_name), true
+		end
+
+		return false
 	end
 
-	return rawget(self, index)
-end
+	if (torch.type(index) == "Df_Array") then
+		return self:_create_subset(index), true
+	end
+
+	return false
 end
