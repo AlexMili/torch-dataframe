@@ -41,3 +41,9 @@ _Return value_: Dataframe
 Returns the number of rows
 
 _Return value_: integer
+<a name="Dataframe.==">
+### Dataframe.==
+
+Checks if Dataframe's contain the same values
+
+_Return value_: boolean

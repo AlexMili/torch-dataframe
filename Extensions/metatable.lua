@@ -143,3 +143,55 @@ _Return value_: integer
 	call=function(self, other)
 	return self.n_rows
 end}
+
+Dataframe.__eq__ = argcheck{
+	doc =  [[
+<a name="Dataframe.==">
+### Dataframe.==
+
+Checks if Dataframe's contain the same values
+
+_Return value_: boolean
+]],
+	{name="self", type="Dataframe"},
+	{name="other", type="Dataframe"},
+	call=function(self, other)
+	-- Check that size matches
+	if (not torch.all(torch.eq(self:size(), other:size()))) then
+		return false
+	end
+
+	-- Check that columns match
+	for i=1,#self.columns do
+		if (not other:has_column(self.columns[i])) then
+			return false
+		end
+	end
+
+	-- Check actual content (expensive why this is left to last)
+	for i=1,#self.columns do
+		local self_col = self:get_column(self.columns[i])
+		local other_col = other:get_column(self.columns[i])
+
+		for i=1,self.n_rows do
+			-- one is nan and not the other
+			if ((not isnan(self_col[i]) and
+			     isnan(other_col[i])) or
+			    (isnan(self_col[i]) and
+			     not isnan(other_col[i]))) then
+				return false
+			end
+
+			-- Actual value check if both weren't nan
+			if (not(isnan(self_col[i]))) then
+				if (self_col[i] ~= other_col[i]) then
+					return false
+				end
+			end
+
+		end
+	end
+
+	-- If the function hasn't exited before then it means that the two dataframes are equal
+	return true
+end}
