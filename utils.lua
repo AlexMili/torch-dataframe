@@ -77,26 +77,41 @@ function isnan(n)
 	return n ~= n
 end
 
-table.collapse_to_string = function(tbl)
+table.collapse_to_string = function(tbl, indent, start)
 	assert(type(tbl) == "table")
-	local ret = ""
+
+	indent = indent or ""
+	start = start or indent
+	local ret = start
+
 	if(tbl == nil) then
 		ret = "No table provided"
+
 	elseif(table.exact_length(tbl) == 0) then
 		ret = "Empty table"
+
 	else
 		for k,v in pairs(tbl) do
-			if (ret ~= "") then
+			if (ret ~= start) then
 				ret = ret .. ", "
+
+				-- If deeper structure then the description should be dense
+				if (indent:len() <= 2*1) then
+					ret = ret .. "\n" .. indent
+				end
 			end
 
 			if (type(v) == "table") then
-				v = ("[%s]"):format(table.collapse_to_string(v))
+				v = ("[\n%s%s\n%s]"):
+					format(indent .. "  ",
+					       table.collapse_to_string(v, indent .. "  ", ""),
+					       indent)
 			end
+
 			if (isnan(v)) then
 				ret = ret .. "'" .. k .. "'=>nan"
 			else
-				ret = ret .. "'" .. k .. "'=>'" .. v .. "'"
+				ret = ret .. "'" .. k .. "'=>'" .. tostring(v) .. "'"
 			end
 		end
 	end
@@ -115,6 +130,6 @@ end
 
 -- Util for debugging purpose
 table._dump = function(tbl)
-	print(table.collapse_to_string(tbl))
+	print(("\n-[ Table dump ]-\n%s"):format(table.collapse_to_string(tbl)))
 end
 -- END UTILS
