@@ -8,7 +8,10 @@
 ({
    self          = Dataframe  -- 
    no_lines      = number     -- The number of lines/rows to include (-1 for all)
-  [offset        = number]    -- The number of lines/rows to skip before starting load [default=0]
+  [offset        = number]    -- The number of lines/rows to skip before starting load.
+		The offset has an internal parameter that it defaults to if this is left empty.
+		Note that this will be forgotten in a parallel setting and you should in that case
+		always provide a manual offset. [default=-1]
    load_row_fn   = function   -- Receives a row and returns a tensor assumed to be the data
   [type          = string]    -- Type of data to load [default=train]
   [label_columns = table]     -- The columns that are to be the label. If omitted defaults to all numerical. [default=false]
@@ -19,6 +22,32 @@ Loads a batch of data from the table. Note that you have to call init_batch befo
 in order to split the dataset into train/test/validations.
 
 _Return value_: data, label tensors, table with tensor column names
+<a name="Dataframe.has_batch">
+### Dataframe.has_batch(self, type)
+
+```
+({
+   self = Dataframe  -- 
+   type = string     -- Type of data to load
+})
+```
+
+Checks if batch is available
+
+_Return value_: boolean
+<a name="Dataframe.get_batch">
+### Dataframe.get_batch(self, type)
+
+```
+({
+   self = Dataframe  -- 
+   type = string     -- Type of data to load
+})
+```
+
+Returns the entire batch as a new Dataframe
+
+_Return value_: Dataframe
 <a name="Dataframe.batch_size">
 ### Dataframe.batch_size(self, type)
 
