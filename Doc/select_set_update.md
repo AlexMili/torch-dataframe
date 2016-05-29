@@ -142,3 +142,14 @@ _Return value_: void
 Change value for a line where a column has a certain value
 
 _Return value_: void
+You can also provide the index that you want to set
+
+```
+({
+   self       = Dataframe  -- 
+   index      = number     -- Row index number
+   new_values = Df_Dict    -- Value to replace with
+})
+```
+
+_Return value_: void

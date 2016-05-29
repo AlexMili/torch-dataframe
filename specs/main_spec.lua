@@ -229,11 +229,18 @@ describe("Dataframe class", function()
 		assert.are.same(b:get_column('Col A'), start_val)
 	end)
 
-	it("Updates a single cell given a column name and an index",function()
+	it("Updates a single cell given a column name and an value",function()
 		local a = Dataframe("./data/simple_short.csv")
 
-		a:set(1, 'Col A', Df_Dict({['Col A']=99}))
+		a:set(1000, 'Col C', Df_Dict({['Col A']=99}))
 		assert.is.equal(a:get_column('Col A')[1], 99)
+	end)
+
+	it("Updates a single cell given a an index",function()
+		local a = Dataframe("./data/simple_short.csv")
+
+		a:set(2, Df_Dict({['Col A']=99}))
+		assert.is.equal(a:get_column('Col A')[2], 99)
 	end)
 
 	it("Get a single row given an index",function()
