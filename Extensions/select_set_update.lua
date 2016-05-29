@@ -344,3 +344,34 @@ _Return value_: void
 		end
 	end
 end}
+
+Dataframe.set = argcheck{
+	doc =  [[
+You can also provide the index that you want to set
+
+@ARGT
+
+_Return value_: void
+]],
+	overload=Dataframe.set,
+	{name="self", type="Dataframe"},
+	{name='index', type='number',
+	 doc='Row index number'},
+	{name='new_values', type='Df_Dict',
+ 	 doc='Value to replace with'},
+	call = function(self, index, new_values)
+	assert(isint(index), "The index should be an integer, you've provided " .. tostring(index))
+	assert(index > 0 and index <= self.n_rows, ("The index (%d) is outside the bounds 1-%d"):format(index, self.n_rows))
+
+	new_values = new_values.data
+
+	for i=1,#self.columns do
+		local key = self.columns[i]
+		if (new_values[key] ~= nil) then
+			if (self:is_categorical(key)) then
+				new_values[key] = self:_get_raw_cat_key(key, new_values[key])
+			end
+			self.dataset[key][index] = new_values[key]
+		end
+	end
+end}
