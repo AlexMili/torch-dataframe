@@ -24,18 +24,18 @@ _Return value_: data, label tensors, table with tensor column names
 ]],
 	{name="self", type="Dataframe"},
 	{name='no_lines', type='number', doc='The number of lines/rows to include (-1 for all)'},
-	{name='offset', type='number', default=-1,
-		doc=[[The number of lines/rows to skip before starting load.
-		The offset has an internal parameter that it defaults to if this is left empty.
-		Note that this will be forgotten in a parallel setting and you should in that case
-		always provide a manual offset.]]},
 	{name='load_row_fn', type='function',
 	 doc='Receives a row and returns a tensor assumed to be the data'},
+	{name='offset', type='number', default=-1,
+	 doc=[[The number of lines/rows to skip before starting load.
+	 The offset has an internal parameter that it defaults to if this is left empty.
+	 Note that this will be forgotten in a parallel setting and you should in that case
+	 always provide a manual offset.]]},
 	{name='type', type='string', doc='Type of data to load', default="train"},
 	{name='label_columns', type='table',
 	 doc='The columns that are to be the label. If omitted defaults to all numerical.',
 	 default=false},
-	call = function(self, no_lines, offset, load_row_fn, type, label_columns)
+	call = function(self, no_lines, load_row_fn, offset, type, label_columns)
 	assert(self.batch ~= nil and
 	       self.batch.datasets ~= nil,
 	       "You must call init_batch before calling load_batch")
@@ -293,6 +293,7 @@ _Return value_: void
 	if (reset_batch) then
 		self.batch.shuffle = shuffle
 		self.batch.datasets = {}
+		self.batch.offset = {}
 		self:_add_2_batch_datasets{number = self.n_rows,
 		                           shuffle = shuffle}
 	else
@@ -307,6 +308,7 @@ _Return value_: void
 		elseif (n_permutated > self.n_rows) then
 			print("Warning resetting the batches due to reduced number of rows")
 			self.batch.datasets = {}
+			self.batch.offset = {}
 			self:_add_2_batch_datasets{number = self.n_rows,
 			                           shuffle = shuffle}
 		end
@@ -339,7 +341,6 @@ _Return value_: void
 	local count = 0
 	local last_key = -1
 
-	self.batch.offset = {}
 	for k,prop in pairs(self.batch.data_types) do
 		last_key = k
 		num_observations = math.max(math.ceil(prop * number), 1)
