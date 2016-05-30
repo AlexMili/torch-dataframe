@@ -278,7 +278,7 @@ _Return value_: string
 
 	for row_no = 1,self.n_rows do
 		result = result.. '\n\t<tr>'
-		result = result.. '\n\t\t<td>'..(row_no + offset)..'</td>'
+		result = result.. '\n\t\t<td><span style="font-weight:bold;">'..(row_no + offset)..'</span></td>'
 		for col_no = 1,#self.column_order do
 			k = self.column_order[col_no]
 			val = self:get_column(k)[row_no]
