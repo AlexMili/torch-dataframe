@@ -128,7 +128,6 @@ _Return value_: Dataframe
 	return new_df
 end}
 
-
 Dataframe.__len__ = argcheck{
 	doc =  [[
 <a name="Dataframe.#">
@@ -141,5 +140,12 @@ _Return value_: integer
 	{name="self", type="Dataframe"},
 	{name="other", type="Dataframe"},
 	call=function(self, other)
+	return self.n_rows
+end}
+
+Dataframe.__len__ = argcheck{
+	overload=Dataframe.__len__,
+	{name="self", type="Dataframe"},
+	call=function(self)
 	return self.n_rows
 end}
