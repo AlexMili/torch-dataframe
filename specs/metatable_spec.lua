@@ -84,7 +84,11 @@ describe("Indexing the dataframe", function()
 	describe("Check the __len",function()
 		local df = Dataframe(Df_Dict{a={1,2,3,4,5}})
 
-		it("Should return the n_rows",function()
+		it("__len__ should return the n_rows",function()
+			assert.are.same(df:__len__(), df.n_rows)
+		end)
+
+		it("# should return the n_rows",function()
 			assert.are.same(#df, df.n_rows)
 		end)
 	end)
