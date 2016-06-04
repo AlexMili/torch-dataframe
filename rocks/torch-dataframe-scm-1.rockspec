@@ -1,10 +1,10 @@
 package = "torch-dataframe"
- version = "scm-1"
- source = {
+version = "scm-1"
+source = {
 		url = "https://github.com/alexmili/torch-dataframe/archive/master.tar.gz",
 		dir = "torch-dataframe-master"
- }
- description = {
+}
+description = {
 		summary = "A Dataframe class for Torch",
 		detailed = [[
 			 Dataframe is a Torch7 class to load and manipulate
@@ -13,14 +13,14 @@ package = "torch-dataframe"
 		homepage = "https://github.com/alexmili/torch-dataframe",
 		license = "MIT/X11",
 		maintainer = "AlexMili"
- }
- dependencies = {
-		"lua ~> 5.1",
+}
+dependencies = {
+		"lua >= 5.1",
 		"torch >= 7.0",
 		"argcheck >= 2.0",
 		"luafilesystem >= 1.6.3"
- }
- build = {
+}
+build = {
 	type = 'builtin',
 	modules = {
 			["Dataframe.init"] = 'init.lua',
@@ -42,4 +42,4 @@ package = "torch-dataframe"
 			["Dataframe.helper_classes.dict"] = 'helper_classes/dict.lua',
 			["Dataframe.helper_classes.tbl"] = 'helper_classes/tbl.lua'
 	}
- }
+}

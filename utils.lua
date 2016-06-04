@@ -128,6 +128,10 @@ table.has_element = function(haystack, needle)
 	return false
 end
 
+-- maxn is deprecated for lua version >=5.3
+table.maxn = table.maxn or function(t) local maxn=0 for i in pairs(t) do maxn=type(i)=='number'and i>maxn and i or maxn end return maxn end
+
+
 -- Util for debugging purpose
 table._dump = function(tbl)
 	print(("\n-[ Table dump ]-\n%s"):format(table.collapse_to_string(tbl)))

@@ -2,17 +2,17 @@
 ## Batch loading functions
 
 <a name="Dataframe.load_batch">
-### Dataframe.load_batch(self, no_lines[, offset], load_row_fn[, type][, label_columns])
+### Dataframe.load_batch(self, no_lines, load_row_fn[, offset][, type][, label_columns])
 
 ```
 ({
    self          = Dataframe  -- 
    no_lines      = number     -- The number of lines/rows to include (-1 for all)
-  [offset        = number]    -- The number of lines/rows to skip before starting load.
-		The offset has an internal parameter that it defaults to if this is left empty.
-		Note that this will be forgotten in a parallel setting and you should in that case
-		always provide a manual offset. [default=-1]
    load_row_fn   = function   -- Receives a row and returns a tensor assumed to be the data
+  [offset        = number]    -- The number of lines/rows to skip before starting load.
+	 The offset has an internal parameter that it defaults to if this is left empty.
+	 Note that this will be forgotten in a parallel setting and you should in that case
+	 always provide a manual offset. [default=-1]
   [type          = string]    -- Type of data to load [default=train]
   [label_columns = table]     -- The columns that are to be the label. If omitted defaults to all numerical. [default=false]
 })
