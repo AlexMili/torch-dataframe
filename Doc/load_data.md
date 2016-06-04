@@ -35,7 +35,7 @@ Imports a table data directly into Dataframe. The table should all be of equal l
 or just single values. If a table contains one column with 10 rows and then has
 another column with a single element that element is duplicated 10 times, i.e.
 filling the entire column with that single value.
-```
+
 
 _Return value_: void
 	<a name="Dataframe._clean_columns">

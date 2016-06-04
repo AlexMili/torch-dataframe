@@ -34,11 +34,7 @@ _Return value_: void
 	data = self:sub(1, max_rows)
 	if (html) then
 		html_string = data:_to_html{digits = digits}
-		if (itorch ~= nil) then
-			itorch.html(html_string)
-		else
-			print(html_string)
-		end
+		itorch.html(html_string)
 	else
 		print(data:__tostring__{digits = digits})
 	end
@@ -135,7 +131,8 @@ _Return value_: string
 	if (digits) then
 		assert(digits >= 0, "The digits argument must be positive")
 	end
-  local no_rows = math.min(self.print.no_rows, self.n_rows)
+
+	local no_rows = math.min(self.print.no_rows, self.n_rows)
 	max_width = self.print.max_col_width
 
 	-- Get the width of each column
@@ -281,7 +278,7 @@ _Return value_: string
 
 	for row_no = 1,self.n_rows do
 		result = result.. '\n\t<tr>'
-		result = result.. '\n\t\t<td>'..(row_no + offset)..'</td>'
+		result = result.. '\n\t\t<td><span style="font-weight:bold;">'..(row_no + offset)..'</span></td>'
 		for col_no = 1,#self.column_order do
 			k = self.column_order[col_no]
 			val = self:get_column(k)[row_no]

@@ -108,7 +108,14 @@ You can discover your dataset with the following functions:
 -- you can either view the data as a plain text output or itorch html table
 df:output() -- prints html if in itorch otherwise prints plain table
 df:output{html=true} -- forces html output
+
+-- To correctly print the dataframe with a classical print function, 
+-- be sure to run setprintlevel(0) to prevent itorch from printing raw object variables.
+-- run setprintlevel(2) to reset to default itorch print level
+-- see http://stackoverflow.com/questions/36616423/how-does-luas-print-work-and-what-is-the-difference-between-tostring-and for further details
+setprintlevel(0)
 print(df) -- prints a plain table using the tostring() output
+setprintlevel(2)
 
 df:show() -- prints the head + tail of the table
 ```
