@@ -172,14 +172,14 @@ Find the rows where the column has the given value
 _Return value_: Dataframe
 ]],
 	{name="self", type="Dataframe"},
-	{name='column', type='string',
+	{name='column_name', type='string',
 	 doc='column to browse or findin the item argument'},
 	{name='item_to_find', type='number|string|boolean',
 	 doc='The value to find'},
-	call = function(self, column, item_to_find)
+	call = function(self, column_name, item_to_find)
 
 	return self:where(function(row)
-		return row[column] == item_to_find
+		return row[column_name] == item_to_find
 	end)
 end}
 

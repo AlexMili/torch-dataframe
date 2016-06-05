@@ -39,16 +39,23 @@ _Return value_: (1) a sampler function (2) a reset sampler function
 ]],
 	{name="self", type="Dataframe"},
 	{name="sampler", type="string", doc="The sampler function name. Hyphens are replaced with underscore"},
-	call=function(self, sampler)
+	{name="args", type="Df_Dict", doc="Arguments that should be passed to function", default=false},
+	call=function(self, sampler, args)
 	local sampler_cleaned = sampler:lower()
 	if (not sampler_cleaned:match("^get_sampler_")) then
-		local sampler_cleaned = ("get_sampler_%s"):format(sampler:gsub("-", "_"))
+		sampler_cleaned = ("get_sampler_%s"):format(sampler:gsub("-", "_"))
 	end
 
 	assert(type(self[sampler_cleaned]) == "function",
 		("The sampler that you requested '%s' isn't available"):format(sampler_cleaned))
 
-	return self[sampler_cleaned](self)
+	if (args) then
+		args = args.data
+		local ret = Dataframe[sampler_cleaned](self, args)
+		return ret
+	else
+		return self[sampler_cleaned](self)
+	end
 end}
 
 Dataframe.get_sampler = argcheck{
@@ -60,11 +67,12 @@ Dataframe.get_sampler = argcheck{
 	overload=Dataframe.get_sampler,
 	{name="self", type="Dataframe"},
 	{name="sampler", type="string", doc="The sampler function name. Hyphens are replaced with underscore"},
+	{name="sampler", type="string", doc="The sampler function name. Hyphens are replaced with underscore"},
 	{name="subset", type="string", doc=[[
-	The data split subset that you want to use the sampler on. If you provide none then the entire dataset
-	will be used.
+	The data split subset that you want to use the sampler on. If you provide none
+	then the entire dataset will be used.
 	]]},
-	call=function(self, sampler, subset)
+	call=function(self, sampler, args, subset)
 	assert(self:has_subset(subset), ("The subset %s doesn't seem to exist"):format(subset))
 
 	-- Add get_sampler_ if not present
@@ -76,7 +84,12 @@ Dataframe.get_sampler = argcheck{
 	assert(type(self[sampler_cleaned]) == "function",
 		("The sampler that you requested '%s' isn't available"):format(sampler_cleaned))
 
-	return self[sampler_cleaned](self, subset)
+	if (args) then
+		args.data.subset = subset
+		return self[sampler_cleaned](self, args.data)
+	else
+		return self[sampler_cleaned](self, subset)
+	end
 end}
 
 
@@ -118,8 +131,8 @@ Add a subset name if you only want to walk through a particular subset
 	overload=Dataframe.get_sampler_linear,
 	{name="self", type="Dataframe"},
 	{name="subset", type="string", doc=[[
-	The data split subset that you want to use the sampler on. If you provide none then the entire dataset
-	will be used.
+	The data split subset that you want to use the sampler on. If you provide none
+	then the entire dataset will be used.
 	]]},
 	call=function(self, subset)
 	assert(self:has_subset(subset), ("The subset %s doesn't seem to exist"):format(subset))
@@ -151,8 +164,7 @@ _Return value_: (1) a sampler function (2) a reset sampler function (inactive)
 	call=function(self)
 
 	return function()
-		local id = torch.random(1, self:itemCount(label))
-		return self:itemAt(id, label)
+		return torch.random(1, self:size(1))
 	end, function()
 		-- nothing to do on reset
 	end
@@ -168,8 +180,8 @@ Add a subset name if you only want to walk through a particular subset
 	overload=Dataframe.get_sampler_uniform,
 	{name="self", type="Dataframe"},
 	{name="subset", type="string", doc=[[
-	The data split subset that you want to use the sampler on. If you provide none then the entire dataset
-	will be used.
+	The data split subset that you want to use the sampler on. If you provide none
+	then the entire dataset will be used.
 	]]},
 	call=function(self, subset)
 	assert(self:has_subset(subset), ("The subset %s doesn't seem to exist"):format(subset))
@@ -185,14 +197,14 @@ end}
 -- Internal permutation helper
 Dataframe._get_new_permutation = argcheck{
 	{name="size", type="number"},
-	{name="oldPerm", type="table", doc="previous permutation", default = false},
-	{name="depth", type="number"},
+	{name="oldPerm", type="torch.*Tensor", doc="previous permutation", default = false},
+	{name="depth", type="number", default=2},
 	call=function(size, oldPerm, depth)
 	if not oldPerm then
 		return torch.randperm(size)
 	end
 
-	depth = (depth and math.max(2, math.min(depth, size))) or 2
+	depth = math.max(2, math.min(depth, size))
 
 	-- Make sure we have a different distribution
 	-- when resetting the permutation to make test work.
@@ -250,8 +262,8 @@ Add a subset name if you only want to walk through a particular subset
 	overload=Dataframe.get_sampler_permutation,
 	{name="self", type="Dataframe"},
 	{name="subset", type="string", doc=[[
-	The data split subset that you want to use the sampler on. If you provide none then the entire dataset
-	will be used.
+	The data split subset that you want to use the sampler on. If you provide none
+	then the entire dataset will be used.
 	]]},
 	call=function(self, subset)
 	assert(self:has_subset(subset), ("The subset %s doesn't seem to exist"):format(subset))
@@ -273,7 +285,8 @@ end}
 -- Internal helper function
 Dataframe._get_lab_and_idx = argcheck{
 	{name="df", type="Dataframe"},
-	call=function(df)
+	{name="column_name", type="string"},
+	call=function(df, column_name)
 	local labels =
 		df:unique{column_name = column_name}
 
@@ -290,9 +303,10 @@ end}
 Dataframe._get_lab_and_idx = argcheck{
 	overload = Dataframe._get_lab_and_idx,
 	{name="self", type="Dataframe"},
+	{name="column_name", type="string"},
 	{name="subset_df", type="Dataframe"},
 	call=function(self, subset_df)
-	local labels, sub_label_idxs = self._get_lab_and_idx(subset_df)
+	local labels, sub_label_idxs = self._get_lab_and_idx(subset_df, column_name)
 
 	-- Convert indexes from subset to the original dataset
 	local label_idxs = {}
@@ -322,8 +336,8 @@ _Return value_: (1) a sampler function (2) a reset sampler function (inactive)
 	{name="self", type="Dataframe"},
 	{name='column_name', type='string', doc='column which labels to use'},
 	{name="subset", type="string", doc=[[
-	The data split subset that you want to use the sampler on. If you provide none then the entire dataset
-	will be used.
+	The data split subset that you want to use the sampler on. If you provide none
+	then the entire dataset will be used.
 	]], default = false},
 	call=function(self, column_name, subset)
 	assert(self:has_column(column_name),
@@ -335,10 +349,10 @@ _Return value_: (1) a sampler function (2) a reset sampler function (inactive)
 
 		-- TODO: not really an efficient solution - should probably just get a single column in the subset
 		local tmp_subset = self:get_subset(subset)
-		labels, label_idxs = self:_get_lab_and_idx(tmp_subset)
+		labels, label_idxs = self:_get_lab_and_idx(tmp_subset, column_name)
 	else
 		labels, label_idxs =
-			self:_get_lab_and_idx()
+			self:_get_lab_and_idx(column_name)
 	end
 
 	return function()
@@ -366,8 +380,8 @@ _Return value_: (1) a sampler function (2) a reset sampler function (inactive)
 	{name='column_name', type='string', doc='column which labels to use'},
 	{name='distribution', type='Df_Dict', doc='The distribution for the labels from which to sample'},
 	{name="subset", type="string", doc=[[
-	The data split subset that you want to use the sampler on. If you provide none then the entire dataset
-	will be used.
+	The data split subset that you want to use the sampler on. If you provide none
+	then the entire dataset will be used.
 	]], default = false},
 	call=function(self, column_name, distribution, subset)
 	assert(self:has_column(column_name),
@@ -389,10 +403,10 @@ _Return value_: (1) a sampler function (2) a reset sampler function (inactive)
 
 		-- TODO: not really an efficient solution - should probably just get a single column in the subset
 		local tmp_subset = self:get_subset(subset)
-		labels, label_idxs = self:_get_lab_and_idx(tmp_subset)
+		labels, label_idxs = self:_get_lab_and_idx(tmp_subset, column_name)
 	else
 		labels, label_idxs =
-			self:_get_lab_and_idx()
+			self:_get_lab_and_idx(column_name)
 	end
 
 	for i,class in ipairs(labels) do
@@ -438,8 +452,8 @@ _Return value_: (1) a sampler function (2) a reset sampler function (inactive)
 	{name="self", type="Dataframe"},
 	{name='column_name', type='string', doc='column which labels to use'},
 	{name="subset", type="string", doc=[[
-	The data split subset that you want to use the sampler on. If you provide none then the entire dataset
-	will be used.
+	The data split subset that you want to use the sampler on. If you provide none
+	then the entire dataset will be used.
 	]], default = false},
 	call=function(self, column_name, subset)
 	assert(self:has_column(column_name),
@@ -451,10 +465,10 @@ _Return value_: (1) a sampler function (2) a reset sampler function (inactive)
 
 		-- TODO: not really an efficient solution - should probably just get a single column in the subset
 		local tmp_subset = self:get_subset(subset)
-		labels, label_idxs = self:_get_lab_and_idx(tmp_subset)
+		labels, label_idxs = self:_get_lab_and_idx(tmp_subset, column_name)
 	else
 		labels, label_idxs =
-			self:_get_lab_and_idx()
+			self:_get_lab_and_idx(column_name)
 	end
 
 	local filePermTable = {}
