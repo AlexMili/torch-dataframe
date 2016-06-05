@@ -36,12 +36,16 @@ describe("Linear Sampler", function()
 	local sampler,resetSampler = df:
 		get_sampler('linear')
 	for j = 1,3 do
-		for i = 1,df:value_counts{column_name = 'label1', as_dataframe = false}['B'] do
-			local s = sampler()
-			assert.are.same(df:get_column('label1')[s], 'B', 'label must always be B') -- remnant from torch-dataset
-			assert.are.same(s, i, 'must sample in index order')
-		end
-		assert.is_true(sampler() == nil, 'going past the end must return nil')
+			for i = 1,df:value_counts{column_name = 'label1', as_dataframe = false}['B'] do
+				local s = sampler()
+				it("Check order", function()
+					assert.are.same(df:get_column('label1')[s], 'B', 'label must always be B') -- remnant from torch-dataset
+					assert.are.same(s, i, 'must sample in index order')
+				end)
+			end
+		it("Check reset", function()
+			assert.is_true(sampler() == nil, 'going past the end must return nil')
+		end)
 		resetSampler()
 	end
 end)
@@ -65,8 +69,12 @@ describe("Permutation Sampler", function()
 		end
 
 		if i % 25 == 0 then
-			assert.is_true(sampler() == nil, 'going past the end must return nil')
+			local idx = ret sampler()
+			it("Check reset", function()
+				assert.is_true(idx == nil, 'going past the end must return nil')
+			end)
 			resetSampler()
+
 			if prev ~= nil then
 				assert.are.same(#seen, #prev, 'need to see the same amount sampled each loop')
 				assert.are_not.same(seen, prev, 'the lists must have different orders')
@@ -89,8 +97,11 @@ describe("Permutation Sampler", function()
 end)
 
 describe("Label Permutation Sampler", function()
-	local df = Dataframe('./data/sampler_csv_files/index.csv')
-	local sampler = df:get_sampler('label-permutation', Df_Dict({column_name = 'label1'}))
+	local df = Dataframe('./data/sampler_csv_files/index.csv'):
+		wide2long(Df_Array("label1","label2","label3"),
+	             "id", "label")
+
+	local sampler = df:get_sampler('label-permutation', Df_Dict({column_name = 'label'}))
 	local seen = { }
 	local seenClasses = { }
 	local labelCounts = { }
@@ -100,7 +111,7 @@ describe("Label Permutation Sampler", function()
 
 	for i = 1,3*fullLoop do
 		local s = sampler()
-		local label = df:get_column('label1')[s]
+		local label = df:get_column('label')[s]
 		table.insert(seen, s)
 		table.insert(seenClasses, label)
 		labelCounts[label] = labelCounts[label] or 0
@@ -116,10 +127,9 @@ describe("Label Permutation Sampler", function()
 				table.sort(sortedSeen)
 				local sortedPrev = clone(prevClasses)
 				table.sort(sortedPrev)
-				print("AA")
 				assert.are.same(sortedSeen, sortedPrev, 'the lists must have the same sorted orders')
 
-				for _,label in ipairs(df:unique{column_name = 'label1'}) do
+				for _,label in ipairs(df:unique{column_name = 'label'}) do
 					local x = 1
 					local y = labelCountsClasses[label]
 					assert.are.same(x, y, 'wrong distribution saw '..y..' expected '..x)
@@ -139,8 +149,8 @@ describe("Label Permutation Sampler", function()
 				local sortedPrev = clone(prev)
 				table.sort(sortedPrev)
 				assert.are.same(sortedSeen, sortedPrev, 'the lists must have the same sorted orders')
-				for _,label in ipairs(df:unique{column_name = 'label1'}) do
-					local x = fullLoop / #df:unique{column_name = 'label1'}
+				for _,label in ipairs(df:unique{column_name = 'label'}) do
+					local x = fullLoop / #df:unique{column_name = 'label'}
 					local y = labelCounts[label]
 					assert.are.same(x, y, 'must have the same distribution of '..label..' saw '..y..' expected '..x)
 				end
