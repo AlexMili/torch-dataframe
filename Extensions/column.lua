@@ -84,10 +84,12 @@ _Return value_: void
 			table.insert(col_ordr, self.column_order[i])
 		end
 	end
+	self.column_order = col_ordr
 
 	if (not empty) then
 		self.dataset = temp_dataset
 		self.categorical[column_name] = nil
+		self.schema[column_name] = nil
 		self:_refresh_metadata() -- TODO: Merge column_order with columns
 	else
 		self:__init()
