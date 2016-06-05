@@ -37,20 +37,20 @@ _Return value_: data, label tensors, table with tensor column names
 	 default=false},
 	call = function(self, no_lines, load_row_fn, offset, type, label_columns)
 	assert(self.batch ~= nil and
-	       self.batch.datasets ~= nil,
+	       self.batch.subsets ~= nil,
 	       "You must call init_batch before calling load_batch")
 	-- Check argument integrity
 	assert(self:has_batch(type), "There is no batch dataset group corresponding to '".. type .."'")
 	assert(isint(no_lines) and
 	       (no_lines > 0 or
 	        no_lines == -1) and
-	        no_lines <= self:batch_size(type),
+	        no_lines <= self:subset_size(type),
 	       "The number of files to load has to be either -1 for all files or " ..
 	       " a positive integer less or equeal to the number of observations in that category " ..
-	       self:batch_size(type) .. "." ..
+	       self:subset_size(type) .. "." ..
 	       " You provided " .. tostring(no_lines))
 
-	if (no_lines == -1) then no_lines = self:batch_size(type) end
+	if (no_lines == -1) then no_lines = self:subset_size(type) end
 
 	if (offset == -1) then offset = self.batch.offset[type] end
 	assert(isint(offset) and
@@ -78,11 +78,11 @@ _Return value_: data, label tensors, table with tensor column names
 	end
 
   local rows = {}
-  local start_position = (offset + 1) % self:batch_size(type)
-  local stop_position = (no_lines + offset) % self:batch_size(type)
+  local start_position = (offset + 1) % self:subset_size(type)
+  local stop_position = (no_lines + offset) % self:subset_size(type)
 
 	if (stop_position == 0) then
-		stop_position = self:batch_size(type)
+		stop_position = self:subset_size(type)
 	end
 
 	assert(stop_position ~= start_position and
@@ -90,22 +90,22 @@ _Return value_: data, label tensors, table with tensor column names
 	       [[
 	       It seems that the start and stop positions are identical. This is most
 	       likely due to an unintentional loop where the batch is the size of the
-	       self:batch_size(type) + 1
+	       self:subset_size(type) + 1
 	       ]])
 
 	-- If we loop and restart the loading then we need to load the last examples
 	--  and then restart from 1
 	if (start_position > stop_position) then
 
-		for i=start_position,self:batch_size(type) do
-			table.insert(rows, self.batch.datasets[type][i])
+		for i=start_position,self:subset_size(type) do
+			table.insert(rows, self.batch.subsets[type][i])
 		end
 
 		start_position = 1
 	end
 
 	for i=start_position,stop_position do
-		table.insert(rows, self.batch.datasets[type][i])
+		table.insert(rows, self.batch.subsets[type][i])
 	end
 
 	local dataset_2_load = self:_create_subset(Df_Array(rows))
@@ -124,7 +124,7 @@ _Return value_: data, label tensors, table with tensor column names
 
 	-- Update offset
 	self.batch.offset[type] = stop_position
-	if (self.batch.offset[type] >= self:batch_size(type)) then
+	if (self.batch.offset[type] >= self:subset_size(type)) then
 		self.batch.offset[type] = 0
 	end
 
@@ -146,8 +146,8 @@ _Return value_: boolean
 	{name='type', type='string', doc='Type of data to load'},
 	call = function(self, type)
 	return(self.batch ~= nil and
-	       self.batch.datasets ~= nil and
-	       self.batch.datasets[type] ~= nil)
+	       self.batch.subsets ~= nil and
+	       self.batch.subsets[type] ~= nil)
 end}
 
 Dataframe.get_batch = argcheck{
@@ -166,13 +166,41 @@ _Return value_: Dataframe
 	call = function(self, type)
 	assert(self:has_batch(type), "There is no batch named " .. type)
 
-	return self:_create_subset(Df_Array(self.batch.datasets[type]))
+	return self:_create_subset(Df_Array(self.batch.subsets[type]))
 end}
 
-Dataframe.batch_size = argcheck{
+Dataframe.subset_idx_2_real = argcheck{
 	doc = [[
-<a name="Dataframe.batch_size">
-### Dataframe.batch_size(@ARGP)
+<a name="Dataframe.subset_idx_2_real">
+### Dataframe.subset_idx_2_real(@ARGP)
+
+Indexes the subset at 1 to n within the subset and returns the row number of the
+original dataset. This is then used for subsetting the real dataset.
+
+@ARGT
+
+_Return value_: the row number in the original dataset. If outside the subset it will return nil
+]],
+	{name="self", type="Dataframe"},
+	{name="index", type="number", "The index in the subset"},
+	{name="subset", type="string", doc="The subset that we want to index"},
+	call=function(self, index, subset)
+	assert(self:has_subset(subset), ("The subset %s doesn't seem to exist"):format(subset))
+	assert(isint(index) and
+	       index> 0,
+	       "The number of be a positive integers, you provided " .. index)
+
+	if (index > self:subset_size()) then
+		return nil
+	end
+
+	return self.batch.subsets[subset][index]
+end}
+
+Dataframe.subset_size = argcheck{
+	doc = [[
+<a name="Dataframe.subset_size">
+### Dataframe.subset_size(@ARGP)
 
 @ARGT
 
@@ -183,7 +211,7 @@ _Return value_: number of rows/lines (integer)
 	{name="self", type="Dataframe"},
 	{name="type", type="string", doc="the type of batch data"},
 	call=function(self, type)
-	data = self.batch.datasets[type]
+	data = self.batch.subsets[type]
 	assert(data ~= nil, "Could not find the batch of type " .. type)
 	return #data
 end}
@@ -292,13 +320,13 @@ _Return value_: void
 
 	if (reset_batch) then
 		self.batch.shuffle = shuffle
-		self.batch.datasets = {}
+		self.batch.subsets = {}
 		self.batch.offset = {}
 		self:_add_2_batch_datasets{number = self.n_rows,
 		                           shuffle = shuffle}
 	else
 		local n_permutated = 0
-		for _,v in pairs(self.batch.datasets) do
+		for _,v in pairs(self.batch.subsets) do
 			n_permutated = n_permutated + #v
 		end
 		if (n_permutated < self.n_rows) then
@@ -307,7 +335,7 @@ _Return value_: void
 			                           offset = n_permutated}
 		elseif (n_permutated > self.n_rows) then
 			print("Warning resetting the batches due to reduced number of rows")
-			self.batch.datasets = {}
+			self.batch.subsets = {}
 			self.batch.offset = {}
 			self:_add_2_batch_datasets{number = self.n_rows,
 			                           shuffle = shuffle}
@@ -349,24 +377,24 @@ _Return value_: void
 		end
 
 		-- Initi empty dataset with 0 offset
-		self.batch.datasets[k] = {}
+		self.batch.subsets[k] = {}
 		self.batch.offset[k] = 0
 
 		for i = 1,num_observations do
-			table.insert(self.batch.datasets[k], offset + row_indexes[count + i])
+			table.insert(self.batch.subsets[k], offset + row_indexes[count + i])
 		end
 
 		count = count + num_observations
 	end
 
 	-- Add any observatinos that weren't included in thre previous loop
-	assert(number + offset - count < 2 * table.exact_length(self.batch.datasets),
+	assert(number + offset - count < 2 * table.exact_length(self.batch.subsets),
 	       "An error must have occurred during recruitment into the batch datasets" ..
 	       " as the difference was larger than expected: " .. number + offset - count)
 
 	if (count < number) then
 		for i = (count + 1),number do
-			table.insert(self.batch.datasets[last_key], offset + row_indexes[i])
+			table.insert(self.batch.subsets[last_key], offset + row_indexes[i])
 		end
 	end
 end}
