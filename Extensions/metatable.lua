@@ -140,7 +140,7 @@ _Return value_: integer
 	{name="self", type="Dataframe"},
 	{name="other", type="Dataframe"},
 	call=function(self, other)
-	return other.n_rows
+	return self.n_rows
 end}
 
 Dataframe.__len__ = argcheck{
