@@ -139,10 +139,15 @@ _Return value_: Dataframe
 	-- The above is most likely to global variables beeing overwritten due to lack of local definintions
 	local tmp = clone(self.categorical)
 	self.categorical = {}
-	local ret = Dataframe.new()
+	local ret = false
 	for _,i in pairs(index_items) do
 		local val = self:get_row(i)
-		ret:append(Df_Dict(val))
+		if (not ret) then
+			ret = Dataframe.new()
+			ret:load_table(Df_Dict(val), Df_Dict(self.schema))
+		else
+			ret:append(Df_Dict(val))
+		end
 	end
 	self.categorical = tmp
 	ret = self:_copy_meta(ret)
@@ -374,4 +379,69 @@ _Return value_: void
 			self.dataset[key][index] = new_values[key]
 		end
 	end
+end}
+
+Dataframe.wide2long = argcheck{
+	doc = [[
+<a name="Dataframe.wide2long">
+### Dataframe.wide2long(@ARGP)
+
+Change table from wide format, i.e. where a labels are split over multiple columns
+into a case where all the values are in one column and adjacent is a column with
+the column names.
+
+@ARGT
+
+_Return value_: Dataframe
+]],
+	overload=Dataframe.set,
+	{name="self", type="Dataframe"},
+	{name='columns', type='Df_Array',
+	 doc='The columns that are to be merged'},
+	 {name='id_name', type='string',
+ 	 doc='The column name for where to store the old column names'},
+	{name='value_name', type='string',
+	 doc='The column name for where to store the values'},
+	call = function(self, columns, id_name, value_name)
+	columns = columns.data
+	assert(not self:has_column(id_name), "The column name for the id's already exists")
+	assert(not self:has_column(value_name), "The column name for the values already exists")
+	for _,column_name in ipairs(columns) do
+		assert(self:has_column(column_name), "The column name doesn't exist")
+	end
+
+	local ret = self:copy()
+	ret:add_column(id_name)
+	ret:add_column(value_name)
+
+	local i = 1
+	while i <= ret.n_rows do
+		local row = ret:get_row(i)
+		local first = true
+		for _,column_name in ipairs(columns) do
+			if (first) then
+				local values = {}
+				values[id_name] = column_name
+				values[value_name] = row[column_name]
+
+				first = false
+				-- Just update the current row
+				ret:set(i, Df_Dict(values))
+			elseif (row[column_name] ~= nil and
+			        row[column_name] ~= '' and
+			        not isnan(row[column_name])) then
+				row[id_name] = column_name
+				row[value_name] = row[column_name]
+				i = i + 1
+				ret:insert(i, Df_Dict(row))
+			end
+		end
+		i = i + 1
+	end
+
+	for _,column_name in ipairs(columns) do
+		ret:drop(column_name)
+	end
+
+	return ret
 end}

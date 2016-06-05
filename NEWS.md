@@ -14,6 +14,7 @@ Version: development
 * The add_column can now take a position argument
 * The init with a table can now also accept column_order argument
 * Added has_batch and get_batch
+* Added wide2long for converting wide datasets to long
 
 Version: 1.1
 -----------
