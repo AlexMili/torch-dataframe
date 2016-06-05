@@ -40,7 +40,6 @@ _Return value_: void
 		            skip = skip,
 		            verbose = verbose,
 		            column_order = true}
-
 	self:_clean_columns()
 	self.column_order = trim_table_strings(self.column_order)
 	self:_refresh_metadata()
@@ -75,8 +74,8 @@ _Return value_: void
 	]],
 	{name="self", type="Dataframe"},
 	{name="data", type="Df_Dict", doc="Table (dictionary) to import. Max depth 2."},
-	{name="infer_schema", type="boolean", default=true,
-	 doc="automatically detect columns' type"},
+	{name="infer_schema", type="Df_Dict|boolean", default=true,
+	 doc="automatically detect columns' type or use previous schema"},
 	{name="column_order", type="Df_Array", default=false,
 	 doc="The order of the column (has to be array and _not_ a dictionary)"},
 	call=function(self, data, infer_schema, column_order)
@@ -150,7 +149,17 @@ _Return value_: void
 	self:_refresh_metadata()
 
 	if infer_schema then
-		self:_infer_schema()
+		if (torch.type(infer_schema) == "Df_Dict") then
+			infer_schema = infer_schema.data
+			local new_schema = {}
+			for _,column_name in ipairs(self.column_order) do
+				assert(infer_schema[column_name],
+				       ("Could not find schema column '%s' in provided schema table"):format(tostring(column_name)))
+			end
+			self.schema = infer_schema
+		else
+			self:_infer_schema()
+		end
 	else
 		-- Default value for self.schema
 		for key,value in pairs(self.column_order) do

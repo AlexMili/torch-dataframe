@@ -31,6 +31,12 @@ env.istype = function(obj, typename)
       isnan(obj)
   end
 
+	-- Either a Df_Dict or string
+  if (typename == "Df_Dict|boolean") then
+    return torch.type(obj) == "boolean" or
+      torch.type(obj) == "Df_Dict"
+  end
+
 	-- Only numerical tensors count
   if (typename == "torch.*Tensor") then
     -- regular expressions don't work therefore this

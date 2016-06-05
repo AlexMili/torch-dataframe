@@ -204,14 +204,16 @@ _Return value_: string
 
 			output = row[column_name]
 			if (self:is_numerical(column_name)) then
-			  if (digits and i > 0) then
+
+				if (digits and i > 0) then
 					output = _numeric2string(output, digits)
 				end
 				-- TODO: maybe use :format instead of manual padding
 				-- Right align numbers by padding to left
 				df_string = add_padding(df_string, string.len(output), lengths[column_name])
 				df_string = df_string .. output
-			else
+
+			elseif (output ~= nil) then
 
 				if (string.len(output) > max_width) then
 					output = string.sub(output, 1, max_width - 3) .. "..."
@@ -219,7 +221,10 @@ _Return value_: string
 				df_string = df_string .. output
 				-- Padd left if needed
 				df_string = add_padding(df_string, string.len(output), math.min(max_width, lengths[column_name]))
+			else
+				df_string = add_padding(df_string, 0, lengths[column_name])
 			end
+
 		end
 
 		df_string = df_string .. " |"
