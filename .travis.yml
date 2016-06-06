@@ -29,7 +29,7 @@ install:
   - luarocks --from=$TORCH_SERVER install csvigo
   - luarocks install luafilesystem
   - luarocks install busted
-  - luarocks make rocks/torch-dataframe-scm-1.rockspec CFLAGS="-O2 -fPIC -fprofile-arcs -ftest-coverage" LIBFLAG="-shared"
+  - luarocks make rocks/torch-dataframe-scm-1.rockspec CFLAGS="-O2 -fPIC -fprofile-arcs -ftest-coverage" LIBFLAG="-shared --coverage"
 
 script:
   - cd specs
