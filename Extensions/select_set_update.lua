@@ -139,11 +139,10 @@ _Return value_: Dataframe
 	-- The above is most likely to global variables beeing overwritten due to lack of local definintions
 	local tmp = clone(self.categorical)
 	self.categorical = {}
-	local ret = false
+	local ret = Dataframe.new()
 	for _,i in pairs(index_items) do
 		local val = self:get_row(i)
-		if (not ret) then
-			ret = Dataframe.new()
+		if (ret:size(1) == 0) then
 			ret:load_table(Df_Dict(val), Df_Dict(self.schema))
 		else
 			ret:append(Df_Dict(val))
@@ -423,7 +422,9 @@ _Return value_: Dataframe
 				local values = {}
 				values[id_name] = column_name
 				values[value_name] = row[column_name]
-
+				if (isnan(values[value_name])) then
+					values[id_name] = 0/0
+				end
 				first = false
 				-- Just update the current row
 				ret:set(i, Df_Dict(values))
@@ -433,7 +434,11 @@ _Return value_: Dataframe
 				row[id_name] = column_name
 				row[value_name] = row[column_name]
 				i = i + 1
-				ret:insert(i, Df_Dict(row))
+				if (i > ret:size(1)) then
+					ret:append(Df_Dict(row))
+				else
+					ret:insert(i, Df_Dict(row))
+				end
 			end
 		end
 		i = i + 1
