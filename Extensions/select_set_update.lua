@@ -393,7 +393,6 @@ the column names.
 
 _Return value_: Dataframe
 ]],
-	overload=Dataframe.set,
 	{name="self", type="Dataframe"},
 	{name='columns', type='Df_Array',
 	 doc='The columns that are to be merged'},
@@ -449,4 +448,30 @@ _Return value_: Dataframe
 	end
 
 	return ret
+end}
+
+Dataframe.wide2long = argcheck{
+	doc = [[
+You can also provide a regular expression for column names
+
+@ARGT
+
+]],
+	overload=Dataframe.wide2long,
+	{name="self", type="Dataframe"},
+	{name='column_regex', type='string',
+	 doc='Regular expression for the columns that are to be merged'},
+	 {name='id_name', type='string',
+ 	 doc='The column name for where to store the old column names'},
+	{name='value_name', type='string',
+	 doc='The column name for where to store the values'},
+	call = function(self, column_regex, id_name, value_name)
+	local columns_2_merge = {}
+	for _,column_name in ipairs(self.column_order) do
+		if (column_name:match(column_regex)) then
+			table.insert(columns_2_merge, column_name)
+		end
+	end
+	assert(#columns_2_merge > 0, "Could not find columns that matched the regular expression: " .. column_regex)
+	return self:wide2long(Df_Array(columns_2_merge), id_name, value_name)
 end}
