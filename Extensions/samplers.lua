@@ -67,7 +67,7 @@ Dataframe.get_sampler = argcheck{
 	overload=Dataframe.get_sampler,
 	{name="self", type="Dataframe"},
 	{name="sampler", type="string", doc="The sampler function name. Hyphens are replaced with underscore"},
-	{name="sampler", type="string", doc="The sampler function name. Hyphens are replaced with underscore"},
+	{name="args", type="Df_Dict", doc="Arguments that should be passed to function", default=false},
 	{name="subset", type="string", doc=[[
 	The data split subset that you want to use the sampler on. If you provide none
 	then the entire dataset will be used.
