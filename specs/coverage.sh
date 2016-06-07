@@ -6,6 +6,10 @@ echo "";
 
 ./run_all.sh --coverage
 
+if [ "$?" == 0 ]; then
+	exit 0
+fi
+
 mv luacov.stats.out ../luacov.stats.out
 
 cd ..
