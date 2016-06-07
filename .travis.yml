@@ -33,7 +33,7 @@ install:
   - luarocks make rocks/torch-dataframe-scm-1.rockspec CFLAGS="-O2 -fPIC -fprofile-arcs -ftest-coverage" LIBFLAG="-shared --coverage"
 
 script:
-  - git clone git clone https://github.com/geoffleyland/luatrace
+  - git clone https://github.com/geoffleyland/luatrace
   - cd luatrace
   - luarocks make rockspec/luatrace-scm-1.rockspec
   - cd ..
