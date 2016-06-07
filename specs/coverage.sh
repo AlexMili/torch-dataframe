@@ -10,11 +10,17 @@ mv luacov.stats.out ../luacov.stats.out
 
 cd ..
 
-luacov -c specs/luacov_config.lua
+luacov -c .luacov
 
-mv luacov.stats.out specs/luacov.stats.out
-mv luacov.report.out specs/luacov.report.out
+if [ "$1" != "--generate" ]; then
 
-cd specs
 
-cat luacov.report.out
+	mv -f luacov.stats.out specs/luacov.stats.out
+	mv -f luacov.report.out specs/luacov.report.out
+
+	cd specs
+
+	if [ "$1" == "--verbose" ]; then
+		cat luacov.report.out
+	fi
+fi
