@@ -15,11 +15,12 @@ Dataframe.to_csv = argcheck{
 <a name="Dataframe.to_csv">
 ### Dataframe.to_csv(@ARGP)
 
-@ARGT
-
 Saves a Dataframe into a CSV using csvigo as backend
 
-_Return value_: void
+_Return value_: self (Dataframe)
+
+@ARGT
+
 ]],
 	{name="self", type="Dataframe"},
 	{name='path', type='string', doc='path to file'},
@@ -39,6 +40,8 @@ _Return value_: void
 	            verbose = verbose,
 	            column_order = self.column_order,
 	            nan_as_missing = true}
+
+	return self
 end}
 
 Dataframe.to_tensor = argcheck{
@@ -46,11 +49,12 @@ Dataframe.to_tensor = argcheck{
 <a name="Dataframe.to_tensor">
 ### Dataframe.to_tensor(@ARGP)
 
-@ARGT
-
 Convert the numeric section or specified columns of the dataset to a tensor
 
+@ARGT
+
 _Return value_: (1) torch.tensor with self.n_rows rows and #columns, (2) exported column names
+
 ]],
 	{name="self", type="Dataframe"},
 	call = function(self)
