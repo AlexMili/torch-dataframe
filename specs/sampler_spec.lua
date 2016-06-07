@@ -44,23 +44,23 @@ describe("Linear Sampler #linear", function()
 	local df = dataLoader():
 		where{column_name = 'label',
 		      item_to_find = 'B'}
-	local sampler,resetSampler =
-		df:get_sampler('linear')
 	it("Check order and reset", function()
-	for j = 1,3 do
+		local sampler,resetSampler =
+			df:get_sampler('linear')
+		for j = 1,3 do
 
-		for i = 1,df:size(1) do
-			local s = sampler()
-				assert.are.same(s, i, 'must sample in index order')
+			for i = 1,df:size(1) do
+				local s = sampler()
+					assert.are.same(s, i, 'must sample in index order')
+			end
+
+			local idx = sampler()
+				assert.is_true(idx == nil, 'going past the end must return nil, you got ' .. tostring(idx))
+
+			resetSampler()
 		end
+	end)
 
-		local idx = sampler()
-			assert.is_true(idx == nil, 'going past the end must return nil, you got ' .. tostring(idx))
-
-		resetSampler()
-	end
-
-end)
 end)
 
 describe("Permutation Sampler #permutation", function()
