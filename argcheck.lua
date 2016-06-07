@@ -1,5 +1,9 @@
 env = require 'argcheck.env' -- retrieve argcheck environement
 env.istype = function(obj, typename)
+	if (typename == "Dataframe") then
+		return torch.istype(obj, typename)
+	end
+
 	-- Either a number or string
   if (typename == "number|string") then
     return torch.type(obj) == "number" or

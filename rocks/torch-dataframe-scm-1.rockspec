@@ -39,6 +39,7 @@ build = {
 			["Dataframe.Extensions.select_set_update"] = 'Extensions/select_set_update.lua',
 			["Dataframe.Extensions.statistics"] = 'Extensions/statistics.lua',
 			["Dataframe.Extensions.samplers"] = 'Extensions/samplers.lua',
+			["Dataframe.sub_classes.batchframe"] = 'sub_classes/batchframe.lua',
 			["Dataframe.helper_classes.array"] = 'helper_classes/array.lua',
 			["Dataframe.helper_classes.dict"] = 'helper_classes/dict.lua',
 			["Dataframe.helper_classes.tbl"] = 'helper_classes/tbl.lua'
