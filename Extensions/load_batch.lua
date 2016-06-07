@@ -8,6 +8,17 @@ doc[[
 
 ## Batch loading functions
 
+The core idea behind the batch loading is that you split your dataset using the
+`init_batch` function where you can also choose the sampler that you want. The
+sampler will decide how `get_batch` retrieves a Batchframe object. The Batchframe
+is a sub_class to Dataframe with the major difference being the `to_tensor` functionality
+that has here been extended so that you can load data and labels from the same dataset.
+
+If you want to run the batch loader in parallel you need to keep the sampling in
+the main thread and do the `to_tensor` conversion in the threads. This as the offset
+for the sampler is hidden inside the samplers local environement and the main thread
+has no way of knowing that you've sampled the next 30 cases in the data in a subthread.
+
 ]]
 
 Dataframe.load_batch = argcheck{
@@ -24,23 +35,18 @@ _Return value_: data, label tensors, table with tensor column names
 ]],
 	{name="self", type="Dataframe"},
 	{name='no_lines', type='number', doc='The number of lines/rows to include (-1 for all)'},
-	{name='load_row_fn', type='function',
-	 doc='Receives a row and returns a tensor assumed to be the data'},
 	{name='offset', type='number', default=-1,
 	 doc=[[The number of lines/rows to skip before starting load.
 	 The offset has an internal parameter that it defaults to if this is left empty.
 	 Note that this will be forgotten in a parallel setting and you should in that case
 	 always provide a manual offset.]]},
 	{name='type', type='string', doc='Type of data to load', default="train"},
-	{name='label_columns', type='table',
-	 doc='The columns that are to be the label. If omitted defaults to all numerical.',
-	 default=false},
 	call = function(self, no_lines, load_row_fn, offset, type, label_columns)
 	assert(self.batch ~= nil and
 	       self.batch.subsets ~= nil,
 	       "You must call init_batch before calling load_batch")
 	-- Check argument integrity
-	assert(self:has_batch(type), "There is no batch dataset group corresponding to '".. type .."'")
+	assert(self:has_subset(type), "There is no batch dataset group corresponding to '".. type .."'")
 	assert(isint(no_lines) and
 	       (no_lines > 0 or
 	        no_lines == -1) and
@@ -108,37 +114,16 @@ _Return value_: data, label tensors, table with tensor column names
 		table.insert(rows, self.batch.subsets[type][i])
 	end
 
-	local dataset_2_load = self:_create_subset(Df_Array(rows))
-	tensor_label, tensor_col_names = dataset_2_load:to_tensor{columns = Df_Array(label_columns)}
-	single_data = load_row_fn(dataset_2_load:get_row(1))
-	single_data = _add_single_first_dim(single_data)
-	tensor_data = single_data
 
-	if (#rows > 1) then
-		for i = 2,#rows do
-			single_data = load_row_fn(dataset_2_load:get_row(i))
-			single_data = _add_single_first_dim(single_data)
-			tensor_data = torch.cat(tensor_data, single_data, 1)
-		end
-	end
 
-	-- Update offset
-	self.batch.offset[type] = stop_position
-	if (self.batch.offset[type] >= self:subset_size(type)) then
-		self.batch.offset[type] = 0
-	end
-
-	return tensor_data, tensor_label, tensor_col_names
-end}
-
-Dataframe.has_batch = argcheck{
+Dataframe.has_subset = argcheck{
 	doc = [[
-<a name="Dataframe.has_batch">
-### Dataframe.has_batch(@ARGP)
+<a name="Dataframe.has_subset">
+### Dataframe.has_subset(@ARGP)
+
+Checks if subset used in batch loading is available
 
 @ARGT
-
-Checks if batch is available
 
 _Return value_: boolean
 ]],
@@ -150,23 +135,28 @@ _Return value_: boolean
 	       self.batch.subsets[type] ~= nil)
 end}
 
-Dataframe.get_batch = argcheck{
+Dataframe.get_subset = argcheck{
 	doc = [[
-<a name="Dataframe.get_batch">
-### Dataframe.get_batch(@ARGP)
+<a name="Dataframe.get_subset">
+### Dataframe.get_subset(@ARGP)
+
+Returns the entire subset as a new Dataframe or Batchframe
 
 @ARGT
 
-Returns the entire batch as a new Dataframe
-
-_Return value_: Dataframe
+_Return value_: Dataframe or Batchframe
 ]],
 	{name="self", type="Dataframe"},
 	{name='type', type='string', doc='Type of data to load'},
+	{name='as_batchframe', type='boolean',
+	 doc=[[Return a Batchframe with a different `to_tensor` functionality that allows
+	 loading data, label tensors simultaneously]], default=false},
 	call = function(self, type)
-	assert(self:has_batch(type), "There is no batch named " .. type)
+	assert(self:has_subset(type), "There is no batch named " .. type)
 
-	return self:_create_subset(Df_Array(self.batch.subsets[type]))
+	return self:
+		_create_subset{index_items = Df_Array(self.batch.subsets[type]),
+		               as_batchframe = as_batchframe}
 end}
 
 Dataframe.subset_idx_2_real = argcheck{

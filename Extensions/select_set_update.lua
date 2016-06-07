@@ -114,15 +114,18 @@ Dataframe._create_subset = argcheck{
 <a name="Dataframe._create_subset">
 ### Dataframe._create_subset(@ARGP)
 
+Creates a class and returns a subset based on the index items. Intended for internal
+use. The method is primarily intended for internal use.
+
 @ARGT
 
-Creates a class and returns a subset based on the index items. Intended for internal
-use.
-
-_Return value_: Dataframe
+_Return value_: Dataframe or Batchframe
 ]],
 	{name="self", type="Dataframe"},
 	{name='index_items', type='Df_Array', doc='The indexes to retrieve'},
+	{name='as_batchframe', type='boolean',
+	 doc=[[Return a Batchframe with a different `to_tensor` functionality that allows
+	 loading data, label tensors simultaneously]], default=false},
 	call = function(self, index_items)
 	index_items = index_items.data
 
@@ -139,7 +142,12 @@ _Return value_: Dataframe
 	-- The above is most likely to global variables beeing overwritten due to lack of local definintions
 	local tmp = clone(self.categorical)
 	self.categorical = {}
-	local ret = Dataframe.new()
+	local ret
+	if (as_batchframe) then
+		ret = Batchframe()
+	else
+		ret = Dataframe.new()
+	end
 	for _,i in pairs(index_items) do
 		local val = self:get_row(i)
 		if (ret:size(1) == 0) then

@@ -13,7 +13,7 @@ Version: development
 * The statistics can now return dataframe that is also the default (allows nicer printing)
 * The add_column can now take a position argument
 * The init with a table can now also accept column_order argument
-* Added has_batch and get_batch
+* Added has_subset and get_batch
 * Added wide2long for converting wide datasets to long
 
 Version: 1.1

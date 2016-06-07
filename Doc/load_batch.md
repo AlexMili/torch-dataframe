@@ -22,8 +22,8 @@ Loads a batch of data from the table. Note that you have to call init_batch befo
 in order to split the dataset into train/test/validations.
 
 _Return value_: data, label tensors, table with tensor column names
-<a name="Dataframe.has_batch">
-### Dataframe.has_batch(self, type)
+<a name="Dataframe.has_subset">
+### Dataframe.has_subset(self, type)
 
 ```
 ({
