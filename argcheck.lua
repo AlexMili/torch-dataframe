@@ -35,9 +35,15 @@ env.istype = function(obj, typename)
       isnan(obj)
   end
 
-	-- Either a Df_Dict or string
+	-- Either a Df_Dict or boolean
   if (typename == "Df_Dict|boolean") then
     return torch.type(obj) == "boolean" or
+      torch.type(obj) == "Df_Dict"
+  end
+
+	-- Either a Df_Dict or string
+  if (typename == "Df_Dict|string") then
+    return torch.type(obj) == "string" or
       torch.type(obj) == "Df_Dict"
   end
 
