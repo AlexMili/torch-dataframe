@@ -11,7 +11,10 @@ function da:__init(...)
 
 	local array_data = {}
 	for i=1,#arg do
-		assert(type(arg[i]) ~= "table", "The Dataframe array cannot contain tables")
+		assert(type(arg[i]) ~= "table",
+		       [[The Dataframe array cannot contain tables - you have provide
+the following input:
+]] .. table.collapse_to_string(arg))
 		array_data[i] = arg[i]
 	end
 
