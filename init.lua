@@ -32,7 +32,7 @@ help_clss_path = string.gsub(dataframe_path, "[^/]+$", "") .. "helper_classes/"
 for extension_file,_ in lfs.dir (help_clss_path) do
   if (string.match(extension_file, "[.]lua$")) then
     local file = help_clss_path .. extension_file
-    assert(loadfile(file))()
+    assert(loadfile(file))(help_clss_path)
   end
 end
 
@@ -57,7 +57,7 @@ sub_clss_path = string.gsub(dataframe_path, "[^/]+$", "") .. "sub_classes/"
 for sub_file,_ in lfs.dir (sub_clss_path) do
   if (string.match(sub_file, "[.]lua$")) then
     local file = sub_clss_path .. sub_file
-    assert(loadfile(file))(Dataframe)
+    assert(loadfile(file))(Dataframe, sub_clss_path)
   end
 end
 
