@@ -18,7 +18,8 @@ dependencies = {
 		"lua >= 5.1",
 		"torch >= 7.0",
 		"argcheck >= 2.0",
-		"luafilesystem >= 1.6.3"
+		"luafilesystem >= 1.6.3",
+		"paths"
 }
 build = {
 	type = 'builtin',
