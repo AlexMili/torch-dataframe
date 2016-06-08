@@ -126,7 +126,7 @@ _Return value_: Dataframe or Batchframe
 	{name='as_batchframe', type='boolean',
 	 doc=[[Return a Batchframe with a different `to_tensor` functionality that allows
 	 loading data, label tensors simultaneously]], default=false},
-	call = function(self, index_items)
+	call = function(self, index_items, as_batchframe)
 	index_items = index_items.data
 
 	for i=1,#index_items do
