@@ -12,66 +12,98 @@ paths.dofile('init.lua')
 -- Go into specs so that the loading of CSV:s is the same as always
 lfs.chdir("specs")
 
-describe("Loading batch process", function()
-	local fake_loader = function(row) return torch.Tensor({1, 2}) end
-	a = Dataframe("./data/realistic_29_row_data.csv")
-	a:create_subsets()
-
+describe("Loading dataframe and creaing adequate subsets", function()
 	it("Raises an error if create_subsets hasn't be called",function()
+		local a = Dataframe("./data/realistic_29_row_data.csv")
+
 		assert.has.error(function() a:reset_subsets() end)
 	end)
 
+
 	it("Initializes with random order for training and linear for the other",
 		function()
-		torch.manualSeed(0)
-		a:reset_subsets()
-		local order = 0
-
-		assert.are.equal(a["/train"].subsets.samper, 'permutation')
-		assert.are.equal(a["/test"].subsets.samper, 'linear')
-		assert.are.equal(a["/validate"].subsets.samper, 'linear')
-	end)
-
-	describe("In action",function()
+		local a = Dataframe("./data/realistic_29_row_data.csv")
 		a:create_subsets()
 
-		it("Loads batches",function()
-			local data, label =
-				a["/train"]:
-				get_batch{no_lines = 5}:
-				to_tensor{
-					load_data_fn = fake_loader
-				}
-
-			assert.is.equal(data:size(1), 5)-- "The data has invalid rows"
-			assert.is.equal(data:size(2), 2)-- "The data has invalid columns"
-			assert.is.equal(label:size(1), 5)--"The labels have invalid size"
-		end)
-
-		it("Doesn't load all cases",function()
-			local batch_size = 6
-			local count = 0
-			local batch, reset
-			for i=1,(math.ceil(a["/train"]:size(1)/batch_size) + 1) do
-				batch, reset =
-					a["/train"]:get_batch{no_lines = batch_size}
-				if (batch == nil) then
-					break
-				end
-				count = count + batch:size(1)
-			end
-
-			assert.are.equal(count, a["/train"]:size(1))
-			assert.is_true(reset)
-
-			a["/train"]:reset_sampler()
-			batch, reset =
-				a["/train"]:get_batch{no_lines = -1}
-
-			assert.are.equal(batch:size(1), a["/train"]:size(1))
-			assert.is_true(reset)
-		end)
-
-		-- TODO: Add tests for custom subset splits and samplers
+		assert.are.equal(a.subsets.samplers["train"], 'permutation', "Train init failed")
+		assert.are.equal(a.subsets.samplers["validate"], 'linear', "Validate init failed")
+		assert.are.equal(a.subsets.samplers["test"], 'linear', "Test init failed")
 	end)
+
+	it("Check that the initialized subset sizes are correct for default subsets",
+		function()
+		local a = Dataframe("./data/realistic_29_row_data.csv")
+		a:create_subsets()
+
+		assert.are.equal(a["/test"]:size(1) +
+		                 a["/train"]:size(1) +
+		                 a["/validate"]:size(1), a:size(1), "Number of cases don't match")
+		-- as the full dataset must be used per definition one of the elements may not
+		-- exactly be of expected length. We therefore have to look for sizes that
+		-- are within no_of_subset - 1 from eachother
+		assert.is_true(
+			math.abs(a["/train"]:size(1) -
+		          math.floor(a:size(1) * .7)) <= 2,
+		          ("Train size fail - %d is not within 2 from expected %d"):
+		          format(a["/train"]:size(1), math.floor(a:size(1) * .7)))
+		assert.is_true(
+			math.abs(a["/validate"]:size(1) -
+		          math.floor(a:size(1) * .2)) <= 2,
+		          ("Validate size fail - %d is not within 2 from expected %d"):
+		          format(a["/validate"]:size(1), math.floor(a:size(1) * .2)))
+		assert.is_true(
+			math.abs(a["/test"]:size(1) -
+		          math.floor(a:size(1) * .1)) <= 2,
+		          ("Test size fail - %d is not within 2 from expected %d"):
+		          format(a["/test"]:size(1), math.floor(a:size(1) * .1)))
+	end)
+end)
+
+describe("Test if we can get a batch with data and labels",function()
+	local fake_loader = function(row) return torch.Tensor({1, 2}) end
+	local a = Dataframe("./data/realistic_29_row_data.csv")
+	a:create_subsets()
+
+	it("Checkk that we get reasonable formatted data back",function()
+		local data, label =
+			a["/train"]:
+			get_batch{no_lines = 5}:
+			to_tensor{
+				load_data_fn = fake_loader
+			}
+
+		assert.is.equal(data:size(1), 5)-- "The data has invalid rows"
+		assert.is.equal(data:size(2), 2)-- "The data has invalid columns"
+		assert.is.equal(label:size(1), 5)--"The labels have invalid size"
+	end)
+
+	it("Check that we get all cases when running with the a sampler that requires resetting",
+	function()
+		a["/train"]:reset_sampler()
+
+		local batch_size = 6
+		local count = 0
+		local batch, reset
+		-- Run for over an epoch
+		for i=1,(math.ceil(a["/train"]:size(1)/batch_size) + 1) do
+			batch, reset =
+				a["/train"]:get_batch{no_lines = batch_size}
+			if (batch == nil) then
+				break
+			end
+			count = count + batch:size(1)
+		end
+
+		assert.are.equal(count, a["/train"]:size(1))
+		assert.is_true(reset, "The reset should be set to true after 1 epoch")
+
+		a["/train"]:reset_sampler()
+		batch, reset =
+			a["/train"]:get_batch{no_lines = -1}
+
+		assert.are.equal(batch:size(1), a["/train"]:size(1))
+		assert.is_true(reset)
+	end)
+
+	-- TODO: Add tests for custom subset splits and samplers
 end)
