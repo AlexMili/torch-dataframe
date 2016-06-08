@@ -195,7 +195,8 @@ default_value
 	end
 
 	assert(table.maxn(default_values) == self.n_rows,
-	       'The default values don\'t match the number of rows')
+	       ('The number of default values (%s) don\'t match the number of rows in dataset %d'):
+				 format(table.maxn(default_values), self.n_rows))
 
 	self.dataset[column_name] = {}
 	for i = 1, self.n_rows do
