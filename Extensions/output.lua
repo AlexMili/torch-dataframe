@@ -19,7 +19,7 @@ Dataframe.output = argcheck{
 
 Prints the table into itorch.html if in itorch and html == true, otherwise prints a table string
 
-_Return value_: void
+_Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	{name='html', type='boolean', doc='If the output should be in html format', default=itorch ~= nil},
@@ -38,6 +38,8 @@ _Return value_: void
 	else
 		print(data:__tostring__{digits = digits})
 	end
+
+	return self
 end}
 
 Dataframe.show = argcheck{
@@ -49,7 +51,7 @@ Dataframe.show = argcheck{
 
 Prints the top  and bottom section of the table for better overview. Uses itorch if available
 
-_Return value_: void
+_Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	{name='digits', type='number|boolean',
@@ -84,6 +86,8 @@ _Return value_: void
 			tail:output{digits = digits}
 		end
 	end
+
+	return self
 end}
 
 Dataframe.tostring = argcheck{

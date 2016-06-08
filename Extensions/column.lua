@@ -59,7 +59,7 @@ Dataframe.drop = argcheck{
 
 Delete column from dataset
 
-_Return value_: void
+_Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	{name="column_name", type="string", doc="The column to drop"},
@@ -94,6 +94,8 @@ _Return value_: void
 	else
 		self:__init()
 	end
+
+	return self
 end}
 
 Dataframe.drop = argcheck{
@@ -110,6 +112,8 @@ You can also delete multiple columns by supplying a Df_Array
 	for i=1,#columns do
 		self:drop(columns[i])
 	end
+
+	return self
 end}
 
 Dataframe.add_column = argcheck{
@@ -122,7 +126,7 @@ the right.
 
 @ARGT
 
-_Return value_: void
+_Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	{name="column_name", type="string", doc="The column to add"},
@@ -142,6 +146,8 @@ The default_value argument will fill the new column. If omitted will be 0/0
 	overload=Dataframe.add_column,
 	call=function(self, column_name, default_value)
 	self:add_column(column_name, -1, default_value)
+
+	return self
 end}
 
 Dataframe.add_column = argcheck{
@@ -211,7 +217,7 @@ Bind data columnwise together
 
 @ARGT
 
-_Return value_: void
+_Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	{name="data", type="Dataframe", doc="The other dataframe to bind"},
@@ -226,6 +232,8 @@ _Return value_: void
 	for i=1,#data.column_order do
 		self:add_column(data.column_order[i], Df_Array(data:get_column(data.column_order[i])))
 	end
+
+	return self
 end}
 
 Dataframe.cbind =  argcheck{
@@ -287,7 +295,7 @@ Change value of a whole column or columns
 
 @ARGT
 
-_Return value_: void
+_Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	{name='columns', type='Df_Array', doc='The columns to reset'},
@@ -297,6 +305,8 @@ _Return value_: void
 	for i=1,#columns do
 		self:reset_column(columns[i], new_value)
 	end
+
+	return self
 end}
 
 Dataframe.reset_column = argcheck{
@@ -327,7 +337,7 @@ Rename a column
 
 @ARGT
 
-_Return value_: void
+_Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	{name='old_column_name', type='string', doc='The old column name'},
@@ -363,6 +373,8 @@ _Return value_: void
 
 	self:_refresh_metadata()
 	self:_infer_schema()
+
+	return self
 end}
 
 Dataframe.get_numerical_colnames = argcheck{

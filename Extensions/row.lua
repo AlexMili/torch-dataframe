@@ -49,7 +49,7 @@ Inserts a row or multiple rows into database at the position of the provided ind
 
 @ARGT
 
-_Return value_: void
+_Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	{name="index", type="number", doc="The row number where to insert the row(s)"},
@@ -79,6 +79,8 @@ _Return value_: void
 	end
 	self:_refresh_metadata()
 	self:_infer_schema()
+
+	return self
 end}
 
 Dataframe.insert = argcheck{
@@ -173,7 +175,7 @@ Appends the row(s) to the Dataframe.
 
 @ARGT
 
-_Return value_: void
+_Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	{name="rows", type="Df_Dict", doc="Values to append to the Dataframe"},
@@ -200,6 +202,8 @@ _Return value_: void
 
 	self:_refresh_metadata()
 	self:_infer_schema()
+
+	return self
 end}
 
 Dataframe.append = argcheck{
@@ -214,7 +218,7 @@ be the ones that are kept
 	{name="self", type="Dataframe"},
 	{name="rows", type="Dataframe", doc="A Dataframe that you want to append"},
 	call=function(self, rows)
-	self:append(Df_Dict(rows.dataset))
+	return self:append(Df_Dict(rows.dataset))
 end}
 
 
@@ -227,7 +231,7 @@ Alias to Dataframe.append
 
 @ARGT
 
-_Return value_: void
+_Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	{name="rows", type="Df_Dict", doc="Values to append to the Dataframe"},
@@ -259,7 +263,7 @@ Deletes a given row
 
 @ARGT
 
-_Return value_: void
+_Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	{name="index", type="number", doc="The row index to remove"},
@@ -273,4 +277,6 @@ _Return value_: void
 	self.n_rows = self.n_rows - 1
 
 	self:_refresh_metadata()
+
+	return self
 end}

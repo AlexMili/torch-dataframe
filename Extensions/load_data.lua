@@ -20,7 +20,7 @@ Dataframe.load_csv = argcheck{
 
 Loads a CSV file into Dataframe using csvigo as backend
 
-_Return value_: void
+_Return value_: self
 	]],
 	{name="self", type="Dataframe"},
 	{name="path", type="string", doc="path to file"},
@@ -55,6 +55,8 @@ _Return value_: void
 
 	-- Change all missing values to nan
 	self:_fill_missing()
+
+	return self
 end}
 
 Dataframe.load_table = argcheck{
@@ -70,7 +72,7 @@ another column with a single element that element is duplicated 10 times, i.e.
 filling the entire column with that single value.
 
 
-_Return value_: void
+_Return value_: self
 	]],
 	{name="self", type="Dataframe"},
 	{name="data", type="Df_Dict", doc="Table (dictionary) to import. Max depth 2."},
@@ -169,6 +171,8 @@ _Return value_: void
 
 	-- Change all missing values to nan
 	self:_fill_missing()
+
+	return self
 end}
 
 Dataframe._clean_columns = argcheck{
@@ -180,7 +184,7 @@ Dataframe._clean_columns = argcheck{
 
 Internal function to clean columns names
 
-_Return value_: void
+_Return value_: self
 	]],
 	{name="self", type="Dataframe"},
 	call = function(self)
@@ -195,6 +199,8 @@ _Return value_: void
 	end
 
 	self.dataset = temp_dataset
+
+	return self
 end}
 
 -- Count missing values
@@ -235,7 +241,7 @@ Dataframe._fill_missing = argcheck{
 
 Internal function for changing missing values to NaN values.
 
-_Return value_: void
+_Return value_: self
 	]],
 	{name="self", type="Dataframe"},
 	call = function(self)
@@ -251,4 +257,6 @@ _Return value_: void
 			end
 		end
 	end
+
+	return self
 end}

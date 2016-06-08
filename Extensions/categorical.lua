@@ -20,7 +20,7 @@ Dataframe.as_categorical = argcheck{
 Set a column to categorical type. Adds the column to self.categorical table with
 the keuys retrieved from Dataframe.unique.
 
-_Return value_: void
+_Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	{name="column_name", type="string",
@@ -60,8 +60,9 @@ Dataframe.as_categorical = argcheck{
 		end
 	end
 	self:_infer_schema()
-end
-}
+
+	return self
+end}
 
 Dataframe.add_cat_key = argcheck{
 	doc =  [[
@@ -98,7 +99,7 @@ Dataframe.as_string = argcheck{
 Converts a categorical column to a string column. This can be used to revert
 the Dataframe.as_categorical or as a way to convert numericals into strings.
 
-_Return value_: void
+_Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	{name="column_name", type="string", doc="The column name"},
@@ -119,6 +120,8 @@ _Return value_: void
 	end
 	self:_refresh_metadata()
 	self:_infer_schema()
+
+	return self
 end}
 
 Dataframe.clean_categorical = argcheck{
@@ -130,7 +133,7 @@ Dataframe.clean_categorical = argcheck{
 
 Removes any categories no longer present from the keys
 
-_Return value_: void
+_Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	{name='column_name', type='string', doc='the name of the column'},
@@ -157,6 +160,8 @@ _Return value_: void
 		end
 		self.categorical[column_name] = keys
 	end
+
+	return self
 end}
 
 Dataframe.is_categorical = argcheck{
