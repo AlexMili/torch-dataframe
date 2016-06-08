@@ -57,6 +57,59 @@ describe("Loading dataframe and creaing adequate subsets", function()
 		          ("Test size fail - %d is not within 2 from expected %d"):
 		          format(a["/test"]:size(1), math.floor(a:size(1) * .1)))
 	end)
+
+	it("Check that the initialized subset is correct for a #single_subset",
+		function()
+		local a = Dataframe("./data/realistic_29_row_data.csv")
+		a:create_subsets(Df_Dict({core = 1}))
+
+		assert.are.equal(a["/core"]:size(1), a:size(1), "Number of cases don't match")
+		assert.are.equal(a.subsets.samplers["core"], 'permutation')
+	end)
+
+	it("Check selecting if #selecting_sampler works",
+		function()
+		local a = Dataframe("./data/realistic_29_row_data.csv")
+		a:create_subsets(Df_Dict({core = 1}), "uniform")
+
+		assert.are.equal(a.subsets.samplers["core"], 'uniform')
+
+		a:create_subsets(Df_Dict({a = .5, b = .5}), "uniform")
+		assert.are.equal(a.subsets.samplers["a"], 'uniform')
+		assert.are.equal(a.subsets.samplers["b"], 'uniform')
+
+		a:create_subsets(Df_Dict({a = .5, b = .5}), Df_Dict({a = "uniform"}))
+		assert.are.equal(a.subsets.samplers["a"], 'uniform')
+		assert.are.equal(a.subsets.samplers["b"], 'permutation', "Not correcct for b")
+	end)
+
+	it("Check that the initialized subset sizes are correct for multiple #custom_subsets provided",
+		function()
+		local a = Dataframe("./data/realistic_29_row_data.csv")
+		a:create_subsets()
+
+		assert.are.equal(a["/test"]:size(1) +
+		                 a["/train"]:size(1) +
+		                 a["/validate"]:size(1), a:size(1), "Number of cases don't match")
+		-- as the full dataset must be used per definition one of the elements may not
+		-- exactly be of expected length. We therefore have to look for sizes that
+		-- are within no_of_subset - 1 from eachother
+		assert.is_true(
+			math.abs(a["/train"]:size(1) -
+		          math.floor(a:size(1) * .7)) <= 2,
+		          ("Train size fail - %d is not within 2 from expected %d"):
+		          format(a["/train"]:size(1), math.floor(a:size(1) * .7)))
+		assert.is_true(
+			math.abs(a["/validate"]:size(1) -
+		          math.floor(a:size(1) * .2)) <= 2,
+		          ("Validate size fail - %d is not within 2 from expected %d"):
+		          format(a["/validate"]:size(1), math.floor(a:size(1) * .2)))
+		assert.is_true(
+			math.abs(a["/test"]:size(1) -
+		          math.floor(a:size(1) * .1)) <= 2,
+		          ("Test size fail - %d is not within 2 from expected %d"):
+		          format(a["/test"]:size(1), math.floor(a:size(1) * .1)))
+	end)
 end)
 
 describe("Test if we can get a batch with data and labels",function()
