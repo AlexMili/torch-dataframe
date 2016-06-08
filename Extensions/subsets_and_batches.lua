@@ -30,6 +30,17 @@ Initializes the metadata needed for batch loading:
 - Subsets e.g. for training, validating, and testing
 - Samplers associated with the above
 
+The default data subsets and propotions are:
+```
+{['train'] = 0.7,
+ ['validate'] = 0.2,
+ ['test'] = 0.1}
+```
+
+The samplers defaults to permutation for the train set while the validate and
+test have a linear. If you provide a string identifying the sampler it will be
+used by all the subsets.
+
 The metadata is stored under `self.subsets.*`.
 
 _Note_: This function must be called prior to load_batch as it needs the
@@ -40,25 +51,85 @@ information for loading correct rows.
 _Return value_: self
 ]],
   {name='self', type='Dataframe'},
+	call=function(self)
+	-- Add default subsets
+	local subsets = Df_Dict({['train'] = 0.7, ['validate'] = 0.2, ['test'] = 0.1})
+	return self:create_subsets(subsets)
+end}
+
+Dataframe.create_subsets = argcheck{
+	doc = [[
+
+@ARGT
+
+]],
+	overload=Dataframe.create_subsets,
+  {name='self', type='Dataframe'},
 	{name='subsets', type='Df_Dict',
-	 doc=[[ The default data subsets are:
-	 {['train'] = 0.7,
-	  ['validate'] = 0.2,
-	  ['test'] = 0.1}]],
-	 default=false},
-	{name='samplers', type='Df_Dict|string',
-	 doc=[[The samplers to use together with the subsets. Defaults to permutation
-	 for the train set while the validate and test have a linear. If you provide a
-	 string identifying the sampler it will be used by all the subsets.]],
-	 default=false},
-	call=function(self, subsets, samplers)
-	if (not subsets) then
-		subsets = {['train'] = 0.7,
-		           ['validate'] = 0.2,
- 		           ['test'] = 0.1}
-	else
-		subsets = subsets.data
+	 doc="The default data subsets"},
+	call=function(self, subsets)
+	subsets = subsets.data
+
+	-- Add default samplers
+	local samplers = {}
+	if (subsets['train'] ~= nil) then
+		samplers.train = 'permutation'
 	end
+
+	for _,type in ipairs({'validate', 'test'}) do
+		if (subsets[type] ~= nil) then
+			samplers[type] = 'linear'
+		end
+	end
+
+	for type,_ in pairs(subsets) do
+		if (samplers[type] == nil) then
+			samplers[type] = 'permutation'
+		end
+	end
+
+	return self:create_subsets(Df_Dict(subsets), Df_Dict(samplers))
+end}
+
+Dataframe.create_subsets = argcheck{
+	doc = [[
+
+@ARGT
+
+]],
+	overload=Dataframe.create_subsets,
+  {name='self', type='Dataframe'},
+	{name='subsets', type='Df_Dict',
+	 doc="The default data subsets"},
+	{name='sampler', type='string',
+	 doc="The sampler to use together with all subsets."},
+	call=function(self, subsets, sampler)
+	subsets = subsets.data
+
+	-- Create a table with the same sampler for all elements
+	local samplers = {}
+	for key,_ in pairs(subsets) do
+		samplers[key] = sampler
+	end
+
+	return self:create_subsets(Df_Dict(subsets), Df_Dict(samplers))
+end}
+
+Dataframe.create_subsets = argcheck{
+	doc = [[
+
+@ARGT
+
+]],
+	overload=Dataframe.create_subsets,
+  {name='self', type='Dataframe'},
+	{name='subsets', type='Df_Dict',
+	 doc="The default data subsets"},
+	{name='samplers', type='Df_Dict',
+	 doc="The samplers to use together with the subsets."},
+	call=function(self, subsets, samplers)
+	subsets = subsets.data
+	samplers = samplers.data
 
 	-- Check data_type for inconcistencies
 	local total = 0
@@ -76,45 +147,23 @@ _Return value_: self
 		end
 	end
 
-	-- Initiate samplers
-	if (not samplers) then
-		samplers = {}
-		if (subsets['train'] ~= nil) then
-			samplers.train = 'permutation'
-		end
-
-		for _,type in ipairs({'validate', 'test'}) do
-			if (subsets[type] ~= nil) then
+	-- Add samplers that are missing in the sampler input
+	for type,_ in pairs(subsets) do
+		if (samplers[type] == nil) then
+			if (type == 'validate' or
+			    type == 'test') then
 				samplers[type] = 'linear'
-			end
-		end
-
-		for type,_ in pairs(subsets) do
-			if (samplers[type] == nil) then
+			else
 				samplers[type] = 'permutation'
 			end
 		end
-	else
-		samplers = samplers.data
-
-		-- Add samplers that are missing in the sampler input
-		for type,_ in pairs(subsets) do
-			if (samplers[type] ~= nil) then
-				if (type == 'validate' or
-				    type == 'test') then
-					samplers[type] = 'linear'
-				else
-					samplers[type] = 'permutation'
-				end
-			end
-		end
-
 	end
 
 	self.subsets = {
 		subset_splits = subsets,
 		samplers = samplers
 	}
+
 	return self:reset_subsets()
 end}
 
