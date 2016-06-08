@@ -118,11 +118,9 @@ Batchframe.to_tensor  = argcheck{
 	overload=Batchframe.to_tensor,
 	{name="self", type="Dataframe"},
 	{name='data_columns', type='Df_Array',
-	 doc='Receives a row and returns a tensor assumed to be the data',
-	 default=false},
-	{name='load_label_fn', type='Df_Array',
- 	 doc='The columns that are to be the label. If omitted defaults to all numerical.',
- 	 default=false},
+	 doc='Receives a row and returns a tensor assumed to be the data'},
+	{name='load_label_fn', type='function',
+ 	 doc='The columns that are to be the label.'},
 	call = function(self, data_columns, load_label_fn)
 	if (data_columns) then
 		data_columns = data_columns.data
@@ -136,13 +134,13 @@ Batchframe.to_tensor  = argcheck{
 	end
 
 	local tensor_data = Dataframe.to_tensor(self, Df_Array(data_columns))
-	local single_label = load_data_fn(self:get_row(1))
+	local single_label = load_label_fn(self:get_row(1))
 	single_label = _add_single_first_dim(single_label)
 	local tensor_label = single_label
 
 	if (#rows > 1) then
 		for i = 2,#rows do
-			single_label = load_data_fn(self:get_row(i))
+			single_label = load_label_fn(self:get_row(i))
 			single_label = _add_single_first_dim(single_label)
 			tensor_label = torch.cat(tensor_label, single_label, 1)
 		end
