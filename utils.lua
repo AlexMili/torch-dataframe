@@ -70,7 +70,11 @@ table.exact_length = function(tbl)
 end
 
 function isint(n)
-	return n == math.floor(n)
+	if (torch.isTensor(n)) then
+		return torch.equal(n, torch.floor(n))
+	else
+		return n == math.floor(n)
+	end
 end
 
 function isnan(n)
