@@ -67,11 +67,11 @@ describe("Loading dataframe and creaing adequate subsets", function()
 		assert.are.equal(a.subsets.samplers["core"], 'permutation')
 	end)
 
-	it("Check selecting if #selecting_sampler works",
+	it("Check selecting if #selecting_sampler works without label requirement",
 		function()
 		local a = Dataframe("./data/realistic_29_row_data.csv")
-		a:create_subsets(Df_Dict({core = 1}), "uniform")
 
+		a:create_subsets(Df_Dict({core = 1}), "uniform")
 		assert.are.equal(a.subsets.samplers["core"], 'uniform')
 
 		a:create_subsets(Df_Dict({a = .5, b = .5}), "uniform")
@@ -81,6 +81,23 @@ describe("Loading dataframe and creaing adequate subsets", function()
 		a:create_subsets(Df_Dict({a = .5, b = .5}), Df_Dict({a = "uniform"}))
 		assert.are.equal(a.subsets.samplers["a"], 'uniform')
 		assert.are.equal(a.subsets.samplers["b"], 'permutation', "Not correcct for b")
+	end)
+
+	it("Check selecting if #selecting_sampler works with label requirement",
+		function()
+		local a = Dataframe("./data/realistic_29_row_data.csv")
+
+		assert.has.error(function() a:create_subsets(Df_Dict({core = 1}), "label-uniform") end)
+
+		a:create_subsets(Df_Dict({core = 1}),
+		                 "label-uniform", "Gender")
+		assert.are.equal(a.subsets.samplers["core"], 'label-uniform')
+
+		a:create_subsets(Df_Dict({core = 1}),
+		                 "label-distribution", "Gender",
+		                 Df_Tbl({core = Df_Dict({distribution = Df_Dict({Male = 10, Female = 20})})}))
+		assert.are.equal(a.subsets.samplers["core"], 'label-distribution')
+
 	end)
 
 	it("Check that the initialized subset sizes are correct for multiple #custom_subsets provided",
