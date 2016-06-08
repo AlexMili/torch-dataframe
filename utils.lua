@@ -93,7 +93,7 @@ table.get_key_string = function(tbl)
 end
 
 table.collapse_to_string = function(tbl, indent, start)
-	assert(type(tbl) == "table")
+	assert(type(tbl) == "table", "The object isn't of type table: " .. type(tbl))
 
 	indent = indent or ""
 	start = start or indent
