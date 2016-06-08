@@ -90,11 +90,10 @@ _Return value_: self
 		end
 
 		for type,_ in pairs(subsets) do
-			if (samplers[type] ~= nil) then
+			if (samplers[type] == nil) then
 				samplers[type] = 'permutation'
 			end
 		end
-
 	else
 		samplers = samplers.data
 
@@ -157,7 +156,7 @@ _Return value_: self
 			local no_to_select = self.subsets.subset_splits[name] * self:size(1)
 			-- Clean the number just to make sure we have a valid number
 			-- and that the number is an integer
-			no_to_select = math.min(1, math.floor(no_to_select))
+			no_to_select = math.max(1, math.floor(no_to_select))
 
 			self.subsets.sub_objs[name] =
 				Df_Subset(Df_Array(permuations[{{offset + 1, offset + no_to_select}}]),
@@ -184,9 +183,9 @@ _Return value_: boolean
 	{name="self", type="Dataframe"},
 	{name='subset', type='string', doc='Type of subset to check for'},
 	call = function(self, subset)
-	return(self.batch ~= nil and
-	       self.batch.sub_objs ~= nil and
-	       self.batch.sub_objs[subset] ~= nil)
+	return(self.subsets ~= nil and
+	       self.subsets.sub_objs ~= nil and
+	       self.subsets.sub_objs[subset] ~= nil)
 end}
 
 Dataframe.get_subset = argcheck{
@@ -207,7 +206,9 @@ _Return value_: Df_Subset, Dataframe or Batchframe
 	 Return a Batchframe with a different `to_tensor` functionality that allows
 	 loading data, label tensors simultaneously]], default="Df_Subset"},
 	call = function(self, subset, return_type)
-	assert(self:has_subset(subset), "There is no subset named " .. subset)
+	assert(self:has_subset(subset),
+	       ("There is no subset named '%s' among the subsets: %s"):
+	       format(subset, table.get_key_string(self.subsets.sub_objs)))
 
 	local sub_obj = self.subsets.sub_objs[subset]
 	if (return_type == "Df_Subset") then
