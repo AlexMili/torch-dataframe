@@ -22,7 +22,6 @@ Creates and initializes a Dataframe class. Envoked through `local my_dataframe =
 
 @ARGT
 
-_Return value_: Dataframe
 ]],
 	{name="self", type="Dataframe"},
 	call=function(self)
@@ -32,11 +31,10 @@ end}
 
 Dataframe.__init = argcheck{
 	doc =  [[
-Read in an csv-file
+Read in an csv-filef
 
 @ARGT
 
-_Return value_: Dataframe
 ]],
 	overload=Dataframe.__init,
 	{name="self", type="Dataframe"},
@@ -52,7 +50,6 @@ Directly input a table
 
 @ARGT
 
-_Return value_: Dataframe
 ]],
 	overload=Dataframe.__init,
 	{name="self", type="Dataframe"},
@@ -79,6 +76,7 @@ Dataframe._clean = argcheck{
 	self.categorical = {}
 	self.schema = {}
 	self.__version = "1.1.dev"
+	return self
 end}
 
 -- Private function for copying core settings to new Dataframe
@@ -123,6 +121,8 @@ Dataframe._refresh_metadata = argcheck{
 
 	self.columns = keyset
 	self.n_rows = rows
+
+	return self
 end}
 
 -- Internal function to detect columns types
@@ -159,6 +159,8 @@ Dataframe._infer_schema = argcheck{
 			end
 		end
 	end
+
+	return self
 end}
 
 --

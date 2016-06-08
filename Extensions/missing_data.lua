@@ -82,7 +82,7 @@ Replace missing value in a specific column
 
 @ARGT
 
-_Return value_: void
+_Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	{name="column_name", type="string", doc="The column to fill"},
@@ -101,6 +101,8 @@ _Return value_: void
 			self.dataset[column_name][i] = default_value
 		end
 	end
+
+	return self
 end}
 
 Dataframe.fill_all_na = argcheck{
@@ -112,7 +114,7 @@ Replace missing value in all columns
 
 @ARGT
 
-_Return value_: void
+_Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	{name="default_value", type="number|string|boolean", doc="The default missing value", default=0},
@@ -120,4 +122,6 @@ _Return value_: void
 	for i=1,#self.columns do
 		self:fill_na(self.columns[i], default_value)
 	end
+
+	return self
 end}
