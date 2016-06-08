@@ -132,6 +132,28 @@ _Return value_: self
 	return self
 end}
 
+
+subset.get_idx = argcheck{
+	doc =  [[
+<a name="Df_Subset.get_idx">
+### Df_Subset.get_idx(@ARGP)
+
+Get the index fromm the parent Dataframe that a local index corresponds to
+
+@ARGT
+
+_Return value_: integer
+]],
+	{name="self", type="Df_Subset"},
+	{name="index", type="number", doc="The subset's index that you want the original index for"},
+	call=function(self, index)
+	assert(isint(index) and index > 0 and index <= self:size(1),
+	       ("The index must be an integer between 1 and %d , you've provided %s"):
+	       format(self:size(1), tostring(index)))
+
+	return self:get_column('indexes')[index]
+end}
+
 subset.set_labels = argcheck{
 	doc =  [[
 <a name="Df_Subset.set_labels">
