@@ -46,7 +46,9 @@ end}
 
 subset.__init = argcheck{
 doc =  [[
-Some of the samplers require a label column to which the samples will be balanced
+Some of the samplers require a label column to which the samples will be balanced.
+The label-distribution furthermore also requires a distribution,
+e.g. `{train = {distribution = Df_Dict({A = 2, B=10})}}`
 
 @ARGT
 
@@ -55,7 +57,7 @@ Some of the samplers require a label column to which the samples will be balance
 	{name="self", type="Df_Subset"},
 	{name="indexes", type="Df_Array", doc="The indexes in the original dataset to use for sampling"},
 	{name="sampler", type="string", doc="The sampler to use with this data"},
-	{name="labels", type="Df_Tbl",
+	{name="labels", type="Df_Array",
 	 doc="The column with all the labels (note this is passed by reference)"},
 	{name="sampler_args", type="Df_Dict",
 	 doc=[[Optional arguments for the sampler function, currently only used for
@@ -68,9 +70,9 @@ Some of the samplers require a label column to which the samples will be balance
 		set_idxs(indexes):
 		set_labels(labels)
 	if (sampler_args) then
-		set_sampler(sampler, sampler_args)
+			self:set_sampler(sampler, sampler_args)
 	else
-		set_sampler(sampler)
+		self:set_sampler(sampler)
 	end
 
 	self.parent = parent

@@ -45,8 +45,10 @@ describe("Linear Sampler #linear", function()
 		where{column_name = 'label',
 		      item_to_find = 'B'}
 	it("Check order and reset", function()
-		local sampler,resetSampler =
-			df:get_sampler('linear')
+		df:create_subsets(Df_Dict({core = 1}),
+		                  Df_Dict({core = 'linear'}))
+		local sampler = df[":/core"].sampler
+		local resetSampler = df[":/core"].reset
 		for j = 1,3 do
 
 			for i = 1,df:size(1) do
@@ -55,7 +57,7 @@ describe("Linear Sampler #linear", function()
 			end
 
 			local idx = sampler()
-				assert.is_true(idx == nil, 'going past the end must return nil, you got ' .. tostring(idx))
+			assert.is_true(idx == nil, 'going past the end must return nil, you got ' .. tostring(idx))
 
 			resetSampler()
 		end

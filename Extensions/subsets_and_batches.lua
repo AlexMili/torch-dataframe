@@ -46,9 +46,10 @@ The metadata is stored under `self.subsets.*`.
 _Note_: This function must be called prior to load_batch as it needs the
 information for loading correct rows.
 
+_Return value_: self
+
 @ARGT
 
-_Return value_: self
 ]],
   {name='self', type='Dataframe'},
 	call=function(self)
@@ -103,8 +104,24 @@ Dataframe.create_subsets = argcheck{
 	 doc="The default data subsets"},
 	{name='sampler', type='string',
 	 doc="The sampler to use together with all subsets."},
-	call=function(self, subsets, sampler)
+	{name='label_column', type='string',
+	 doc="The label based samplers need a column with labels",
+	 default = false},
+	{name='sampler_args', type="Df_Tbl",
+	 doc=[[Arguments needed for some of the samplers - currently only used by
+	 the label-distribution sampler that needs the distribution. Note that
+	 you need to have a somewhat complex table:
+	 `Df_Tbl({train = Df_Dict({distribution = Df_Dict({A = 2, B=10})})})`.]],
+	 default=false},
+	call=function(self, subsets, sampler, label_column, sampler_args)
 	subsets = subsets.data
+	-- Set to nil so that we can easily rely on argcheck passing when label and args are missing
+	if (not label_column) then
+		label_column = nil
+	end
+	if (not sampler_args) then
+		sampler_args = nil
+	end
 
 	-- Create a table with the same sampler for all elements
 	local samplers = {}
@@ -112,7 +129,11 @@ Dataframe.create_subsets = argcheck{
 		samplers[key] = sampler
 	end
 
-	return self:create_subsets(Df_Dict(subsets), Df_Dict(samplers))
+	return self:create_subsets{
+		subsets = Df_Dict(subsets),
+		samplers = Df_Dict(samplers),
+		label_column = label_column,
+		sampler_args = sampler_args}
 end}
 
 Dataframe.create_subsets = argcheck{
@@ -127,9 +148,27 @@ Dataframe.create_subsets = argcheck{
 	 doc="The default data subsets"},
 	{name='samplers', type='Df_Dict',
 	 doc="The samplers to use together with the subsets."},
-	call=function(self, subsets, samplers)
+	{name='label_column', type='string',
+ 	 doc="The label based samplers need a column with labels",
+ 	 default = false},
+	{name='sampler_args', type="Df_Tbl",
+ 	 doc=[[Arguments needed for some of the samplers - currently only used by
+ 	 the label-distribution sampler that needs the distribution. Note that
+	 you need to have a somewhat complex table:
+	 `Df_Tbl({train = Df_Dict({distribution = Df_Dict({A = 2, B=10})})})`.]],
+ 	 default=false},
+ 	call=function(self, subsets, samplers, label_column, sampler_args)
 	subsets = subsets.data
 	samplers = samplers.data
+	-- Set to nil or empty table so that we can easily rely on argcheck passing
+	if (not label_column) then
+		label_column = nil
+	end
+	if (not sampler_args) then
+		sampler_args = {}
+	else
+		sampler_args = sampler_args.data
+	end
 
 	-- Check data_type for inconcistencies
 	local total = 0
@@ -161,7 +200,9 @@ Dataframe.create_subsets = argcheck{
 
 	self.subsets = {
 		subset_splits = subsets,
-		samplers = samplers
+		samplers = samplers,
+		label_column = label_column,
+		sampler_args = sampler_args
 	}
 
 	return self:reset_subsets()
@@ -191,27 +232,52 @@ _Return value_: self
 	local i = 0
 	local n_subsets = table.exact_length(self.subsets.subset_splits)
 	local permuations = torch.randperm(self:size(1))
+	local subset_permutations
+
+	local label_column = self.subsets.label_column
+	if (label_column) then
+		assert(self:has_column(label_column), "Couldn't find column: " .. tostring(label_column))
+		label_column = self:get_column(label_column)
+	end
+
 	self.subsets.sub_objs = {}
 	for name, proportion in pairs(self.subsets.subset_splits) do
 		i = i + 1
+		-- Prepare label column for subset
+
 		if (i == n_subsets) then
-			-- Use the remainder (should be correct as the create_subsets takes care of normalizing)
-			self.subsets.sub_objs[name] =
-				Df_Subset(Df_Array(permuations[{{offset + 1, self:size(1)}}]),
-				          self.subsets.samplers[name],
-				          self)
+		-- Use the remainder (should be correct as the create_subsets takes care of normalizing)
+			subset_permutations = permuations[{{offset + 1, self:size(1)}}]
+
 			offset = self:size(1)
 		else
 			local no_to_select = self.subsets.subset_splits[name] * self:size(1)
 			-- Clean the number just to make sure we have a valid number
 			-- and that the number is an integer
 			no_to_select = math.max(1, math.floor(no_to_select))
+			subset_permutations = permuations[{{offset + 1, offset + no_to_select}}]
+			offset = offset + no_to_select
+		end
+
+		if (not label_column) then
+			self.subsets.sub_objs[name] =
+				Df_Subset{
+					indexes = Df_Array(subset_permutations),
+					sampler = self.subsets.samplers[name],
+					sampler_args = self.subsets.sampler_args[name],
+					parent = self}
+		else
+			-- A little hacky but it should speed up and cheking tensor data makes no sense
+			local labels = Df_Array()
+			subset_permutations:apply(function(key) table.insert(labels.data, label_column[key]) end)
 
 			self.subsets.sub_objs[name] =
-				Df_Subset(Df_Array(permuations[{{offset + 1, offset + no_to_select}}]),
-				          self.subsets.samplers[name],
-				          self)
-			offset = offset + no_to_select
+				Df_Subset{
+					indexes = Df_Array(subset_permutations),
+					sampler = self.subsets.samplers[name],
+					labels = labels,
+					sampler_args = self.subsets.sampler_args[name],
+					parent = self}
 		end
 	end
 
