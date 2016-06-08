@@ -34,11 +34,14 @@ Creates and initializes a Df_Subset class.
 	{name="self", type="Df_Subset"},
 	{name="indexes", type="Df_Array", doc="The indexes in the original dataset to use for sampling"},
 	{name="sampler", type="string", doc="The sampler to use with this data"},
-	call=function(self, indexes, sampler)
+	{name="parent", type="Dataframe", doc="The parent Dataframe that will be stored by reference"},
+	call=function(self, indexes, sampler, parent)
 	self:
 		_clean():
 		set_idxs(indexes):
 		set_sampler(sampler)
+
+	self.parent = parent
 end}
 
 subset.__init = argcheck{
@@ -58,7 +61,8 @@ Some of the samplers require a label column to which the samples will be balance
 	 doc=[[Optional arguments for the sampler function, currently only used for
 	 the label-distribution sampler.]],
 	 default=false},
-	call=function(self, indexes, sampler, labels, sampler_args)
+	{name="parent", type="Dataframe", doc="The parent Dataframe that will be stored by reference"},
+	call=function(self, indexes, sampler, labels, sampler_args, parent)
 	self:
 		_clean():
 		set_idxs(indexes):
@@ -68,6 +72,8 @@ Some of the samplers require a label column to which the samples will be balance
 	else
 		set_sampler(sampler)
 	end
+
+	self.parent = parent
 end}
 
 subset._clean = argcheck{
@@ -185,5 +191,69 @@ for extension_file,_ in lfs.dir (ext_path) do
     assert(loadfile(file))(subset)
   end
 end
+
+subset.get_batch = argcheck{
+	doc =  [[
+<a name="Df_Subset.get_batch">
+### Df_Subset.get_batch(@ARGP)
+
+Retrieves a batch of given size using the set sampler. If sampler needs resetting
+then the batch will be either smaller than the requested number or nil.
+
+@ARGT
+
+_Return value_: Batchframe, boolean (if reset_sampler() should be called)
+]],
+	{name="self", type="Df_Subset"},
+	{name='no_lines', type='number', doc='The number of lines/rows to include (-1 for all)'},
+	call=function(self, no_lines)
+
+	assert(isint(no_lines) and
+				 (no_lines > 0 or
+					no_lines == -1) and
+					no_lines <= self:size(1),
+				 "The number of files to load has to be either -1 for all files or " ..
+				 " a positive integer less or equeal to the number of observations in that category " ..
+				 self:size(1) .. "." ..
+				 " You provided " .. tostring(no_lines))
+
+	if (no_lines == -1) then no_lines = self:size(1) end
+
+	local indexes = {}
+	local reset = false
+	for i=1,no_lines do
+		local idx = self.sampler()
+		if (idx == nil) then
+			reset = true
+			break
+		end
+		table.insert(indexes, idx)
+	end
+
+	if (#indexes == nil) then
+		return nil, reset
+	end
+
+	return self.parent:_create_subset{index_items = Df_Array(indexes),
+	                                  as_batchframe = true}, reset
+end}
+
+subset.reset_sampler = argcheck{
+	doc =  [[
+<a name="Df_Subset.reset_sampler">
+### Df_Subset.reset_sampler(@ARGP)
+
+Resets the sampler. This is needed for a few samplers and is easily checked for
+in the 2nd return value from `get_batch`
+
+@ARGT
+
+_Return value_: self
+]],
+	{name="self", type="Df_Subset"},
+	call=function(self)
+	self.reset()
+	return self
+end}
 
 return subset
