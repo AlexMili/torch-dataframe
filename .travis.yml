@@ -34,6 +34,7 @@ install:
 
 script:
   - cd specs
+  - ./run_all.sh --coverage
   - ./coverage.sh --generate
   - cd ..
 
