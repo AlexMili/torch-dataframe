@@ -115,7 +115,7 @@ _Return value_: self
 	call=function(self, indexes)
 	for i=1,#indexes.data do
 		local idx = indexes.data[i]
-		assert(isint(idx) and torch.gt(idx, 0),
+		assert(isint(idx) and idx > 0,
 		       "The index must be a positive integer, you've provided " .. tostring(idx))
 	end
 
@@ -243,10 +243,13 @@ _Return value_: Batchframe, boolean (if reset_sampler() should be called)
 				 self:size(1) .. "." ..
 				 " You provided " .. tostring(no_lines))
 
-	if (no_lines == -1) then no_lines = self:size(1) end
+	local reset = false
+	if (no_lines == -1) then
+		no_lines = self:size(1)
+		reset = true -- The sampler only triggers the reset after passing > 1 epoch
+	end
 
 	local indexes = {}
-	local reset = false
 	for i=1,no_lines do
 		local idx = self.sampler()
 		if (idx == nil) then
