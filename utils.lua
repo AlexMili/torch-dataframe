@@ -71,7 +71,7 @@ end
 
 function isint(n)
 	if (torch.isTensor(n)) then
-		return torch.equal(n, torch.floor(n))
+		return torch.eq(n, torch.floor(n))
 	else
 		return n == math.floor(n)
 	end
@@ -79,6 +79,17 @@ end
 
 function isnan(n)
 	return n ~= n
+end
+
+table.get_key_string = function(tbl)
+	local ret = ""
+	for key,_ in pairs(tbl) do
+		if (ret ~= "") then
+			ret = ret .. ", "
+		end
+		ret = ret .. ("'%s'"):format(key)
+	end
+	return ret
 end
 
 table.collapse_to_string = function(tbl, indent, start)
