@@ -4,8 +4,10 @@ echo -e "= Code coverage =";
 echo -e "=================";
 echo "";
 
-if [ "$1" != "--generate" ]; then
-	./run_all.sh --coverage
+./run_all.sh --coverage
+
+if [ "$?" > 0 ]; then
+	exit $?
 fi
 
 mv luacov.stats.out ../luacov.stats.out
