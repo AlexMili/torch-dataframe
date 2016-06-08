@@ -13,11 +13,9 @@ paths.dofile('init.lua')
 lfs.chdir("specs")
 
 describe("Loading batch process", function()
-	before_each(function()
-		local fake_loader = function(row) return torch.Tensor({1, 2}) end
-		local a = Dataframe("./data/realistic_29_row_data.csv")
-		a:init_batch()
-	end)
+	local fake_loader = function(row) return torch.Tensor({1, 2}) end
+	a = Dataframe("./data/realistic_29_row_data.csv")
+	a:create_subsets()
 
 	it("Raises an error if create_subsets hasn't be called",function()
 		assert.has.error(function() a:reset_subsets() end)
@@ -26,7 +24,7 @@ describe("Loading batch process", function()
 	it("Initializes with random order for training and linear for the other",
 		function()
 		torch.manualSeed(0)
-		a:create_subsets()
+		a:reset_subsets()
 		local order = 0
 
 		assert.are.equal(a["/train"].subsets.samper, 'permutation')

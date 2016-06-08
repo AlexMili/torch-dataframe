@@ -16,7 +16,7 @@ describe("Loading batch data", function()
 	before_each(function()
 		local fake_loader = function(row) return torch.Tensor({1, 2}) end
 		local a = Dataframe("./data/realistic_29_row_data.csv")
-		a:init_batch()
+		a:create_subsets()
 	end)
 
 	describe("Batch with #load_data_fn", function()
