@@ -154,7 +154,7 @@ _Return value_: self
 				          self))
 			offset = self:size(1)
 		else
-			local no_to_select = self.subsets.subset_splits[1] * self:size(1)
+			local no_to_select = self.subsets.subset_splits[name] * self:size(1)
 			-- Clean the number just to make sure we have a valid number
 			-- and that the number is an integer
 			no_to_select = math.min(1, math.floor(no_to_select))
