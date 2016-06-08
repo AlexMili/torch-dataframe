@@ -55,8 +55,9 @@ The `__index__` function is a powerful tool that allows quick access to regular 
 
 - _Single integer_: it returns the raw row table (see `get_row()`)
 - _Df_Array()_: select rows of interest (see `_create_subset()`)
-- _"start:stop"_: get a row span using start/stop index, e.g. "2:5" (see `sub()`)
-- _"$column_name"_: get a column by prepending the name with $, e.g. "$a column name" (see `get_column`)
+- _"start:stop"_: get a row span using start/stop index, e.g. `"2:5"` (see `sub()`)
+- _"$column_name"_: get a column by prepending the name with `$`, e.g. `"$a column name"` (see `get_column`)
+- _"/subset_name"_: get a subset by prepending the name with `/`, e.g. `"/a subset name"` (see `get_subset`)
 
 _Return value_: Table or Dataframe
 ]]
@@ -81,6 +82,12 @@ function Dataframe:__index__(index)
 		if (index:match("^[$]")) then
 			local column_name = index:gsub("^[$]", "")
 			return self:get_column(column_name), true
+		end
+
+		-- Index a subset using a / at the beginning of a string
+		if (index:match("^[/]")) then
+			local subset_name = index:gsub("^[/]", "")
+			return self:get_subset(subset_name), true
 		end
 
 		return false
