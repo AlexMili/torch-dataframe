@@ -1,5 +1,5 @@
 paths = require 'paths'
-
+local lfs = require "lfs"
 local dataframe_path = paths.thisfile():gsub("init.lua$", "?.lua")
 
 -- Make utils available to all
