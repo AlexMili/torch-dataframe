@@ -97,8 +97,8 @@ Batchframe.to_tensor  = argcheck{
 	single_data = _add_single_first_dim(single_data)
 	tensor_data = single_data
 
-	if (#rows > 1) then
-		for i = 2,#rows do
+	if (self:size(1) > 1) then
+		for i = 2,self:size(1) do
 			single_data = load_data_fn(self:get_row(i))
 			single_data = _add_single_first_dim(single_data)
 			tensor_data = torch.cat(tensor_data, single_data, 1)
@@ -138,8 +138,8 @@ Batchframe.to_tensor  = argcheck{
 	single_label = _add_single_first_dim(single_label)
 	local tensor_label = single_label
 
-	if (#rows > 1) then
-		for i = 2,#rows do
+	if (self:size(1) > 1) then
+		for i = 2,self:size(1) do
 			single_label = load_label_fn(self:get_row(i))
 			single_label = _add_single_first_dim(single_label)
 			tensor_label = torch.cat(tensor_label, single_label, 1)
@@ -168,8 +168,8 @@ Batchframe.to_tensor  = argcheck{
 	single_data = _add_single_first_dim(single_data)
 	local tensor_data = single_data
 
-	if (#rows > 1) then
-		for i = 2,#rows do
+	if (self:size(1) > 1) then
+		for i = 2,self:size(1) do
 			single_data = load_data_fn(self:get_row(i))
 			single_data = _add_single_first_dim(single_data)
 			tensor_data = torch.cat(tensor_data, single_data, 1)
@@ -180,8 +180,8 @@ Batchframe.to_tensor  = argcheck{
 	single_label = _add_single_first_dim(single_label)
 	local tensor_label = single_label
 
-	if (#rows > 1) then
-		for i = 2,#rows do
+	if (self:size(1) > 1) then
+		for i = 2,self:size(1) do
 			single_label = load_label_fn(self:get_row(i))
 			single_label = _add_single_first_dim(single_label)
 			tensor_label = torch.cat(tensor_label, single_label, 1)
@@ -190,3 +190,17 @@ Batchframe.to_tensor  = argcheck{
 
 	return tensor_data, tensor_label
 end}
+
+-- Helper for adding a single first dimension to help with torch.cat
+function _add_single_first_dim(data)
+  if (data:size(1) ~= 1) then
+    local current_size = data:size()
+    local new_size = {1}
+    for i = 1,#current_size do
+      table.insert(new_size, current_size[i])
+    end
+    new_size = torch.LongStorage(new_size)
+    data = data:reshape(new_size)
+  end
+  return data
+end
