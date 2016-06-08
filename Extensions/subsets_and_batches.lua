@@ -149,9 +149,9 @@ _Return value_: self
 		if (i == n_subsets) then
 			-- Use the remainder (should be correct as the create_subsets takes care of normalizing)
 			self.subsets.sub_objs[name] =
-				Df_Subset(Df_Array(permuations[{{offset + 1, self:size(1)}}],
+				Df_Subset(Df_Array(permuations[{{offset + 1, self:size(1)}}]),
 				          self.subsets.samplers[name],
-				          self))
+				          self)
 			offset = self:size(1)
 		else
 			local no_to_select = self.subsets.subset_splits[name] * self:size(1)
@@ -160,9 +160,9 @@ _Return value_: self
 			no_to_select = math.min(1, math.floor(no_to_select))
 
 			self.subsets.sub_objs[name] =
-				Df_Subset(Df_Array(permuations[{{offset + 1, offset + no_to_select}}],
+				Df_Subset(Df_Array(permuations[{{offset + 1, offset + no_to_select}}]),
 				          self.subsets.samplers[name],
-				          self))
+				          self)
 			offset = offset + no_to_select
 		end
 	end
