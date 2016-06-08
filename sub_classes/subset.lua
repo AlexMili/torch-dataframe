@@ -115,7 +115,7 @@ _Return value_: self
 	call=function(self, indexes)
 	for i=1,#indexes.data do
 		local idx = indexes.data[i]
-		assert(isint(idx) and idx > 0,
+		assert(isint(idx) and torch.gt(idx, 0),
 		       "The index must be a positive integer, you've provided " .. tostring(idx))
 	end
 
@@ -199,9 +199,13 @@ _Return value_: self
 	{name="sampler_args", type="Df_Dict",
 	 doc=[[Optional arguments for the sampler function, currently only used for
 	 the label-distribution sampler.]],
-	 default=nil},
+	 default=false},
 	call=function(self, sampler, sampler_args)
-	self.sampler, self.reset = self:get_sampler(sampler, sampler_args)
+	if (sampler_args) then
+		self.sampler, self.reset = self:get_sampler(sampler, sampler_args)
+	else
+		self.sampler, self.reset = self:get_sampler(sampler)
+	end
 	return self
 end}
 
