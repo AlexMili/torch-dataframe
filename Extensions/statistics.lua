@@ -452,9 +452,7 @@ _Return value_: number
 	end
 
 	if (isnan(max)) then
-	print(self:is_categorical(column_name))
 		self:output()
-		print(column_name, max)
 	end
 	return max
 end}
