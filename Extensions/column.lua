@@ -190,6 +190,10 @@ default_value
 	assert(not self:has_column(column_name), "The column " .. column_name .. " already exists in the dataset")
 	default_values = default_values.data
 
+	if (self.n_rows == 0) then
+		return self:load_table(Df_Dict({[column_name] = default_values}))
+	end
+
 	assert(table.maxn(default_values) == self.n_rows,
 	       'The default values don\'t match the number of rows')
 
