@@ -13,132 +13,67 @@ paths.dofile('init.lua')
 lfs.chdir("specs")
 
 describe("Loading batch process", function()
-	local fake_loader = function(row) return torch.Tensor({1, 2}) end
-	local a = Dataframe("./data/realistic_29_row_data.csv")
-
-	it("Raises an error if init_batch hasn't be called",function()
-		assert.has.error(function() a:load_batch{no_lines = 10,
-		                                         load_row_fn = fake_loader} end)
+	before_each(function()
+		local fake_loader = function(row) return torch.Tensor({1, 2}) end
+		local a = Dataframe("./data/realistic_29_row_data.csv")
+		a:init_batch()
 	end)
 
-	it("Initializes",function()
+	it("Raises an error if create_subsets hasn't be called",function()
+		assert.has.error(function() a:reset_subsets() end)
+	end)
+
+	it("Initializes with random order for training and linear for the other",
+		function()
 		torch.manualSeed(0)
-		a:init_batch()
+		a:create_subsets()
 		local order = 0
 
-		for i = 2,#a.batch.datasets["train"] do
-			order = order + a.batch.datasets["train"][i] - a.batch.datasets["train"][i - 1] - 1
-		end
-
-		assert.is.not_equal(order, 0)
-
-		a:init_batch{shuffle = false}
-		order = 0
-
-		for i = 2,#a.batch.datasets["train"] do
-			order = order + a.batch.datasets["train"][i] - a.batch.datasets["train"][i - 1] - 1
-		end
-
-		assert.is.equal(order, 0)
-
-		assert.is_true(a:has_subset("train"))
-		assert.is_true(a:get_batch("train"):size(1) > 0)
-		assert.is_true(a:get_batch("train"):size(1) < a:size(1))
-		assert.are.same(a:get_batch("train"):size(2), a:size(2))
+		assert.are.equal(a["/train"].subsets.samper, 'permutation')
+		assert.are.equal(a["/test"].subsets.samper, 'linear')
+		assert.are.equal(a["/validate"].subsets.samper, 'linear')
 	end)
 
 	describe("In action",function()
-		local a = Dataframe("./data/realistic_29_row_data.csv")
-		a:init_batch()
-
-		it("Fails if the number of lines isn't correct",function()
-			--assert.has.error(a:load_batch(0))
-		end)
-
+		a:create_subsets()
 
 		it("Loads batches",function()
-			a:init_batch()
 			local data, label =
-				a:load_batch{no_lines = 5,
-				             load_row_fn = fake_loader,
-				             type = 'train'}
+				a["/train"]:
+				get_batch{no_lines = 5}:
+				to_tensor{
+					load_data_fn = fake_loader
+				}
+
 			assert.is.equal(data:size(1), 5)-- "The data has invalid rows"
 			assert.is.equal(data:size(2), 2)-- "The data has invalid columns"
 			assert.is.equal(label:size(1), 5)--"The labels have invalid size"
 		end)
 
-		it("Loads categorical columns",function()
-			a:as_categorical('Gender')
-			local data, label, names =
-				a:load_batch{no_lines = 5,
-				             load_row_fn = fake_loader,
-				             type = 'train',
-				             offset = 0}
-			assert.is.equal(data:size(1), 5)-- "The data with gender has invalid rows"
-			assert.is.equal(data:size(2), 2)-- "The data with gender has invalid columns"
-			assert.is.equal(label:size(1), 5)-- "The labels with gender have invalid size"
-			assert.are.same(names, {'Gender', 'Weight'})-- "Invalid names returned"
-
-			data, label, names =
-				a:load_batch{no_lines = 5,
-				             load_row_fn = fake_loader,
-				             type = 'train',
-				             offset = 0}
-
-			assert.is.equal(data:size(1), 5)-- "The data with gender has invalid rows"
-			assert.is.equal(data:size(2), 2)-- "The data with gender has invalid columns"
-			assert.is.equal(label:size(1), 5)-- "The labels with gender have invalid size"
-		end)
-
 		it("Doesn't load all cases",function()
 			local batch_size = 6
-			for i=1,10 do
-				local data, label, names =
-					a:load_batch{no_lines = batch_size,
-					             load_row_fn = fake_loader,
-					             type = 'train',
-					             offset = (i - 1)*batch_size}
-				assert.is.equal(label:size(1), batch_size)-- "The labels have invalid size at iteration " .. i
-				assert.is.equal(data:size(1), batch_size)-- "The data has invalid size at iteration " .. i
+			local count = 0
+			local batch, reset
+			for i=1,(math.ceil(a["/train"]:size(1)/batch_size) + 1) do
+				batch, reset =
+					a["/train"]:get_batch{no_lines = batch_size}
+				if (batch == nil) then
+					break
+				end
+				count = count + batch:size(1)
 			end
 
-			local data, label =
-				a:load_batch{no_lines = -1,
-				            load_row_fn = fake_loader,
-				            offset = 0,
-				            type = 'train'}
-			assert.are.same(data:size(1), a:batch_size('train'))-- "Doesn't load all train cases"
-			data, label =
-				a:load_batch{no_lines = -1,
-				            load_row_fn = fake_loader,
-				            offset = 0,
-				            type = 'validate'}
-			assert.are.same(data:size(1), a:batch_size('validate'))-- "Doesn't load all validation cases"
-			data, label =
-				a:load_batch{no_lines = -1,
-				            load_row_fn = fake_loader,
-				            offset = 0,
-				            type = 'test'}
-			assert.are.same(data:size(1), a:batch_size('test'))-- "Doesn't load all test cases"
+			assert.are.equal(count, a["/train"]:size(1))
+			assert.is_true(reset)
 
-			data, label =
-				a:load_batch{no_lines = a:batch_size('train'),
-				            load_row_fn = fake_loader,
-				            offset = 0,
-				            type = 'train'}
-			assert.are.same(data:size(1), a:batch_size('train'))-- "Doesn't load all train cases when max number specified"
-			data, label =
-				a:load_batch{no_lines = a:batch_size('validate'),
-				            load_row_fn = fake_loader,
-				            offset = 0,
-				            type = 'validate'}
-			assert.are.same(data:size(1), a:batch_size('validate'))-- "Doesn't load all validation cases when max number specified"
-			data, label =
-				a:load_batch{no_lines = a:batch_size('test'),
-				            load_row_fn = fake_loader,
-				            offset = 0,
-				            type = 'test'}
-			assert.are.same(data:size(1), a:batch_size('test'))-- "Doesn't load all test cases when max number specified"
+			a["/train"]:reset_sampler()
+			batch, reset =
+				a["/train"]:get_batch{no_lines = -1}
+
+			assert.are.equal(batch:size(1), a["/train"]:size(1))
+			assert.is_true(reset)
 		end)
+
+		-- TODO: Add tests for custom subset splits and samplers
 	end)
 end)
