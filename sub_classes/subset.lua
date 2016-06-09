@@ -36,6 +36,7 @@ Creates and initializes a Df_Subset class.
 	{name="sampler", type="string", doc="The sampler to use with this data"},
 	{name="parent", type="Dataframe", doc="The parent Dataframe that will be stored by reference"},
 	call=function(self, indexes, sampler, parent)
+	Dataframe.__init(self)
 	self:
 		_clean():
 		set_idxs(indexes):
@@ -65,6 +66,8 @@ e.g. `{train = {distribution = Df_Dict({A = 2, B=10})}}`
 	 default=false},
 	{name="parent", type="Dataframe", doc="The parent Dataframe that will be stored by reference"},
 	call=function(self, indexes, sampler, labels, sampler_args, parent)
+	Dataframe.__init(self)
+	
 	self:
 		_clean():
 		set_idxs(indexes):
