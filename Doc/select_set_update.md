@@ -55,26 +55,28 @@ Retrieves the last elements of a table
 
 _Return value_: Dataframe
 <a name="Dataframe._create_subset">
-### Dataframe._create_subset(self, index_items)
+### Dataframe._create_subset(self, index_items[, as_batchframe])
+
+Creates a class and returns a subset based on the index items. Intended for internal
+use. The method is primarily intended for internal use.
 
 ```
 ({
-   self        = Dataframe  -- 
-   index_items = Df_Array   -- The indexes to retrieve
+   self          = Dataframe  -- 
+   index_items   = Df_Array   -- The indexes to retrieve
+  [as_batchframe = boolean]   -- Return a Batchframe with a different `to_tensor` functionality that allows
+	 loading data, label tensors simultaneously [default=false]
 })
 ```
 
-Creates a class and returns a subset based on the index items. Intended for internal
-use.
-
-_Return value_: Dataframe
+_Return value_: Dataframe or Batchframe
 <a name="Dataframe.where">
-### Dataframe.where(self, column, item_to_find)
+### Dataframe.where(self, column_name, item_to_find)
 
 ```
 ({
    self         = Dataframe              -- 
-   column       = string                 -- column to browse or findin the item argument
+   column_name  = string                 -- column to browse or findin the item argument
    item_to_find = number|string|boolean  -- The value to find
 })
 ```
@@ -153,3 +155,31 @@ You can also provide the index that you want to set
 ```
 
 _Return value_: void
+<a name="Dataframe.wide2long">
+### Dataframe.wide2long(self, columns, id_name, value_name)
+
+Change table from wide format, i.e. where a labels are split over multiple columns
+into a case where all the values are in one column and adjacent is a column with
+the column names.
+
+```
+({
+   self       = Dataframe  -- 
+   columns    = Df_Array   -- The columns that are to be merged
+   id_name    = string     -- The column name for where to store the old column names
+   value_name = string     -- The column name for where to store the values
+})
+```
+
+_Return value_: Dataframe
+You can also provide a regular expression for column names
+
+```
+({
+   self         = Dataframe  -- 
+   column_regex = string     -- Regular expression for the columns that are to be merged
+   id_name      = string     -- The column name for where to store the old column names
+   value_name   = string     -- The column name for where to store the values
+})
+```
+

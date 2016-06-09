@@ -18,16 +18,16 @@
 
 Loads a CSV file into Dataframe using csvigo as backend
 
-_Return value_: void
+_Return value_: self
 	<a name="Dataframe.load_table">
 ### Dataframe.load_table(self, data[, infer_schema][, column_order])
 
 ```
 ({
-   self         = Dataframe  -- 
-   data         = Df_Dict    -- Table (dictionary) to import. Max depth 2.
-  [infer_schema = boolean]   -- automatically detect columns' type [default=true]
-  [column_order = Df_Array]  -- The order of the column (has to be array and _not_ a dictionary) [default=false]
+   self         = Dataframe         -- 
+   data         = Df_Dict           -- Table (dictionary) to import. Max depth 2.
+  [infer_schema = Df_Dict|boolean]  -- automatically detect columns' type or use previous schema [default=true]
+  [column_order = Df_Array]         -- The order of the column (has to be array and _not_ a dictionary) [default=false]
 })
 ```
 
@@ -37,7 +37,7 @@ another column with a single element that element is duplicated 10 times, i.e.
 filling the entire column with that single value.
 
 
-_Return value_: void
+_Return value_: self
 	<a name="Dataframe._clean_columns">
 ### Dataframe._clean_columns(self)
 
@@ -49,7 +49,7 @@ _Return value_: void
 
 Internal function to clean columns names
 
-_Return value_: void
+_Return value_: self
 	<a name="Dataframe._count_missing">
 ### Dataframe._count_missing(self)
 
@@ -75,5 +75,5 @@ _Return value_: number of missing values (integer)
 
 Internal function for changing missing values to NaN values.
 
-_Return value_: void
+_Return value_: self
 	

@@ -39,7 +39,7 @@ _Return value_: boolean
 
 Delete column from dataset
 
-_Return value_: void
+_Return value_: self
 You can also delete multiple columns by supplying a Df_Array
 
 ```
@@ -61,7 +61,7 @@ the right.
 })
 ```
 
-_Return value_: void
+_Return value_: self
 The default_value argument will fill the new column. If omitted will be 0/0
 
 ```
@@ -103,7 +103,7 @@ Bind data columnwise together
 })
 ```
 
-_Return value_: void
+_Return value_: self
 
 ```
 ({
@@ -140,7 +140,7 @@ Change value of a whole column or columns
 })
 ```
 
-_Return value_: void
+_Return value_: self
 
 ```
 ({
@@ -163,7 +163,7 @@ Rename a column
 })
 ```
 
-_Return value_: void
+_Return value_: self
 <a name="Dataframe.get_numerical_colnames">
 ### Dataframe.get_numerical_colnames(self)
 
