@@ -40,15 +40,17 @@ local function dataLoader(num, skip_wide)
 end
 
 
-describe("Linear Sampler #linear", function()
+describe([[The #linear sampler should call each element in a linear fashion and
+	after finishing the epoch it requires a reset in order to allow new sampling]],
+	function()
 	local df = dataLoader():
 		where{column_name = 'label',
 		      item_to_find = 'B'}
 	it("Check order and reset", function()
 		df:create_subsets(Df_Dict({core = 1}),
 		                  Df_Dict({core = 'linear'}))
-		local sampler = df[":/core"].sampler
-		local resetSampler = df[":/core"].reset
+		local sampler = df["/core"].sampler
+		local resetSampler = df["/core"].reset
 		for j = 1,3 do
 
 			for i = 1,df:size(1) do
@@ -65,10 +67,20 @@ describe("Linear Sampler #linear", function()
 
 end)
 
-describe("Permutation Sampler #permutation", function()
+describe([[The permutation sampler should permute the results but otherwise works
+  similar to the linear with a requirement of calling the reset at the end of an
+	epoch]],
+	function()
 	local df = dataLoader(	)
-	it("Check order and reset", function()
-		local sampler,resetSampler = df:get_sampler('permutation')
+	it([[Permutation sampler with permutation using single label should
+	return a different permutation every time but the content should be the
+	same after sorting.]],
+	function()
+		df:create_subsets(Df_Dict({core = 1}),
+		                  Df_Dict({core = 'permutation'}))
+		local sampler = df["/core"].sampler
+		local resetSampler = df["/core"].reset
+
 		local seen = { }
 		local labelCounts = { }
 		local prev
@@ -109,11 +121,50 @@ describe("Permutation Sampler #permutation", function()
 			end
 		end
 	end)
+
+	describe([[Changing to only use B shouldn't impact anything]],
+	function()
+		-- This is somewhat of a torch-dataset remnant
+		local df = dataLoader():where('label', 'B')
+		df:create_subsets(Df_Dict({core = 1}),
+		                  Df_Dict({core = 'permutation'}))
+		it("Check order and reset", function()
+			local sampler = df["/core"].sampler
+			local resetSampler = df["/core"].sampler
+			local seen = { }
+			local prev
+			for i = 1,df["/core"]:size(1) do
+				local s,label = sampler()
+				table.insert(seen, s)
+				if i % 9 == 0 then
+					local idx = sampler()
+					assert.are.same(idx, nil)
+					resetSampler()
+					if prev ~= nil then
+						assert.are.same(no_seen, #prev, 'need to see the same amount sampled each loop')
+						assert.is_true(TestNoDupes(seen) == true, 'should not see any dupes')
+						assert.are_not.same(seen, prev, 'the lists must have different orders')
+
+						local sortedSeen = clone(seen)
+						table.sort(sortedSeen)
+						local sortedPrev = clone(prev)
+						table.sort(sortedPrev)
+						assert.are.same(sortedSeen, sortedPrev, 'the lists must have the same sorted orders')
+					end
+					prev = seen
+					seen = { }
+				end
+			end
+		end)
+	end)
 end)
 
-describe("Label Permutation Sampler #permutation #label", function()
+describe("Sample from a distribution that is permuted by label #label_permutation", function()
 	local df = dataLoader()
-	local sampler = df:get_sampler('label-permutation', Df_Dict({column_name = 'label'}))
+	df:create_subsets(Df_Dict({core = 1}),
+	                  Df_Dict({core = 'label-permutation'}),
+	                  "label")
+	local sampler = df["/core"].sampler
 	local seen = { }
 	local seenClasses = { }
 	local labelCounts = { }
@@ -121,7 +172,8 @@ describe("Label Permutation Sampler #permutation #label", function()
 	local prev, prevClasses
 	local fullLoop = 135
 
-	it("Check order and reset", function()
+	it([[The order should be different between each sampling]],
+	function()
 		for i = 1,3*fullLoop do
 			local s = sampler()
 			local label = df:get_column('label')[s]
@@ -179,66 +231,44 @@ describe("Label Permutation Sampler #permutation #label", function()
 	end)
 end)
 
-describe("Permutation Sampler With Label #permutation", function()
-	local df = dataLoader():where('label', 'B')
-	it("Check order and reset", function()
-		local sampler,resetSampler = df:get_sampler('permutation')
-		local seen = { }
-		local prev
-		for i = 1,27 do
-			local s,label = sampler()
-			table.insert(seen, s)
-			if i % 9 == 0 then
-				local idx = sampler()
-				assert.are.same(idx, nil)
-				resetSampler()
-				if prev ~= nil then
 
-					assert.are.same(#seen, #prev, 'need to see the same amount sampled each loop')
-					assert.is_true(TestNoDupes(seen) == true, 'should not see any dupes')
-					assert.are_not.same(seen, prev, 'the lists must have different orders')
-
-					local sortedSeen = clone(seen)
-					table.sort(sortedSeen)
-					local sortedPrev = clone(prev)
-					table.sort(sortedPrev)
-					assert.are.same(sortedSeen, sortedPrev, 'the lists must have the same sorted orders')
-				end
-				prev = seen
-				seen = { }
-			end
-		end
-	end)
-end)
-
-describe("Label Uniform Sampler #uniform", function()
-	it("Test ratios", function()
+describe("Sampler from a #label_uniform distribution", function()
+	it("The ratios between the labels should be equally distributed", function()
 		local df = dataLoader()
-		local sampler = df:get_sampler('label-uniform', Df_Dict({column_name = 'label'}))
+		df:create_subsets(Df_Dict({core = 1}),
+		                  Df_Dict({core = 'label-uniform'}),
+		                  "label")
+		local sampler = df["/core"].sampler
 		local hist = {}
-		for i = 1,1e6 do
+		local no_samplers = 1e4
+		for i = 1,no_samplers do
 			local s = sampler()
 			local label = df:get_column('label')[s]
 			hist[label] = (hist[label] or 0) + 1
 		end
-		local ratioA = math.abs((3 / (1e6/hist.A)) - 1)
+		local ratioA = math.abs((3 / (no_samplers/hist.A)) - 1)
 		assert.is_true(ratioA < .1, 'ratios of labels A must be 1/3')
-		local ratioB = math.abs((3 / (1e6/hist.A)) - 1)
+		local ratioB = math.abs((3 / (no_samplers/hist.A)) - 1)
 		assert.is_true(ratioB < .1, 'ratios of labels B must be 1/3')
 	end)
 end)
 
-describe("Uniform Sampler #uniform", function()
-	it("Test ratios", function()
+describe("Sampler from a #uniform distribution", function()
+	it("The ratios should be evenly spread out", function()
 		local df = dataLoader(3, true)
-		local sampler = df:get_sampler('uniform')
+		df:create_subsets(Df_Dict({core = 1}),
+		                  Df_Dict({core = 'uniform'}))
+		local sampler = df["/core"].sampler
 		local hist = {}
-		for i = 1,1e6 do
-			local s,label = sampler()
+		local no_samplers = 1e4
+		for i = 1,no_samplers do
+			local s = sampler()
 			hist[tonumber(s)] = (hist[tonumber(s)] or 0) + 1
 		end
-		hist = torch.Tensor(hist):div(1e6/df:size(1)):add(-1):abs()
+		hist = torch.Tensor(hist):div(no_samplers/df:size(1)):add(-1):abs()
 		local err = hist:max()
-		assert.is_true(err < .1, 'ratios of samples must be uniform')
+		assert.is_true(err < .2,
+		               ('ratios of samples must be uniform %.2f is bigger than the allowed .2'):
+									 format(err))
 	end)
 end)
