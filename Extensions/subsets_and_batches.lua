@@ -275,7 +275,9 @@ _Return value_: self
 		else
 			-- A little hacky but it should speed up and cheking tensor data makes no sense
 			local labels = Df_Array()
-			subset_permutations:apply(function(key) table.insert(labels.data, label_column[key]) end)
+			subset_permutations:apply(function(key)
+				labels.data[#labels.data + 1] = label_column[key]
+			end)
 
 			self.subsets.sub_objs[name] =
 				Df_Subset{
