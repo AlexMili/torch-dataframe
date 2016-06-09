@@ -228,10 +228,16 @@ _Return value_: self
 	       self.subsets.samplers ~= nil,
 	       "You haven't initiated your subsets correctly. Please call create_subsets() before the reset_subsets()")
 
-	local offset = 0
-	local i = 0
 	local n_subsets = table.exact_length(self.subsets.subset_splits)
 	local permuations = torch.randperm(self:size(1))
+	if (n_subsets == 1) then
+		-- If only one subset then it's a special case and for some of the tests it's
+		-- beneficial if the sampling is done in a linear order
+		permuations = torch.linspace(1, self:size(1), self:size(1))
+	end
+
+	local offset = 0
+	local i = 0
 	local subset_permutations
 
 	local label_column = self.subsets.label_column
