@@ -11,7 +11,13 @@ for f in *_spec.lua; do
     echo "";
     echo "********************************************";
     echo "Running specs in $f";
-    busted $f;
+
+    if [ "$1" == "--coverage" ]; then
+        busted --coverage $f;
+    else
+        busted $f;
+    fi
+    
     fail=$?
     var=$(($var+$fail))
     count=$(($count+1))
@@ -26,7 +32,7 @@ echo ""
 echo -e "\e[93m==============================================\e[0m"
 if [ $var -gt 0 ]
 then
-	echo -e "Number of scripts failed: \e[31m$var\e[0m (total scripts: $count)"
+    echo -e "Number of scripts failed: \e[31m$var\e[0m (total scripts: $count)"
     echo "Script(s) that failed:"
     for i in "${failed_scripts[@]}"; do echo " -!- $i"; done
 else
