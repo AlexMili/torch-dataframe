@@ -151,4 +151,25 @@ table.maxn = table.maxn or function(t) local maxn=0 for i in pairs(t) do maxn=ty
 table._dump = function(tbl)
 	print(("\n-[ Table dump ]-\n%s"):format(table.collapse_to_string(tbl)))
 end
+
+if (itorch ~= nil) then
+	-- The itorch has a strange handling of tables that generate huge outputs for
+	-- large dataframe objects. This may hang the notebook as it tries to print
+	-- thousands of entries. This snippet overloads if we seem to be in an itorch environement
+	print_itorch = print
+	print_df = function(...)
+	   for i = 1,select('#',...) do
+	      local obj = select(i,...)
+	      if torch.isTypeOf(obj, Dataframe) then
+	            print_itorch(tostring(obj))
+				else
+	         print_itorch(obj)
+	      end
+	   end
+	   if select('#',...) == 0 then
+	      print_itorch()
+	   end
+	end
+	print = print_df
+end
 -- END UTILS
