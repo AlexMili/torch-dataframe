@@ -158,17 +158,17 @@ if (itorch ~= nil) then
 	-- thousands of entries. This snippet overloads if we seem to be in an itorch environement
 	print_itorch = print
 	print_df = function(...)
-	   for i = 1,select('#',...) do
-	      local obj = select(i,...)
-	      if torch.isTypeOf(obj, Dataframe) then
-	            print_itorch(tostring(obj))
-				else
-	         print_itorch(obj)
-	      end
-	   end
-	   if select('#',...) == 0 then
-	      print_itorch()
-	   end
+		for i = 1,select('#',...) do
+			local obj = select(i,...)
+			if torch.isTypeOf(obj, Dataframe) then
+				print_itorch(tostring(obj))
+			else
+				print_itorch(obj)
+			end
+		end
+		if select('#',...) == 0 then
+			print_itorch()
+		end
 	end
 	print = print_df
 end
