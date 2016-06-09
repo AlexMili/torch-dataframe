@@ -122,15 +122,11 @@ Batchframe.to_tensor  = argcheck{
 	{name='load_label_fn', type='function',
  	 doc='The columns that are to be the label.'},
 	call = function(self, data_columns, load_label_fn)
-	if (data_columns) then
-		data_columns = data_columns.data
-		for _,column_name in ipairs(data_columns) do
-			assert(self:has_column(column_name),
-			       ("Could not find column '%s' in '%s'"):
-			        format(tostring(column_name), table.collapse_to_string(self.columns)))
-		end
-	else
-		data_columns = self:get_numerical_colnames()
+	data_columns = data_columns.data
+	for _,column_name in ipairs(data_columns) do
+		assert(self:has_column(column_name),
+		       ("Could not find column '%s' in '%s'"):
+		        format(tostring(column_name), table.collapse_to_string(self.columns)))
 	end
 
 	local tensor_data = Dataframe.to_tensor(self, Df_Array(data_columns))
@@ -146,7 +142,7 @@ Batchframe.to_tensor  = argcheck{
 		end
 	end
 
-	return tensor_label, tensor_data
+	return tensor_data, tensor_label
 end}
 
 Batchframe.to_tensor  = argcheck{
