@@ -110,6 +110,11 @@ You can export selected columns using the columns argument:
 		end
 	end
 
+	if (#tensor_col_names == 1) then
+		-- Reshape to tabular if this is only a single column
+		tensor_data	= tensor_data:reshape(tensor_data:size(1), 1)
+	end
+
 	return tensor_data, tensor_col_names
 end}
 
