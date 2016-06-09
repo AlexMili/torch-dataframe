@@ -145,9 +145,7 @@ The default_value argument will fill the new column. If omitted will be 0/0
 	{name="default_value", type="number|string|boolean", doc="The default_value"},
 	overload=Dataframe.add_column,
 	call=function(self, column_name, default_value)
-	self:add_column(column_name, -1, default_value)
-
-	return self
+	return self:add_column(column_name, -1, default_value)
 end}
 
 Dataframe.add_column = argcheck{
@@ -169,7 +167,8 @@ specifying the position you also must provide the default_value.
 	for i=1,self.n_rows do
 		table.insert(default_values, default_value)
 	end
-	self:add_column(column_name, pos, Df_Array(default_values))
+
+	return self:add_column(column_name, pos, Df_Array(default_values))
 end}
 
 Dataframe.add_column = argcheck{
@@ -207,13 +206,19 @@ default_value
 		self.dataset[column_name][i] = val
 	end
 
+	table.insert(self.columns, column_name)
+
 	-- Append column order
 	if (pos > 0 and pos <= self.n_rows) then
 		table.insert(self.column_order, pos, column_name)
 	else
 		table.insert(self.column_order, column_name)
 	end
+
+	self:_infer_schema()
 	self:_refresh_metadata()
+
+	return self
 end}
 
 Dataframe.cbind =  argcheck{
