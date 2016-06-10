@@ -24,7 +24,10 @@ _Return value_: boolean
 	{name="self", type="Dataframe"},
 	{name="column_name", type="string", doc="The column name to check"},
 	call=function(self, column_name)
-	assert(self:has_column(column_name), "Could not find column: " .. tostring(column_name))
+	assert(self:has_column(column_name),
+		("Could not find column '%s' in columns: %s"):
+		format(column_name, table.get_val_string(self.column_order)))
+	
 	return self.schema[column_name] == "number"
 end}
 
