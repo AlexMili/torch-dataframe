@@ -92,6 +92,17 @@ table.get_key_string = function(tbl)
 	return ret
 end
 
+table.get_val_string = function(tbl)
+	local ret = ""
+	for _,val in pairs(tbl) do
+		if (ret ~= "") then
+			ret = ret .. ", "
+		end
+		ret = ret .. ("'%s'"):format(val)
+	end
+	return ret
+end
+
 table.collapse_to_string = function(tbl, indent, start)
 	assert(type(tbl) == "table", "The object isn't of type table: " .. type(tbl))
 

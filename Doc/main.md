@@ -12,8 +12,7 @@ Creates and initializes a Dataframe class. Envoked through `local my_dataframe =
 })
 ```
 
-_Return value_: Dataframe
-Read in an csv-file
+Read in an csv-filef
 
 ```
 ({
@@ -22,7 +21,6 @@ Read in an csv-file
 })
 ```
 
-_Return value_: Dataframe
 Directly input a table
 
 ```
@@ -33,7 +31,6 @@ Directly input a table
 })
 ```
 
-_Return value_: Dataframe
 <a name="Dataframe.shape">
 ### Dataframe.shape(self)
 
