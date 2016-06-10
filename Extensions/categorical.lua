@@ -280,7 +280,8 @@ _Return value_: table with values
 				end
 			end
 			assert(val ~= nil,
-			       v .. " isn't present in the keyset")
+			       v .. " isn't present in the keyset among " ..
+			table.get_key_string(self.categorical[column_name]))
 		end
 		table.insert(ret, val)
 	end
