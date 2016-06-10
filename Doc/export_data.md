@@ -4,6 +4,10 @@
 <a name="Dataframe.to_csv">
 ### Dataframe.to_csv(self, path[, separator][, verbose])
 
+Saves a Dataframe into a CSV using csvigo as backend
+
+_Return value_: self (Dataframe)
+
 ```
 ({
    self      = Dataframe  -- 
@@ -13,11 +17,10 @@
 })
 ```
 
-Saves a Dataframe into a CSV using csvigo as backend
-
-_Return value_: void
 <a name="Dataframe.to_tensor">
 ### Dataframe.to_tensor(self)
+
+Convert the numeric section or specified columns of the dataset to a tensor
 
 ```
 ({
@@ -25,9 +28,8 @@ _Return value_: void
 })
 ```
 
-Convert the numeric section or specified columns of the dataset to a tensor
-
 _Return value_: (1) torch.tensor with self.n_rows rows and #columns, (2) exported column names
+
 
 You can export selected columns using the columns argument:
 

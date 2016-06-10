@@ -1,28 +1,8 @@
 require "lfs"
 local argdoc = require 'argcheck.doc'
+local paths = require 'paths'
 
-local file_exists = function(name)
-   local f=io.open(name,"r")
-   if f~=nil then io.close(f) return true else return false end
-end
-
--- If we're in development mode the default path should be the current
-local dataframe_path = "./?.lua"
-local search_4_file = "Extensions/load_batch"
-if (not file_exists(string.gsub(dataframe_path, "?", search_4_file))) then
-  -- split all paths according to ;
-  for path in string.gmatch(package.path, "[^;]+;") do
-    -- remove trailing ;
-    path = string.sub(path, 1, string.len(path) - 1)
-    if (file_exists(string.gsub(path, "?", "Dataframe/" .. search_4_file))) then
-      dataframe_path = string.gsub(path, "?", "Dataframe/?")
-      break;
-    end
-  end
-  if (dataframe_path == nil) then
-    error("Can't find package files in search path: " .. tostring(package.path))
-  end
-end
+local dataframe_path = paths.thisfile():gsub("doc.lua$", "?.lua")
 
 -- Make utils available to all
 local utils_file = string.gsub(dataframe_path,"?", "utils")
@@ -33,6 +13,9 @@ local argcheck_file = string.gsub(dataframe_path,"?", "argcheck")
 assert(loadfile(argcheck_file))()
 
 -- README file
+if (not paths.dirp("Doc")) then
+  paths.mkdir("Doc")
+end
 local readmefile = io.open("Doc/README.md", "w")
 readmefile:write("# Documentation\n\n")
 readmefile:write([[
@@ -93,7 +76,7 @@ for sub_file,_ in lfs.dir (sub_clss_path) do
     local doc_file = io.open("Doc/"..doc_filename, "w")
     argdoc.record()
 
-    assert(loadfile(file))(Dataframe)
+    assert(loadfile(file))(Dataframe, sub_clss_path)
 
     content = argdoc.stop()
     title = content:split("\n")[1]

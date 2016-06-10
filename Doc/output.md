@@ -15,7 +15,7 @@
 
 Prints the table into itorch.html if in itorch and html == true, otherwise prints a table string
 
-_Return value_: void
+_Return value_: self
 <a name="Dataframe.show">
 ### Dataframe.show(self[, digits])
 
@@ -28,7 +28,7 @@ _Return value_: void
 
 Prints the top  and bottom section of the table for better overview. Uses itorch if available
 
-_Return value_: void
+_Return value_: self
 <a name="Dataframe.tostring">
 ### Dataframe.tostring(self)
 
