@@ -152,6 +152,32 @@ table._dump = function(tbl)
 	print(("\n-[ Table dump ]-\n%s"):format(table.collapse_to_string(tbl)))
 end
 
+-- A benchmark function that can be used for checking performance
+df_bnchmrk = (function()
+	local start
+	local i =  0
+	return function(desc)
+		if (not start) then
+			start = os.clock()
+			print("Start benchmark")
+		else
+			i = i + 1
+			local new_time = os.clock()
+			local digits = math.floor(math.log10(new_time - start))
+			local out_str = "Passed time %.1f at point no %d"
+			if (digits <= 0) then
+				out_str = ("Passed time %%.%df at point no %d"):
+					format(1-digits, i)
+			end
+			out_str = out_str:format(new_time - start, i)
+			if (desc) then
+				out_str = out_str .. (" (- %s -)"):format(desc)
+			end
+			print(out_str)
+		end
+	end
+end)()
+
 if (itorch ~= nil) then
 	-- The itorch has a strange handling of tables that generate huge outputs for
 	-- large dataframe objects. This may hang the notebook as it tries to print
