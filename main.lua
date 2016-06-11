@@ -75,7 +75,7 @@ Dataframe._clean = argcheck{
 	self.n_rows = 0
 	self.categorical = {}
 	self.schema = {}
-	self.__version = "1.1.dev"
+	self:set_version()
 	return self
 end}
 
@@ -218,6 +218,74 @@ _Return value_: string
 	{name="self", type="Dataframe"},
 	call=function(self)
 	return torch.version(self)
+end}
+
+Dataframe.set_version = argcheck{
+	doc =  [[
+<a name="Dataframe.set_version">
+### Dataframe.set_version(@ARGP)
+
+Sets the data-frame version
+
+@ARGT
+
+_Return value_: self
+]],
+	{name="self", type="Dataframe"},
+	call=function(self)
+	self.__version = "1.2.dev"
+	return self
+end}
+
+Dataframe.upgrade_frame = argcheck{doc =  [[
+<a name="Dataframe.upgrade_frame">
+### Dataframe.upgrade_frame(@ARGP)
+
+Upgrades an dataframe using the old batch loading framework to the new framework
+by instantiating the subsets argument, copying the indexes and setting the
+samplers to either:
+- linear for test/validate or shuffle = false
+- permutation if shuffle = true and none of above names
+
+@ARGT
+
+_Return value_: void
+]],
+	{name = "self", type = "Dataframe"},
+	call = function(self)
+	local current_version = self:version()
+	self:set_version()
+	if (current_version == self.__version) then
+		print(("No need to update dataframe as it already is version '%s'"):format(current_version))
+		return
+	end
+
+	assert(self.subsets == nil, "The dataframe seems to be upgraded as it already has a subset property")
+
+	if (self.batch == nil) then
+		print("Nothing to update")
+		return
+	end
+
+	-- Initiate the subsets
+	self:create_subsets(Df_Dict(self.batch.data_types))
+	self.batch.data_types = nil
+
+	-- Copy the old indexes into the subsets created
+	for sub_name,sub_keys in pairs(self.batch.datasets) do
+		-- Note, can't use drop/add since this breaks with __init call
+		self.subsets.sub_objs[sub_name].dataset["indexes"] = sub_keys
+		self.subsets.sub_objs[sub_name].nrows = #sub_keys
+
+		if (self.batch.shuffle and
+				(sub_name ~= "test" and sub_name ~= "validate")) then
+			self.subsets.sub_objs[sub_name]:set_sampler("permutation")
+		else
+			self.subsets.sub_objs[sub_name]:set_sampler("linear")
+		end
+
+	end
+	self.batch = nil
 end}
 
 return Dataframe
