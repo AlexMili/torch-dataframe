@@ -27,7 +27,7 @@ _Return value_: boolean
 	assert(self:has_column(column_name),
 		("Could not find column '%s' in columns: %s"):
 		format(column_name, table.get_val_string(self.column_order)))
-	
+
 	return self.schema[column_name] == "number"
 end}
 
@@ -53,6 +53,28 @@ _Return value_: boolean
 	return false
 end}
 
+Dataframe.assert_column = argcheck{
+	doc = [[
+<a name="Dataframe.assert_column">
+### Dataframe.assert_column(@ARGP)
+
+Asserts that column is within the dataset
+
+@ARGT
+
+
+_Return value_: boolean
+]],
+	{name="self", type="Dataframe"},
+	{name="column_name", type="string", doc="The column to check"},
+	call=function(self, column_name)
+
+	assert(self:has_column(column_name),
+	      ("The column '%s' doesn't exist among: %s"):
+	       format(column_name, table.get_val_string(self.column_order)))
+
+end}
+
 Dataframe.drop = argcheck{
 	doc = [[
 <a name="Dataframe.drop">
@@ -67,7 +89,8 @@ _Return value_: self
 	{name="self", type="Dataframe"},
 	{name="column_name", type="string", doc="The column to drop"},
 	call=function(self, column_name)
-	assert(self:has_column(column_name), "The column " .. column_name .. " doesn't exist")
+	self:assert_column(column_name)
+
 	self.dataset[column_name] = nil
 	temp_dataset = {}
 	-- Slightly crude method but can't get self.dataset == {} to works
