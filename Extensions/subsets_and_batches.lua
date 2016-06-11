@@ -242,7 +242,7 @@ _Return value_: self
 
 	local label_column = self.subsets.label_column
 	if (label_column) then
-		assert(self:has_column(label_column), "Couldn't find column: " .. tostring(label_column))
+		self:assert_has_column(label_column)
 		label_column = self:get_column(label_column)
 	end
 

@@ -78,8 +78,7 @@ You can export selected columns using the columns argument:
 	-- Check data integrity
 	numeric_dataset = {}
 	for _,k in pairs(columns) do
-		assert(self:has_column(k), "Could not find column: '" .. tostring(k) .. "'"..
-		                           " in " .. table.collapse_to_string(self.columns))
+		self:assert_has_column(k)
 		assert(self:is_numerical(k), "Column " .. tostring(k) .. " is not numerical")
 		numeric_dataset[k] =  self:get_column{column_name = k,
 		                                      as_tensor = true}
