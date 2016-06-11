@@ -190,9 +190,8 @@ _Return value_: Dataframe
 	 doc='The value to find'},
 	call = function(self, column_name, item_to_find)
 
-	return self:where(function(row)
-		return row[column_name] == item_to_find
-	end)
+	local matches = self:which(column_name, item_to_find)
+	return self:_create_subset(Df_Array(matches))
 end}
 
 Dataframe.where = argcheck{
@@ -250,11 +249,12 @@ _Return value_: table
 	{name="self", type="Dataframe"},
 	{name="column_name", type="string",
 	 doc="The column with the value"},
-	{name="value", type="number|string|boolean|nan"},
+	{name="value", type="number|boolean|nan"},
 	call=function(self, column_name, value)
 
 	local values = self:get_column(column_name)
 	local matches = {}
+	-- This is needed as 0/0 ~= 0/0
 	if (isnan(value)) then
 		for i = 1, self.n_rows do
 			if isnan(values[i]) then
@@ -263,8 +263,44 @@ _Return value_: table
 		end
 	else
 		for i = 1, self.n_rows do
-			local row = self:get_row(i)
 			if values[i] == value then
+				table.insert(matches, i)
+			end
+		end
+	end
+
+	return matches
+end}
+
+Dataframe.which = argcheck{
+	doc =  [[
+If that column is a string you also have the option of supplying a regular expression
+
+@ARGT
+
+_Return value_: table
+]],
+	overload=Dataframe.which,
+	{name="self", type="Dataframe"},
+	{name="column_name", type="string",
+	 doc="The column with the value"},
+	{name="value", type="string"},
+	{name="regex", type="boolean",
+	 doc="If the string is aregular expression",
+	 default = false},
+	call=function(self, column_name, value, regex)
+
+	local values = self:get_column(column_name)
+	local matches = {}
+	if (not regex) then
+		for i = 1, self.n_rows do
+			if values[i] == value then
+				table.insert(matches, i)
+			end
+		end
+	else
+		for i = 1, self.n_rows do
+			if values[i]:matches(value) then
 				table.insert(matches, i)
 			end
 		end
@@ -335,7 +371,7 @@ _Return value_: void
 	 {name='new_value', type='Df_Dict',
  	 doc='Value to replace with'},
 	call = function(self, item_to_find, column_name, new_value)
-	assert(self:has_column(column_name), "Could not find column: " .. tostring(column_name))
+	self:assert_has_column(column_name)
 	new_value = new_value.data
 
 	temp_converted_cat_cols = {}
@@ -413,7 +449,7 @@ _Return value_: Dataframe
 	assert(not self:has_column(id_name), "The column name for the id's already exists")
 	assert(not self:has_column(value_name), "The column name for the values already exists")
 	for _,column_name in ipairs(columns) do
-		assert(self:has_column(column_name), "The column name doesn't exist")
+		self:assert_has_column(column_name)
 	end
 
 	local ret = self:copy()
