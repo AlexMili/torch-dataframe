@@ -29,7 +29,8 @@ _Return value_: Dataframe
 		stop = self.n_rows
 	end
 
-	assert(start <= stop, "Stop argument can't be less than the start argument")
+	assert(start <= stop, ("Stop argument '%d' is less than the start argument '%d'"):
+		format(start, stop))
 	assert(start > 0, "Start position can't be less than 1")
 	assert(stop <= self.n_rows, "Stop position can't be more than available rows")
 

@@ -29,9 +29,16 @@ _Return value_: self
 	 default=false},
 	call=function(self, html, max_rows, digits)
 	assert(max_rows > 0, "Can't print less than 1 row")
-	max_rows = math.min(self.n_rows, max_rows)
 
-	data = self:sub(1, max_rows)
+	-- Subset only if we have more rows than we can show
+	if (max_rows < self.n_rows) then
+		max_rows = math.min(self.n_rows, max_rows)
+
+		data = self:sub(1, max_rows)
+	else
+		data = self
+	end
+
 	if (html) then
 		html_string = data:_to_html{digits = digits}
 		itorch.html(html_string)
