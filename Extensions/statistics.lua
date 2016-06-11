@@ -31,8 +31,8 @@ _Return value_:  table with unique values or if as_keys == true then the unique
 	 help='return table with raw data without categorical transformation',
 	 default=false},
 	call=function(self, column_name, as_keys, as_raw)
-	assert(self:has_column(column_name),
-	       "Invalid column name: " .. tostring(column_name))
+	self:assert_has_column(column_name)
+
 	local unique = {}
 	local unique_values = {}
 	local count = 0
@@ -87,8 +87,7 @@ _Return value_: Dataframe or nested table
  {name='as_dataframe', type='boolean', default=true,
 	doc="Return a dataframe"},
 	call=function(self, column_name, normalize, dropna, as_dataframe)
-	assert(self:has_column(column_name),
-				 "Invalid column name: " .. tostring(column_name))
+	self:assert_has_column(column_name)
 
 	count = {}
 	-- Experiencing odd behavior with large data > 254459 rows
@@ -231,7 +230,7 @@ _Return value_: Table, max value
 	{name="self", type="Dataframe"},
 	{name='column_name', type='string', doc='column to inspect'},
 	call=function(self, column_name)
-	assert(self:has_column(column_name), "Could not find column: " .. tostring(k))
+	self:assert_has_column(column_name)
 	assert(self:is_numerical(column_name) and not self:is_categorical(column_name),
 	       "Column has to be numerical")
 
@@ -266,7 +265,7 @@ _Return value_: Table, lowest value
 	{name="self", type="Dataframe"},
 	{name='column_name', type='string', doc='column to inspect'},
 	call=function(self, column_name)
-	assert(self:has_column(column_name), "Could not find column: " .. tostring(k))
+	self:assert_has_column(column_name)
 	assert(self:is_numerical(column_name) and not self:is_categorical(column_name),
 	       "Column has to be numerical")
 
@@ -430,7 +429,7 @@ _Return value_: number
 	{name="self", type="Dataframe"},
 	{name='column_name', type='string', doc='The name of the column'},
 	call=function(self, column_name)
-	assert(self:has_column(column_name), "Could not find column: " .. tostring(k))
+	self:assert_has_column(column_name)
 
 	local max = 0/0
 	if (self:is_categorical(column_name)) then
@@ -530,7 +529,7 @@ _Return value_: number
 	{name="self", type="Dataframe"},
 	{name='column_name', type='string', doc='The name of the column'},
 	call=function(self, column_name)
-	assert(self:has_column(column_name), "Could not find column: " .. tostring(column_name))
+	self:assert_has_column(column_name)
 
 	local min = 0/0
 	if (self:is_categorical(column_name)) then

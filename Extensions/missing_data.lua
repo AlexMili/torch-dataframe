@@ -88,7 +88,7 @@ _Return value_: self
 	{name="column_name", type="string", doc="The column to fill"},
 	{name="default_value", type="number|string|boolean", doc="The default missing value", default=0},
 	call=function(self, column_name, default_value)
-	assert(self:has_column(column_name), "Could not find column: " .. tostring(column_name))
+	self:assert_has_column(column_name)
 
 	if (self:is_categorical(column_name) and
 	    self.categorical[column_name][default_value] == nil) then

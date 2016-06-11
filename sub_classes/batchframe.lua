@@ -49,16 +49,12 @@ _Return value_: data (tensor), label (tensor), column names (lua table)
 
 	data_columns = data_columns.data
 	for _,column_name in ipairs(data_columns) do
-		assert(self:has_column(column_name),
-					 ("Could not find column '%s' in '%s'"):
-						format(tostring(column_name), table.collapse_to_string(self.columns)))
+		self:assert_has_column(column_name)
 	end
 
 	label_columns = label_columns.data
 	for _,column_name in ipairs(label_columns) do
-		assert(self:has_column(column_name),
-					 ("Could not find column '%s' in '%s'"):
-						format(tostring(column_name), table.collapse_to_string(self.columns)))
+		self:assert_has_column(column_name)
 	end
 
 	tensor_label, tensor_col_names = Dataframe.to_tensor(self, Df_Array(label_columns))

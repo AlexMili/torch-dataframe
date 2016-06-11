@@ -24,9 +24,7 @@ _Return value_: boolean
 	{name="self", type="Dataframe"},
 	{name="column_name", type="string", doc="The column name to check"},
 	call=function(self, column_name)
-	assert(self:has_column(column_name),
-		("Could not find column '%s' in columns: %s"):
-		format(column_name, table.get_val_string(self.column_order)))
+	self:assert_has_column(column_name)
 
 	return self.schema[column_name] == "number"
 end}
@@ -53,10 +51,10 @@ _Return value_: boolean
 	return false
 end}
 
-Dataframe.assert_column = argcheck{
+Dataframe.assert_has_column = argcheck{
 	doc = [[
-<a name="Dataframe.assert_column">
-### Dataframe.assert_column(@ARGP)
+<a name="Dataframe.assert_has_column">
+### Dataframe.assert_has_column(@ARGP)
 
 Asserts that column is within the dataset
 
@@ -69,10 +67,14 @@ _Return value_: boolean
 	{name="column_name", type="string", doc="The column to check"},
 	call=function(self, column_name)
 
-	assert(self:has_column(column_name),
-	      ("The column '%s' doesn't exist among: %s"):
-	       format(column_name, table.get_val_string(self.column_order)))
-
+	local has_col = self:has_column(column_name)
+	if (not has_col) then
+		-- The get_val_string is a little expensive and therefore better
+		--  only do when the assertion actually fails
+		assert(false,
+		      ("The column '%s' doesn't exist among: %s"):
+		       format(column_name, table.get_val_string(self.column_order)))
+	end
 end}
 
 Dataframe.drop = argcheck{
@@ -89,7 +91,7 @@ _Return value_: self
 	{name="self", type="Dataframe"},
 	{name="column_name", type="string", doc="The column to drop"},
 	call=function(self, column_name)
-	self:assert_column(column_name)
+	self:assert_has_column(column_name)
 
 	self.dataset[column_name] = nil
 	temp_dataset = {}
@@ -303,12 +305,12 @@ _Return value_: table or tensor
 	{name='as_raw', type='boolean', doc='Convert categorical values to original', default=false},
 	{name='as_tensor', type='boolean', doc='Convert to tensor', default=false},
 	call=function(self, column_name, as_raw, as_tensor)
-	assert(self:has_column(column_name), "Could not find column: " .. tostring(column_name))
+	self:assert_has_column(column_name)
 	assert(not as_tensor or
 	       self:is_numerical(column_name),
-				 "Converting to tensor requires a numerical/categorical variable." ..
-				 " The column " .. tostring(column_name) ..
-				 " is of type " .. tostring(self.schema[column_name]))
+	       "Converting to tensor requires a numerical/categorical variable." ..
+	       " The column " .. tostring(column_name) ..
+	       " is of type " .. tostring(self.schema[column_name]))
 
 	column_data = self.dataset[column_name]
 
@@ -356,7 +358,7 @@ Dataframe.reset_column = argcheck{
 	{name='column_name', type='string', doc='The column requested'},
 	{name='new_value', type='number|string|boolean|nan', doc='New value to set', default=0/0},
 	call=function(self, column_name, new_value)
-	assert(self:has_column(column_name), "Could not find column: " .. tostring(k))
+	self:assert_has_column(column_name)
 
 	for i = 1,self.n_rows do
 		self.dataset[column_name][i] = new_value
@@ -379,7 +381,7 @@ _Return value_: self
 	{name='old_column_name', type='string', doc='The old column name'},
 	{name='new_column_name', type='string', doc='The new column name'},
 	call=function(self, old_column_name, new_column_name)
-	assert(self:has_column(old_column_name), "Could not find column: " .. tostring(old_column_name))
+	self:assert_has_column(old_column_name)
 	assert(not self:has_column(new_column_name), "There is already a column named: " .. tostring(new_column_name))
 	assert(type(new_column_name) == "string" or
 	       type(new_column_name) == "number",
@@ -453,7 +455,7 @@ _Return value_: integer
 	{name="as_tensor", type="boolean", doc="If return index position in tensor", default=false},
 	call=function(self, column_name, as_tensor)
 
-	assert(self:has_column(column_name), "Could not find column: " .. tostring(column_name))
+	self:assert_has_column(column_name)
 
 	local number_count = 0
 	for i = 1,#self.column_order do
