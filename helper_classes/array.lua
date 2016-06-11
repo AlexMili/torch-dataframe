@@ -31,9 +31,7 @@ function da:__init(...)
 	else
 		for i=1,#arg do
 			assert(type(arg[i]) ~= "table",
-			       [[The Dataframe array cannot contain tables - you have provide
-	the following input:
-	]] .. table.collapse_to_string(arg))
+			       ("The Dataframe array cannot contain tables - see position %d in your input"):format(i))
 			array_data[i] = arg[i]
 		end
 	end
