@@ -107,9 +107,9 @@ Dataframe.tostring = argcheck{
 <a name="Dataframe.tostring">
 ### Dataframe.tostring(@ARGP)
 
-@ARGT
-
 Converts table to a string representation that follows standard markdown syntax
+
+@ARGT
 
 _Return value_: string
 ]],

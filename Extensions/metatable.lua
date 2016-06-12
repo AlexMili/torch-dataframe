@@ -122,9 +122,9 @@ Dataframe.__tostring__ = argcheck{
 	<a name="Dataframe.__tostring__">
 ### Dataframe.__tostring__(@ARGP)
 
-@ARGT
+A wrapper for `tostring()`
 
-A convenience wrapper for __tostring
+@ARGT
 
 _Return value_: string
 ]],
