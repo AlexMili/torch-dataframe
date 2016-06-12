@@ -31,9 +31,22 @@ describe("Row functions", function()
 		local a = Dataframe("./data/simple_short.csv")
 
 		b = Dataframe()
-		b:load_table{data = Df_Dict({['Col A']={15},['Col B']={25},['Col C']={35}})}
+		b:load_table{data = Df_Dict({['Col A']={15},['Col B']={25},['Col C']={35}}),
+		             column_order = Df_Array('Col B', 'Col C', 'Col A')}
 		a:append(b)
 		assert.are.same(a:shape(), {rows=5, cols=3})-- "The simple_short.csv is 4x3 after insert should be 5x3"
+	end)
+
+	it("Appends dataframe to empty dataset should copy the original including specs",
+	function()
+		local a = Dataframe()
+
+		b = Dataframe()
+		b:load_table{data = Df_Dict({['Col A']={15},['Col B']={25},['Col C']={35}}),
+		             column_order = Df_Array('Col B', 'Col C', 'Col A')}
+		a:append(b)
+		assert.are.same(a:shape(), {rows=1, cols=3})-- "The simple_short.csv is 4x3 after insert should be 5x3"
+		assert.are.same(a.column_order, b.column_order)
 	end)
 
 	it("Check rbind new columns together with new data",function()
