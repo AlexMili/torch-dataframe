@@ -250,7 +250,7 @@ default_value
 	{name="default_values", type="Df_Array", doc="The default values"},
 	call=function(self, column_name, pos, default_values)
 	assert(isint(pos), "The pos should be an integer, you provided: " .. tostring(pos))
-	self:assert_has_column(column_name)
+	self:assert_has_not_column(column_name)
 	default_values = default_values.data
 
 	if (self.n_rows == 0) then
