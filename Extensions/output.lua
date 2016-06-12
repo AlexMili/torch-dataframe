@@ -45,8 +45,6 @@ _Return value_: self
 	else
 		print(data:tostring{digits = digits})
 	end
-
-	return self
 end}
 
 Dataframe.show = argcheck{
@@ -93,8 +91,6 @@ _Return value_: self
 			tail:output{digits = digits}
 		end
 	end
-
-	return self
 end}
 
 -- helper
