@@ -24,8 +24,7 @@ _Return value_: A table with the row content
 	{name="self", type="Dataframe"},
 	{name='index', type='number', doc='The row index to retrieve'},
 	call=function(self, index)
-	assert(isint(index), "The index should be an integer, you've provided " .. tostring(index))
-	assert(index > 0 and index <= self.n_rows, ("The index (%d) is outside the bounds 1-%d"):format(index, self.n_rows))
+	self:assert_is_index(index)
 
 	local row = {}
 	for _,key in pairs(self.columns) do
@@ -59,9 +58,8 @@ _Return value_: self
 		return self:append{rows = rows}
 	end
 
-	assert(isint(index), "The index should be an integer, you've provided " .. tostring(index))
-	assert(index > 0 and index <= self.n_rows, ("The index (%d) is outside the bounds 1-%d"):format(index, self.n_rows))
-
+	self:assert_is_index(index)
+	
 	rows, no_rows_2_insert =
 		self:_check_and_prep_row_argmnt{rows = rows,
 		                                add_new_columns = true,
@@ -268,8 +266,7 @@ _Return value_: self
 	{name="self", type="Dataframe"},
 	{name="index", type="number", doc="The row index to remove"},
 	call=function(self, index)
-	assert(isint(index), "The index should be an integer, you've provided " .. tostring(index))
-	assert(index > 0 and index <= self.n_rows, ("The index (%d) is outside the bounds 1-%d"):format(index, self.n_rows))
+	self:assert_is_index(index)
 
 	for i = 1,#self.columns do
 		table.remove(self.dataset[self.columns[i]],index)
