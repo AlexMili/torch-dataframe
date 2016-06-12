@@ -67,7 +67,7 @@ e.g. `{train = {distribution = Df_Dict({A = 2, B=10})}}`
 	{name="parent", type="Dataframe", doc="The parent Dataframe that will be stored by reference"},
 	call=function(self, indexes, sampler, labels, sampler_args, parent)
 	Dataframe.__init(self)
-	
+
 	self:
 		_clean():
 		set_idxs(indexes):
@@ -152,10 +152,8 @@ _Return value_: integer
 	{name="self", type="Df_Subset"},
 	{name="index", type="number", doc="The subset's index that you want the original index for"},
 	call=function(self, index)
-	assert(isint(index) and index > 0 and index <= self:size(1),
-	       ("The index must be an integer between 1 and %d , you've provided %s"):
-	       format(self:size(1), tostring(index)))
-
+	self:assert_is_index(index)
+	
 	return self:get_column('indexes')[index]
 end}
 

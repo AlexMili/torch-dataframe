@@ -198,7 +198,7 @@ _Return value_: (1) a sampler function (2) a reset sampler function (inactive)
 ]],
 	{name="self", type="Df_Subset"},
 	call=function(self)
-	assert(self:has_column('labels'),
+	self:assert_has_column('labels',
 	       "When using label-uniform you must set the labels")
 
 	local labels, label_idxs
@@ -230,7 +230,7 @@ _Return value_: (1) a sampler function (2) a reset sampler function (inactive)
 	{name="self", type="Df_Subset"},
 	{name='distribution', type='Df_Dict', doc='The distribution for the labels from which to sample'},
 	call=function(self, distribution)
-	assert(self:has_column('labels'),
+	self:assert_has_column('labels',
 	       "When using label-distribution you must set the labels")
 
 	distribution = distribution.data
@@ -290,7 +290,7 @@ _Return value_: (1) a sampler function (2) a reset sampler function (inactive)
 ]],
 	{name="self", type="Df_Subset"},
 	call=function(self)
-	assert(self:has_column('labels'),
+	self:assert_has_column('labels',
 	       "When using label-permutation you must set the labels")
 
 	local labels, label_idxs

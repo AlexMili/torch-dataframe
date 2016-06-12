@@ -57,10 +57,8 @@ _Return value_: Dataframe
 	{name='n_items', type='number', doc='Number of rows to retrieve', default=1},
 	call = function(self, n_items)
 
-	assert(isint(n_items), "The number must be an integer. You've provided " .. tostring(n_items))
-	assert(n_items > 0 and
-	       n_items < self.n_rows, "The number must be an integer between 0 and " ..
-				 self.n_rows .. " - you've provided " .. tostring(n_items))
+	self:assert_is_index(n_items)
+
 	local rperm = torch.randperm(self.n_rows)
 	local indexes = {}
 	for i = 1,n_items do
@@ -132,11 +130,7 @@ _Return value_: Dataframe or Batchframe
 
 	for i=1,#index_items do
 		local val = index_items[i]
-		assert(isint(val) and
-		       val > 0 and
-		       val <= self.n_rows,
-		       "There are values outside the allowed index range 1 to " .. self.n_rows ..
-		       ": " .. tostring(val))
+		self:assert_is_index(val)
 	end
 
 	-- TODO: for some reason the categorical causes errors in the loop, this strange copy fixes it
@@ -409,8 +403,7 @@ _Return value_: void
 	{name='new_values', type='Df_Dict',
  	 doc='Value to replace with'},
 	call = function(self, index, new_values)
-	assert(isint(index), "The index should be an integer, you've provided " .. tostring(index))
-	assert(index > 0 and index <= self.n_rows, ("The index (%d) is outside the bounds 1-%d"):format(index, self.n_rows))
+	self:assert_is_index(index)
 
 	new_values = new_values.data
 
@@ -447,8 +440,9 @@ _Return value_: Dataframe
 	 doc='The column name for where to store the values'},
 	call = function(self, columns, id_name, value_name)
 	columns = columns.data
-	assert(not self:has_column(id_name), "The column name for the id's already exists")
-	assert(not self:has_column(value_name), "The column name for the values already exists")
+	self:assert_has_not_column(id_name)
+	self:assert_has_not_column(value_name)
+	
 	for _,column_name in ipairs(columns) do
 		self:assert_has_column(column_name)
 	end

@@ -80,9 +80,7 @@ Batchframe.to_tensor  = argcheck{
 	if (label_columns) then
 		label_columns = label_columns.data
 		for _,column_name in ipairs(label_columns) do
-			assert(self:has_column(column_name),
-			       ("Could not find column '%s' in '%s'"):
-			        format(tostring(column_name), table.collapse_to_string(self.columns)))
+			self:assert_has_column(column_name)
 		end
 	else
 		label_columns = self:get_numerical_colnames()
@@ -120,9 +118,7 @@ Batchframe.to_tensor  = argcheck{
 	call = function(self, data_columns, load_label_fn)
 	data_columns = data_columns.data
 	for _,column_name in ipairs(data_columns) do
-		assert(self:has_column(column_name),
-		       ("Could not find column '%s' in '%s'"):
-		        format(tostring(column_name), table.collapse_to_string(self.columns)))
+		self:assert_has_column(column_name)
 	end
 
 	local tensor_data = Dataframe.to_tensor(self, Df_Array(data_columns))

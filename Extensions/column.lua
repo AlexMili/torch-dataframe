@@ -56,7 +56,7 @@ Dataframe.assert_has_column = argcheck{
 <a name="Dataframe.assert_has_column">
 ### Dataframe.assert_has_column(@ARGP)
 
-Asserts that column is within the dataset
+Asserts that column is in the dataset
 
 @ARGT
 
@@ -65,15 +65,51 @@ _Return value_: boolean
 ]],
 	{name="self", type="Dataframe"},
 	{name="column_name", type="string", doc="The column to check"},
-	call=function(self, column_name)
+	{name="comment", type="string", doc="Comments that are to be displayed with the error",
+	 default=""},
+	call=function(self, column_name, comment)
 
 	local has_col = self:has_column(column_name)
 	if (not has_col) then
 		-- The get_val_string is a little expensive and therefore better
 		--  only do when the assertion actually fails
-		assert(false,
-		      ("The column '%s' doesn't exist among: %s"):
-		       format(column_name, table.get_val_string(self.column_order)))
+		local err_msg = ("The column '%s' doesn't exist among: %s"):
+		 format(column_name, table.get_val_string(self.column_order))
+		if (comment ~= "") then
+			err_msg = err_msg .. ". " .. comment
+		end
+		assert(false, err_msg) -- Should probably use stop()
+	end
+end}
+
+Dataframe.assert_has_not_column = argcheck{
+	doc = [[
+<a name="Dataframe.assert_has_not_column">
+### Dataframe.assert_has_not_column(@ARGP)
+
+Asserts that column is not in the dataset
+
+@ARGT
+
+
+_Return value_: boolean
+]],
+	{name="self", type="Dataframe"},
+	{name="column_name", type="string", doc="The column to check"},
+	{name="comment", type="string", doc="Comments that are to be displayed with the error",
+	 default=""},
+	call=function(self, column_name, comment)
+
+	local has_col = self:has_column(column_name)
+	if (has_col) then
+		-- The get_val_string is a little expensive and therefore better
+		--  only do when the assertion actually fails
+		local err_msg = ("The column '%s' already exist among: %s"):
+		 format(column_name, table.get_val_string(self.column_order))
+		if (comment ~= "") then
+			err_msg = err_msg .. ". " .. comment
+		end
+		assert(false, err_msg) -- Should probably use stop()
 	end
 end}
 
@@ -214,7 +250,7 @@ default_value
 	{name="default_values", type="Df_Array", doc="The default values"},
 	call=function(self, column_name, pos, default_values)
 	assert(isint(pos), "The pos should be an integer, you provided: " .. tostring(pos))
-	assert(not self:has_column(column_name), "The column " .. column_name .. " already exists in the dataset")
+	self:assert_has_column(column_name)
 	default_values = default_values.data
 
 	if (self.n_rows == 0) then
@@ -262,9 +298,7 @@ _Return value_: self
 	call=function(self, data)
 	assert(self.n_rows == data.n_rows, ("The number of rows don't match %d ~= %d"):format(self.n_rows, data.n_rows))
 	for i=1,#data.column_order do
-		assert(not self:has_column(data.column_order[i]),
-		       "Column " .. data.column_order[i] .. " already present in the original dataset." ..
-		       " Note that the function is not a join that matches on columns")
+		self:assert_has_not_column(data.column_order[i])
 	end
 
 	for i=1,#data.column_order do
@@ -382,10 +416,10 @@ _Return value_: self
 	{name='new_column_name', type='string', doc='The new column name'},
 	call=function(self, old_column_name, new_column_name)
 	self:assert_has_column(old_column_name)
-	assert(not self:has_column(new_column_name), "There is already a column named: " .. tostring(new_column_name))
+	self:assert_has_not_column(new_column_name)
 	assert(type(new_column_name) == "string" or
 	       type(new_column_name) == "number",
-				 "The column name can only be a number or a string value, yours is: " .. type(new_column_name))
+	       "The column name can only be a number or a string value, yours is: " .. type(new_column_name))
 
 	temp_dataset = {}
 

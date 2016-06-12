@@ -288,4 +288,36 @@ _Return value_: void
 	self.batch = nil
 end}
 
+Dataframe.assert_is_index = argcheck{doc =  [[
+<a name="Dataframe.assert_is_index">
+### Dataframe.assert_is_index(@ARGP)
+
+Asserts that the number is a valid index.
+
+@ARGT
+
+_Return value_: void
+]],
+	{name = "self", type = "Dataframe"},
+	{name = "index", type = "number", doc="The index to investigate"},
+	{name = "plus_one", type = "boolean", default = false,
+	 doc= "When adding rows, an index of size(1) + 1 is OK"},
+	call = function(self, index, plus_one)
+	if (plus_one) then
+		if (not isint(index) or
+				index < 0 or
+				index > self:size(1) + 1) then
+				assert(false, ("The index has to be an integer between 1 and %d - you've provided %s"):
+					format(self:size(1) + 1, index))
+		end
+	else
+		if (not isint(index) or
+				index < 0 or
+				index > self:size(1)) then
+				assert(false, ("The index has to be an integer between 1 and %d - you've provided %s"):
+					format(self:size(1), index))
+		end
+	end
+end}
+
 return Dataframe
