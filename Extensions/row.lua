@@ -58,8 +58,11 @@ _Return value_: self
 		return self:append{rows = rows}
 	end
 
-	self:assert_is_index(index)
-	
+	self:assert_is_index{index = index, plus_one = true}
+	if (index == self:size(1) + 1) then
+		return self:append(rows)
+	end
+
 	rows, no_rows_2_insert =
 		self:_check_and_prep_row_argmnt{rows = rows,
 		                                add_new_columns = true,
@@ -94,6 +97,10 @@ be the ones that are kept
 	{name="index", type="number", doc="The row number where to insert the row(s)"},
 	{name="rows", type="Dataframe", doc="A Dataframe that you want to insert"},
 	call=function(self, index, rows)
+	if (index == self:size(1) + 1) then
+		return self:append(rows)
+	end
+
 	return self:insert(index, Df_Dict(rows.dataset))
 end}
 
@@ -216,6 +223,15 @@ be the ones that are kept
 	{name="self", type="Dataframe"},
 	{name="rows", type="Dataframe", doc="A Dataframe that you want to append"},
 	call=function(self, rows)
+	if (self:size(1) == 0) then
+		self.dataset = clone(rows.dataset)
+		self.n_rows = rows.n_rows
+		self:_infer_schema()
+		self:_refresh_metadata()
+		rows:_copy_meta(self)
+		return self
+	end
+
 	return self:append(Df_Dict(rows.dataset))
 end}
 
