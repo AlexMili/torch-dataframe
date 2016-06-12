@@ -103,7 +103,7 @@ table.get_val_string = function(tbl)
 	return ret
 end
 
-table.collapse_to_string = function(tbl, indent, start)
+table.collapse2str = function(tbl, indent, start)
 	assert(type(tbl) == "table", "The object isn't of type table: " .. type(tbl))
 
 	indent = indent or ""
@@ -130,7 +130,7 @@ table.collapse_to_string = function(tbl, indent, start)
 			if (type(v) == "table") then
 				v = ("[\n%s%s\n%s]"):
 					format(indent .. "  ",
-					       table.collapse_to_string(v, indent .. "  ", ""),
+					       table.collapse2str(v, indent .. "  ", ""),
 					       indent)
 			end
 
@@ -160,7 +160,7 @@ table.maxn = table.maxn or function(t) local maxn=0 for i in pairs(t) do maxn=ty
 
 -- Util for debugging purpose
 table._dump = function(tbl)
-	print(("\n-[ Table dump ]-\n%s"):format(table.collapse_to_string(tbl)))
+	print(("\n-[ Table dump ]-\n%s"):format(table.collapse2str(tbl)))
 end
 
 -- A benchmark function that can be used for checking performance
