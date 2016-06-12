@@ -43,7 +43,7 @@ _Return value_: self
 		html_string = data:_to_html{digits = digits}
 		itorch.html(html_string)
 	else
-		print(data:__tostring__{digits = digits})
+		print(data:tostring{digits = digits})
 	end
 
 	return self
@@ -97,22 +97,6 @@ _Return value_: self
 	return self
 end}
 
-Dataframe.tostring = argcheck{
-	doc=[[
-<a name="Dataframe.tostring">
-### Dataframe.tostring(@ARGP)
-
-@ARGT
-
-A convenience wrapper for __tostring
-
-_Return value_: string
-]],
-	{name="self", type="Dataframe"},
-	call=function (self)
-	return self:__tostring__()
-end}
-
 -- helper
 local function _numeric2string(val, digits)
 	if (isint(val)) then
@@ -122,10 +106,10 @@ local function _numeric2string(val, digits)
 	end
 end
 
-Dataframe.__tostring__ = argcheck{
+Dataframe.tostring = argcheck{
 	doc=[[
-<a name="Dataframe.__tostring__">
-### Dataframe.__tostring__(@ARGP)
+<a name="Dataframe.tostring">
+### Dataframe.tostring(@ARGP)
 
 @ARGT
 

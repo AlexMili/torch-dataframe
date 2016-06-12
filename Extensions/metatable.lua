@@ -117,6 +117,23 @@ function Dataframe:__newindex__(index, value)
 	return false
 end
 
+Dataframe.__tostring__ = argcheck{
+	doc=[[
+	<a name="Dataframe.__tostring__">
+### Dataframe.__tostring__(@ARGP)
+
+@ARGT
+
+A convenience wrapper for __tostring
+
+_Return value_: string
+]],
+	{name="self", type="Dataframe"},
+	call=function (self)
+	return self:tostring()
+end}
+
+
 Dataframe.copy = argcheck{
 	doc =  [[
 <a name="Dataframe.copy">
