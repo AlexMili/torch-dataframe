@@ -34,29 +34,41 @@ _Return value_:  table with unique values or if as_keys == true then the unique
 	self:assert_has_column(column_name)
 
 	local unique = {}
-	local unique_values = {}
-	local count = 0
 
-	local column_values = self:get_column{column_name = column_name,
-																	as_raw = as_raw}
+	local column_values =
+		self:get_column{column_name = column_name,
+		                as_raw = as_raw}
+
 	for i = 1,self.n_rows do
 		local current_key_value = column_values[i]
 		if (current_key_value ~= nil and
 		    not isnan(current_key_value)) then
-			if (unique[current_key_value] == nil) then
-				count = count + 1
-				unique[current_key_value] = count
 
-				if as_keys == false then
-					table.insert(unique_values, current_key_value)
-				end
+			-- Check if has hash
+			if (unique[current_key_value] == nil) then
+				unique[current_key_value] = true
 			end
+
 		end
 	end
+
+	-- Extract an array with values
+	local unique_values = {}
+	for k,_ in pairs(unique) do
+		unique_values[#unique_values + 1] = k
+	end
+	table.sort(unique_values)
 
 	if as_keys == false then
 		return unique_values
 	else
+		-- Set the index in the original unique table, actually just a table flip
+		--  where the value becomes the key and the index the value
+		--  We reuse the unique just for convenience
+		for index,key in ipairs(unique_values) do
+			unique[key] = index
+		end
+
 		return unique
 	end
 end}

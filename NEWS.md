@@ -18,6 +18,8 @@ Version: development
 * The tostring now has a more advanced printing that aims at total table width
   instead of just making sure that certain columns didn't end up too wide.
 * Added upgrade_frame that handles upgrades from previous Dataframe versions
+* The unique sorts the results before returning, thereby preventing the order to
+  depend on any irrelevant changes in the original table order
 
 Version: 1.1
 -----------
