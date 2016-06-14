@@ -59,6 +59,24 @@ print(a:head(4))
 a:as_categorical("Side")
 print(a:head(4))
 
-print(a:value_counts())
+tbl = {
+	one = {},
+	two = {},
+	three = {},
+	four = {},
+	five = {},
+	six = {},
+	seven = {},
+	eight = {},
+	nine = {}
+}
 
-print(a:version())
+local long_txt = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud ex"
+for k,v in pairs(tbl)	do
+	for i=1,4 do
+		v[#v + 1] = long_txt
+	end
+end
+
+a = Dataframe(Df_Dict(tbl))
+a:output()

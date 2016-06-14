@@ -117,60 +117,78 @@ _Return value_: string
 	{name='digits', type='number|boolean',
 	 doc='Set this to an integer >= 0 in order to reduce the number of integers shown',
 	 default=false},
-	call=function(self, digits)
-
+	{name='columns2skip', type='Df_Array',
+	 doc='Columns to skip from the output', default=false},
+	call=function(self, digits, columns2skip)
 	if (digits) then
 		assert(digits >= 0, "The digits argument must be positive")
+	end
+
+	if (columns2skip) then
+		columns2skip = columns2skip.data
+	else
+		columns2skip = {}
 	end
 
 	local no_rows = math.min(self.print.no_rows, self.n_rows)
 	max_width = self.print.max_col_width
 
-	-- Get the width of each column
-	local lengths = {}
-	for _,k in pairs(self.column_order) do
-		lengths[k] = string.len(k)
-		v = self:get_column(k)
-		for i = 1,no_rows do
-			if (v[i] ~= nil) then
-				if (digits and self:is_numerical(k)) then
-					val = _numeric2string(v[i], digits)
-				else
-					val = v[i]
-				end
-				if (lengths[k] < string.len(val)) then
-					lengths[k] = string.len(val)
+	-------------------------------
+	-- Internal helper functions --
+	-------------------------------
+	function get_widths(columns2skip)
+		local widths = {}
+		for _,k in pairs(self.column_order) do
+			if (not table.has_element(columns2skip, k)) then
+				widths[k] = string.len(k)
+				v = self:get_column(k)
+				for i = 1,no_rows do
+					if (v[i] ~= nil) then
+						if (digits and self:is_numerical(k)) then
+							val = _numeric2string(v[i], digits)
+						else
+							val = v[i]
+						end
+
+						if (widths[k] < string.len(val)) then
+							widths[k] = string.len(val)
+						end
+					end
 				end
 			end
 		end
+
+		return widths
 	end
 
-	add_padding = function(df_string, out_len, target_len)
-		if (out_len < target_len) then
-			df_string = df_string .. string.rep(" ", (target_len - out_len))
+	function get_tbl_width(widths)
+		local raw_cell_width = 0
+		for _,w in pairs(widths) do
+			raw_cell_width = raw_cell_width + w
 		end
-		return df_string
+
+		local full_table_width = raw_cell_width +
+			3 * (table.exact_length(widths) - 1) + -- All the " | "
+			2 + -- The beginning of each line "| "
+			2 -- The end of each line " |"
+		return full_table_width, raw_cell_width
 	end
 
-	table_width = 0
-	for _,l in pairs(lengths) do
-		table_width = table_width + math.min(l, max_width)
-	end
-	table_width = table_width +
-		3 * (table.exact_length(lengths) - 1) + -- All the " | "
-		2 + -- The beginning of each line "| "
-		2 -- The end of each line " |"
-
-	add_separator = function(df_string, table_width)
-		df_string = df_string .. "\n+" .. string.rep("-", table_width - 2) .. "+"
-		return df_string
+	function add_padding(str2pad, out_len, target_len)
+		if (out_len < target_len) then
+			str2pad = str2pad .. string.rep(" ", (target_len - out_len))
+		end
+		return str2pad
 	end
 
-	df_string = add_separator("", table_width)
-	df_string = df_string .. "\n| "
-	for i = 0,no_rows do
+	function add_separator(str2add_sep, table_width)
+		str2add_sep = str2add_sep .. "\n+" .. string.rep("-", table_width - 2) .. "+"
+		return str2add_sep
+	end
+
+	function get_output_row(i, columns2skip, widths)
+		local row = {}
 		if (i == 0) then
-			row = {}
 			for _,k in pairs(self.columns) do
 				row[k] = k
 			end
@@ -178,55 +196,160 @@ _Return value_: string
 			row = self:get_row(i)
 		end
 
+		local ret_row = {}
+		for key,value in pairs(row) do
+			if (not table.has_element(columns2skip, key)) then
+				if (self:is_numerical(key)) then
+					if (digits and i > 0) then
+						value = _numeric2string(value, digits)
+					end
+
+					-- TODO: maybe use :format instead of manual padding
+					-- Right align numbers by padding to left
+					value = add_padding("", string.len(value), widths[key]) .. value
+
+				elseif (value ~= nil) then
+					-- Pad right
+					value = add_padding(value, string.len(value), widths[key])
+				else
+					value = add_padding(value, 0, widths[key])
+				end
+
+				-- Clip the trailing string to match column width
+				if (string.len(value) > widths[key]) then
+					value = string.sub(value, 1, widths[key]-3) .. "..."
+				end
+
+				ret_row[key] = value
+			end
+		end
+
+		return ret_row
+	end
+
+	local widths = get_widths(columns2skip)
+	local table_width, raw_tbl_width = get_tbl_width(widths)
+
+	-- If our script excludes columns we should in addition to the 'Columns skipped'
+	-- text below the table also add a column | ... | to the rows in order to convey
+	-- that we have removed additional columns
+	local skip = false
+	if (table_width > self.print.max_table_width) then
+		-- If the table is larger than allowed print we need to shrink it down to match
+		--  the max width limit to the table to fit in the window in two principal ways
+		-- (1) reduce rows to min_col_width and exclude all columns that don't fit
+		-- (2) calculate difference, decide what columns to reduce in length, and
+		--     reduce them accordingly
+
+		local min_length = {}
+		for _,l in pairs(widths) do
+			min_length[#min_length + 1] = math.min(l, self.print.min_col_width)
+		end
+		min_length = get_tbl_width(min_length)
+
+		if (min_length > self.print.max_table_width) then
+			-- Update the widths and add excluded columns
+			local tmp = {}
+			for i=1,#self.column_order do
+
+				local cn = self.column_order[i]
+				local new_col_length = math.min(widths[cn], self.print.min_col_width)
+
+				local new_length = get_tbl_width(tmp) + new_col_length
+				if (not skip and
+				    new_length < self.print.max_table_width) then
+					tmp[cn] = new_col_length
+				else
+					skip = true
+					columns2skip[#columns2skip + 1] = cn
+				end
+			end
+
+			widths = tmp
+			table_width = get_tbl_width(widths)
+		else
+			local available_width =
+				(self.print.max_table_width - (table_width - raw_tbl_width))
+
+			local no_elmnts2large = 0
+			for _,w in pairs(widths) do
+				if (w > self.print.min_col_width) then
+					no_elmnts2large = no_elmnts2large + 1
+				else
+					available_width = available_width - w
+				end
+			end
+
+			local new_min_col_width = math.floor(available_width/no_elmnts2large)
+			assert(new_min_col_width > self.print.min_col_width, "Script bug")
+
+			local tmp = {}
+			for i=1,#self.column_order do
+				local cn = self.column_order[i]
+				local new_col_length = math.min(widths[cn], new_min_col_width)
+				tmp[cn] = new_col_length
+			end
+			widths = tmp
+		end
+	end
+
+	table_width = get_tbl_width(widths)
+	local end_str = " | ... "
+	if (skip) then
+		-- Add length indicator
+		table_width = table_width + string.len(end_str)
+	end
+
+	-- The core creating of the table
+	ret_str = ""
+	ret_str = add_separator(ret_str, table_width)
+	ret_str = ret_str .. "\n| "
+	for i = 0,no_rows do
+		local row = get_output_row(i, columns2skip, widths)
+
 		if (i > 0) then
 			-- Underline header with ----------------
 			if (i == 1) then
-				df_string = add_separator(df_string, table_width)
+				ret_str = add_separator(ret_str, table_width)
 			end
-			df_string = df_string .. "\n| "
+
+			ret_str = ret_str .. "\n| "
 		end
 
 		for ii = 1,#self.column_order do
 			column_name = self.column_order[ii]
 
-			if (ii > 1) then
-				df_string = df_string .. " | "
-			end
-
-			output = row[column_name]
-			if (self:is_numerical(column_name)) then
-
-				if (digits and i > 0) then
-					output = _numeric2string(output, digits)
+			if (row[column_name] ~= nil) then
+				if (ii > 1) then
+					ret_str = ret_str .. " | "
 				end
-				-- TODO: maybe use :format instead of manual padding
-				-- Right align numbers by padding to left
-				df_string = add_padding(df_string, string.len(output), lengths[column_name])
-				df_string = df_string .. output
 
-			elseif (output ~= nil) then
-
-				if (string.len(output) > max_width) then
-					output = string.sub(output, 1, max_width - 3) .. "..."
-				end
-				df_string = df_string .. output
-				-- Padd left if needed
-				df_string = add_padding(df_string, string.len(output), math.min(max_width, lengths[column_name]))
-			else
-				df_string = add_padding(df_string, 0, lengths[column_name])
+				ret_str = ret_str .. row[column_name]
 			end
-
 		end
 
-		df_string = df_string .. " |"
+		if (skip) then
+			ret_str = ret_str .. end_str
+		end
+		ret_str = ret_str .. " |"
 	end
 
 	if (self.n_rows > no_rows) then
-		df_string = df_string .. "\n| ..." .. string.rep(" ", table_width - 5 - 1) .. "|"
+		ret_str = ret_str .. "\n| ..." .. string.rep(" ", table_width - 5 - 1) .. "|"
 	end
 
-	df_string = add_separator(df_string, table_width) .. "\n"
-	return df_string
+	ret_str = add_separator(ret_str, table_width) .. "\n"
+
+	if (#columns2skip > 0 ) then
+		if (#columns2skip == 1) then
+			ret_str = ret_str .. "\n * Column skipped: "
+		else
+			ret_str = ret_str .. "\n * Columns skipped: "
+		end
+		ret_str = ret_str .. table.get_val_string(columns2skip)
+	end
+
+	return ret_str
 end}
 
 Dataframe._to_html = argcheck{
