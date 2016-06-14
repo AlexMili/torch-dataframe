@@ -26,10 +26,11 @@ Creates and initializes a Dataframe class. Envoked through `local my_dataframe =
 	{name="self", type="Dataframe"},
 	call=function(self)
 	self:_clean()
-	self.print = {no_rows = 10,
-	              max_col_width = 20,
-	              min_col_width = 7,
-	              max_table_width = 80}
+	self.tostring_defaults =
+		{no_rows = 10,
+		max_col_width = 20,
+		min_col_width = 7,
+		max_table_width = 80}
 end}
 
 Dataframe.__init = argcheck{
@@ -89,7 +90,7 @@ Dataframe._copy_meta = argcheck{
 	call=function(self, to)
 	to.column_order = clone(self.column_order)
 	to.schema = clone(self.schema)
-	to.print = clone(self.print)
+	to.tostring_defaults = clone(self.tostring_defaults)
 	to.categorical = clone(self.categorical)
 
 	return to
