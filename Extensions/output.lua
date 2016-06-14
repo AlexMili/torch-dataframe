@@ -255,13 +255,15 @@ _Return value_: string
 		return ret_row
 	end
 
-	local widths = get_widths(columns2skip)
-	local table_width, raw_tbl_width = get_tbl_width(widths)
-
 	-- If our script excludes columns we should in addition to the 'Columns skipped'
 	-- text below the table also add a column | ... | to the rows in order to convey
 	-- that we have removed additional columns
 	local skip = false
+	local end_str = " | ... "
+
+	local widths = get_widths(columns2skip)
+	local table_width, raw_tbl_width = get_tbl_width(widths)
+
 	if (table_width > max_table_width) then
 		-- If the table is larger than allowed print we need to shrink it down to match
 		--  the max width limit to the table to fit in the window in two principal ways
@@ -276,6 +278,10 @@ _Return value_: string
 		min_length = get_tbl_width(min_length)
 
 		if (min_length > max_table_width) then
+			-- Since we need to have the ... at the end of the table we need to reduce
+			-- the table width with corresponding no. characters
+			max_table_width = max_table_width - string.len(end_str)
+
 			-- Update the widths and add excluded columns
 			local tmp = {}
 			for i=1,#self.column_order do
@@ -296,9 +302,13 @@ _Return value_: string
 			widths = tmp
 			table_width = get_tbl_width(widths)
 		else
+
+			-- The width that we need to split among the columns that require shortening
 			local available_width =
 				(max_table_width - (table_width - raw_tbl_width))
 
+			-- Find the columns that need to be shortened and remove the others from
+			--  the available_width
 			local no_elmnts2large = 0
 			for _,w in pairs(widths) do
 				if (w > min_col_width) then
@@ -308,9 +318,11 @@ _Return value_: string
 				end
 			end
 
+			-- Calculat a new minimum column width based on above
 			local new_min_col_width = math.floor(available_width/no_elmnts2large)
 			assert(new_min_col_width > min_col_width, "Script bug")
 
+			-- Reset the widths using this new width setting
 			local tmp = {}
 			for i=1,#self.column_order do
 				local cn = self.column_order[i]
@@ -321,8 +333,8 @@ _Return value_: string
 		end
 	end
 
+	-- Recalculate the table width and add the ... column if needed
 	table_width = get_tbl_width(widths)
-	local end_str = " | ... "
 	if (skip) then
 		-- Add length indicator
 		table_width = table_width + string.len(end_str)
