@@ -110,9 +110,21 @@ If you provide a value and a column it will look for identical matches
 
 ```
 ({
-   self        = Dataframe                  -- 
-   column_name = string                     -- The column with the value
-   value       = number|string|boolean|nan  -- 
+   self        = Dataframe           -- 
+   column_name = string              -- The column with the value
+   value       = number|boolean|nan  -- 
+})
+```
+
+_Return value_: table
+If that column is a string you also have the option of supplying a regular expression
+
+```
+({
+   self        = Dataframe  -- 
+   column_name = string     -- The column with the value
+   value       = string     -- 
+  [regex       = boolean]   -- If the string is aregular expression [default=false]
 })
 ```
 

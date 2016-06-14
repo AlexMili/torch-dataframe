@@ -27,6 +27,36 @@ _Return value_: boolean
 Checks if column is present in the dataset
 
 _Return value_: boolean
+<a name="Dataframe.assert_has_column">
+### Dataframe.assert_has_column(self, column_name[, comment])
+
+Asserts that column is in the dataset
+
+```
+({
+   self        = Dataframe  -- 
+   column_name = string     -- The column to check
+  [comment     = string]    -- Comments that are to be displayed with the error [default=]
+})
+```
+
+
+_Return value_: boolean
+<a name="Dataframe.assert_has_not_column">
+### Dataframe.assert_has_not_column(self, column_name[, comment])
+
+Asserts that column is not in the dataset
+
+```
+({
+   self        = Dataframe  -- 
+   column_name = string     -- The column to check
+  [comment     = string]    -- Comments that are to be displayed with the error [default=]
+})
+```
+
+
+_Return value_: boolean
 <a name="Dataframe.drop">
 ### Dataframe.drop(self, column_name)
 
