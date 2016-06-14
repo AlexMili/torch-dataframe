@@ -109,6 +109,10 @@ Dataframe.tostring = argcheck{
 
 Converts table to a string representation that follows standard markdown syntax
 
+{no_rows = 10,
+max_col_width = 20,
+min_col_width = 7,
+max_table_width = 80}
 @ARGT
 
 _Return value_: string
@@ -119,7 +123,16 @@ _Return value_: string
 	 default=false},
 	{name='columns2skip', type='Df_Array',
 	 doc='Columns to skip from the output', default=false},
-	call=function(self, digits, columns2skip)
+	 {name="no_rows", type="number",
+	 doc='The number of rows to display. If -1 then shows all. Defaults to setting in Dataframe.tostring_defaults',
+	 default=false},
+	{name="min_col_width", type="number",
+	 doc='The minimum column width in characters. Defaults to setting in Dataframe.tostring_defaults',
+	 default=false},
+	{name="max_table_width", type="number",
+	 doc='The maximum table width in characters. Defaults to setting in Dataframe.tostring_defaults',
+	 default=false},
+	call=function(self, digits, columns2skip, no_rows, min_col_width, max_table_width)
 	if (digits) then
 		assert(digits >= 0, "The digits argument must be positive")
 	end
@@ -130,8 +143,23 @@ _Return value_: string
 		columns2skip = {}
 	end
 
-	local no_rows = math.min(self.print.no_rows, self.n_rows)
-	max_width = self.print.max_col_width
+	if (not no_rows) then
+		no_rows = math.min(self.tostring_defaults.no_rows, self.n_rows)
+	else
+		if (no_rows == -1) then
+			no_rows = self.n_rows
+		else
+			self:assert_is_index(no_rows)
+		end
+	end
+
+	if (not min_col_width) then
+		min_col_width = self.tostring_defaults.min_col_width
+	end
+
+	if (not max_table_width) then
+		max_table_width = self.tostring_defaults.max_table_width
+	end
 
 	-------------------------------
 	-- Internal helper functions --
@@ -234,7 +262,7 @@ _Return value_: string
 	-- text below the table also add a column | ... | to the rows in order to convey
 	-- that we have removed additional columns
 	local skip = false
-	if (table_width > self.print.max_table_width) then
+	if (table_width > max_table_width) then
 		-- If the table is larger than allowed print we need to shrink it down to match
 		--  the max width limit to the table to fit in the window in two principal ways
 		-- (1) reduce rows to min_col_width and exclude all columns that don't fit
@@ -243,21 +271,21 @@ _Return value_: string
 
 		local min_length = {}
 		for _,l in pairs(widths) do
-			min_length[#min_length + 1] = math.min(l, self.print.min_col_width)
+			min_length[#min_length + 1] = math.min(l, min_col_width)
 		end
 		min_length = get_tbl_width(min_length)
 
-		if (min_length > self.print.max_table_width) then
+		if (min_length > max_table_width) then
 			-- Update the widths and add excluded columns
 			local tmp = {}
 			for i=1,#self.column_order do
 
 				local cn = self.column_order[i]
-				local new_col_length = math.min(widths[cn], self.print.min_col_width)
+				local new_col_length = math.min(widths[cn], min_col_width)
 
 				local new_length = get_tbl_width(tmp) + new_col_length
 				if (not skip and
-				    new_length < self.print.max_table_width) then
+				    new_length < max_table_width) then
 					tmp[cn] = new_col_length
 				else
 					skip = true
@@ -269,11 +297,11 @@ _Return value_: string
 			table_width = get_tbl_width(widths)
 		else
 			local available_width =
-				(self.print.max_table_width - (table_width - raw_tbl_width))
+				(max_table_width - (table_width - raw_tbl_width))
 
 			local no_elmnts2large = 0
 			for _,w in pairs(widths) do
-				if (w > self.print.min_col_width) then
+				if (w > min_col_width) then
 					no_elmnts2large = no_elmnts2large + 1
 				else
 					available_width = available_width - w
@@ -281,7 +309,7 @@ _Return value_: string
 			end
 
 			local new_min_col_width = math.floor(available_width/no_elmnts2large)
-			assert(new_min_col_width > self.print.min_col_width, "Script bug")
+			assert(new_min_col_width > min_col_width, "Script bug")
 
 			local tmp = {}
 			for i=1,#self.column_order do

@@ -23,10 +23,11 @@ describe("Dataframe class", function()
 			assert.are.same(df.columns,{})
 			assert.are.same(df.column_order,{})
 			assert.are.same(df.categorical,{})
-			assert.are.same(df.print,{no_rows = 10,
-			                          max_col_width = 20,
-			                          min_col_width = 7,
-			                          max_table_width = 80})
+			assert.are.same(df.tostring_defaults,
+			               {no_rows = 10,
+			                max_col_width = 20,
+			                min_col_width = 7,
+			                max_table_width = 80})
 			assert.are.same(df.schema,{})
 			assert.is.equal(df.n_rows,0)
 		end)
@@ -71,10 +72,11 @@ describe("Dataframe class", function()
 			assert.are.same(df.columns,{})
 			assert.are.same(df.column_order,{})
 			assert.are.same(df.categorical,{})
-			assert.are.same(df.print,{no_rows = 10,
-			                          max_col_width = 20,
-			                          min_col_width = 7,
-			                          max_table_width = 80})
+			assert.are.same(df.tostring_defaults,
+			               {no_rows = 10,
+			                max_col_width = 20,
+			                min_col_width = 7,
+			                max_table_width = 80})
 			assert.are.same(df.schema,{})
 			assert.is.equal(df.n_rows,0)
 		end)
@@ -91,7 +93,7 @@ describe("Dataframe class", function()
 
 			assert.are.same(df.column_order,df2.column_order)
 			assert.are.same(df.categorical,df2.categorical)
-			assert.are.same(df.print,df2.print)
+			assert.are.same(df.tostring_defaults,df2.tostring_defaults)
 			assert.are.same(df.schema,df2.schema)
 		end)
 	end)
