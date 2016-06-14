@@ -15,6 +15,9 @@ Version: development
 * The add_column can now take a position argument and updates the schema + columns
 * The init with a table can now also accept column_order argument
 * Added wide2long for converting wide datasets to long
+* The tostring now has a more advanced printing that aims at total table width
+  instead of just making sure that certain columns didn't end up too wide.
+* Added upgrade_frame that handles upgrades from previous Dataframe versions
 
 Version: 1.1
 -----------

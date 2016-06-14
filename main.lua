@@ -28,7 +28,6 @@ Creates and initializes a Dataframe class. Envoked through `local my_dataframe =
 	self:_clean()
 	self.tostring_defaults =
 		{no_rows = 10,
-		max_col_width = 20,
 		min_col_width = 7,
 		max_table_width = 80}
 end}
@@ -267,29 +266,37 @@ _Return value_: void
 	assert(self.subsets == nil, "The dataframe seems to be upgraded as it already has a subset property")
 
 	if (self.batch == nil) then
-		print("Nothing to update")
-		return
-	end
+		print("No need to update batch info")
+	else
 
-	-- Initiate the subsets
-	self:create_subsets(Df_Dict(self.batch.data_types))
-	self.batch.data_types = nil
+		-- Initiate the subsets
+		self:create_subsets(Df_Dict(self.batch.data_types))
+		self.batch.data_types = nil
 
-	-- Copy the old indexes into the subsets created
-	for sub_name,sub_keys in pairs(self.batch.datasets) do
-		-- Note, can't use drop/add since this breaks with __init call
-		self.subsets.sub_objs[sub_name].dataset["indexes"] = sub_keys
-		self.subsets.sub_objs[sub_name].nrows = #sub_keys
+		-- Copy the old indexes into the subsets created
+		for sub_name,sub_keys in pairs(self.batch.datasets) do
+			-- Note, can't use drop/add since this breaks with __init call
+			self.subsets.sub_objs[sub_name].dataset["indexes"] = sub_keys
+			self.subsets.sub_objs[sub_name].nrows = #sub_keys
 
-		if (self.batch.shuffle and
-				(sub_name ~= "test" and sub_name ~= "validate")) then
-			self.subsets.sub_objs[sub_name]:set_sampler("permutation")
-		else
-			self.subsets.sub_objs[sub_name]:set_sampler("linear")
+			if (self.batch.shuffle and
+					(sub_name ~= "test" and sub_name ~= "validate")) then
+				self.subsets.sub_objs[sub_name]:set_sampler("permutation")
+			else
+				self.subsets.sub_objs[sub_name]:set_sampler("linear")
+			end
+
 		end
+		self.batch = nil
 
+		print("Updated batch metadata")
 	end
-	self.batch = nil
+
+	if (type(self.print) == "table") then
+		-- Do silently as this is rather unimportant
+		self.tostring_defaults = self.print
+		self.tostring_defaults.max_col_width = nil
+	end
 end}
 
 Dataframe.assert_is_index = argcheck{doc =  [[

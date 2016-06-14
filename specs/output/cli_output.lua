@@ -54,10 +54,10 @@ for i = 1,a:shape()["rows"] do
   end
 end
 a:add_column("Side", Df_Array(left_right))
-print(a:head(4))
+print(a:head(4):tostring(Df_Array("Weight")))
 
 a:as_categorical("Side")
-print(a:head(4))
+print(a:head(4):tostring("Comm"))
 
 tbl = {
 	no = {},

@@ -107,12 +107,18 @@ Dataframe.tostring = argcheck{
 <a name="Dataframe.tostring">
 ### Dataframe.tostring(@ARGP)
 
-Converts table to a string representation that follows standard markdown syntax
+Converts table to a string representation that follows standard markdown syntax.
+The table tries to follow a maximum table width inspired by the `dplyr` table print.
+The core concept is that wide columns are clipped when the table risks of being larger
+than a certain max width. The columns convey though no information if they need to
+be clipped to just a few characters why there is a minimum number of characters.
+The columns that then don't fit are noted below the table as skipped columns.
 
-{no_rows = 10,
-max_col_width = 20,
-min_col_width = 7,
-max_table_width = 80}
+You can also specify columns that you wish to skip by providing the columns2skip
+skip argumnt. If columns are skipped by user demand there won't be a ... column to
+the right but if the table is still too wide then the software may choose to skip
+additional columns and thereby add a ... column.
+
 @ARGT
 
 _Return value_: string
@@ -123,13 +129,13 @@ _Return value_: string
 	 default=false},
 	{name='columns2skip', type='Df_Array',
 	 doc='Columns to skip from the output', default=false},
-	 {name="no_rows", type="number",
+	 {name="no_rows", type="number|boolean",
 	 doc='The number of rows to display. If -1 then shows all. Defaults to setting in Dataframe.tostring_defaults',
 	 default=false},
-	{name="min_col_width", type="number",
+	{name="min_col_width", type="number|boolean",
 	 doc='The minimum column width in characters. Defaults to setting in Dataframe.tostring_defaults',
 	 default=false},
-	{name="max_table_width", type="number",
+	{name="max_table_width", type="number|boolean",
 	 doc='The maximum table width in characters. Defaults to setting in Dataframe.tostring_defaults',
 	 default=false},
 	call=function(self, digits, columns2skip, no_rows, min_col_width, max_table_width)
@@ -326,8 +332,10 @@ _Return value_: string
 			local tmp = {}
 			for i=1,#self.column_order do
 				local cn = self.column_order[i]
-				local new_col_length = math.min(widths[cn], new_min_col_width)
-				tmp[cn] = new_col_length
+				if (not table.has_element(columns2skip, cn)) then
+					local new_col_length = math.min(widths[cn], new_min_col_width)
+					tmp[cn] = new_col_length
+				end
 			end
 			widths = tmp
 		end
@@ -390,6 +398,40 @@ _Return value_: string
 	end
 
 	return ret_str
+end}
+
+Dataframe.tostring = argcheck{
+	doc=[[
+
+@ARGT
+
+]],
+	overload=Dataframe.tostring,
+	{name="self", type="Dataframe"},
+	{name='digits', type='number|boolean',
+	 doc='Set this to an integer >= 0 in order to reduce the number of integers shown',
+	 default=false},
+	{name='columns2skip', type='string',
+	 doc='Columns to skip from the output as regular expression'},
+	 {name="no_rows", type="number",
+	 doc='The number of rows to display. If -1 then shows all. Defaults to setting in Dataframe.tostring_defaults',
+	 default=false},
+	{name="min_col_width", type="number",
+	 doc='The minimum column width in characters. Defaults to setting in Dataframe.tostring_defaults',
+	 default=false},
+	{name="max_table_width", type="number",
+	 doc='The maximum table width in characters. Defaults to setting in Dataframe.tostring_defaults',
+	 default=false},
+	call=function(self, digits, columns2skip, no_rows, min_col_width, max_table_width)
+	local cols = {}
+	for i=1,#self.column_order do
+		local cn = self.column_order[i]
+		if (cn:match(columns2skip)) then
+			cols[#cols + 1] = cn
+		end
+	end
+
+	return self:tostring(digits, Df_Array(cols), no_rows, min_col_width, max_table_width)
 end}
 
 Dataframe._to_html = argcheck{

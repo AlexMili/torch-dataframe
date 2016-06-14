@@ -59,7 +59,6 @@ describe("Column operations", function()
 			assert.are.same(a.categorical,{})
 			assert.are.same(a.tostring_defaults,
 			                {no_rows = 10,
-			                max_col_width = 20,
 			                min_col_width = 7,
 			                max_table_width = 80})
 			assert.are.same(a.schema,{})
