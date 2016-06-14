@@ -264,7 +264,7 @@ describe("Categorical column", function()
 			["Col C"] = 10
 		}
 
-		ret_val:insert(Df_Dict(new_data))
+		ret_val:append(Df_Dict(new_data))
 		assert.are.same(ret_val:from_categorical(Df_Array('A', 'B', 'C'), 'Col B'),
 		{1, 2, 3})-- "The categorical should add the new value as the last number"
 
