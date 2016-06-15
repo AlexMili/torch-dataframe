@@ -1,13 +1,47 @@
 -- UTILS
 
-function trim(s)
+local argcheck = require "argcheck"
+local doc = require "argcheck.doc"
+
+doc[[
+
+## Utility functions
+
+Here are utility functions that are not specific to the dataframe but add a general
+Lua functionality.
+
+]]
+
+trim = argcheck{
+	doc =  [[
+<a name="trim">
+### trim(@ARGP)
+
+Trims a string fro whitespace chars
+
+@ARGT
+
+_Return value_: string
+]],
+	{name="s", type="string", doc="The string to trim"},
+	call = function(s)
 	local from = s:match"^%s*()"
 	return s:match"^%s*()" > #s and "" or s:match(".*%S", s:match"^%s*()")
-end
+end}
 
-function trim_table_strings(t)
-	assert(type(t) == 'table', "You must provide a table")
+trim_table_strings= argcheck{
+	doc =  [[
+<a name="trim_table_strings">
+### trim_table_strings(@ARGP)
 
+Trims a table with strings fro whitespace chars
+
+@ARGT
+
+_Return value_: string
+]],
+	{name="t", type="table", doc="The table with strings to trim"},
+	call = function(t)
 	for index,value in pairs(t) do
 		if(type(value) == 'string') then
 			t[index] = trim(value)
@@ -15,38 +49,39 @@ function trim_table_strings(t)
 	end
 
 	return t
-end
+end}
+
 
 -- See https://stackoverflow.com/questions/20325332/how-to-check-if-two-tablesobjects-have-the-same-value-in-lua
 function tables_equals(o1, o2, ignore_mt)
-    if o1 == o2 then return true end
-    local o1Type = type(o1)
-    local o2Type = type(o2)
-    if o1Type ~= o2Type then return false end
-    if o1Type ~= 'table' then return false end
+	if o1 == o2 then return true end
+	local o1Type = type(o1)
+	local o2Type = type(o2)
+	if o1Type ~= o2Type then return false end
+	if o1Type ~= 'table' then return false end
 
-    if not ignore_mt then
-        local mt1 = getmetatable(o1)
-        if mt1 and mt1.__eq then
-            --compare using built in method
-            return o1 == o2
-        end
-    end
+	if not ignore_mt then
+	local mt1 = getmetatable(o1)
+	if mt1 and mt1.__eq then
+		--compare using built in method
+		return o1 == o2
+	end
+	end
 
-    local keySet = {}
+	local keySet = {}
 
-    for key1, value1 in pairs(o1) do
-        local value2 = o2[key1]
-        if value2 == nil or tables_equals(value1, value2, ignore_mt) == false then
-            return false
-        end
-        keySet[key1] = true
-    end
+	for key1, value1 in pairs(o1) do
+		local value2 = o2[key1]
+		if value2 == nil or tables_equals(value1, value2, ignore_mt) == false then
+			return false
+		end
+		keySet[key1] = true
+	end
 
-    for key2, _ in pairs(o2) do
-        if not keySet[key2] then return false end
-    end
-    return true
+	for key2, _ in pairs(o2) do
+		if not keySet[key2] then return false end
+	end
+	return true
 end
 
 function clone(t) -- shallow-copy a table
@@ -154,6 +189,32 @@ table.has_element = function(haystack, needle)
 	return false
 end
 
+table.array2hash = argcheck{
+	doc=[[
+<a name="table.array2hash">
+### table.array2hash(@ARGP)
+
+Converts an array to hash table with numbers corresponding to the index of the
+original elements position in the array. Intended for use with arrays where all
+values are unique.
+
+@ARGT
+
+_Return value_: table with string keys
+]],
+	{name="array", type="table", doc="An array of elements"},
+	call=function(array)
+	local ret = {}
+	for index,value in ipairs(array) do
+		value = tostring(value)
+		if (ret[value] == nil) then
+			ret[value] = index
+		end
+	end
+
+	return ret
+end}
+
 -- maxn is deprecated for lua version >=5.3
 table.maxn = table.maxn or function(t) local maxn=0 for i in pairs(t) do maxn=type(i)=='number'and i>maxn and i or maxn end return maxn end
 
@@ -167,8 +228,8 @@ end
 df_bnchmrk = (function()
 	local start
 	local i =  0
-	return function(desc)
-		if (not start) then
+	return function(desc, reset)
+		if (not start or reset) then
 			start = os.clock()
 			print("Start benchmark")
 		else
