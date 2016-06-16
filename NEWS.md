@@ -5,6 +5,7 @@ Version: development
 --------------------
 * Added new subset and batch loading functionality (issue #22)
 * Added metatable functionality (issue #18)
+* The as_categorical can now receive levels, labels and exclusions (issue #23)
 * Changed insert to insert with an index
 * Added append that does the same as index previously did
 * Added rbind as an append alias

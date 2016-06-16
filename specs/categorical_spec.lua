@@ -125,6 +125,59 @@ describe("Categorical column", function()
 		assert.are.same(a:unique{column_name ='Col B', as_keys = true, as_raw = true}, {[1] = 1, [2] = 2})-- "Failed to get raw data as keys"
 	end)
 
+	it("Order the categories", function()
+		local b = Dataframe(Df_Dict{a={"b", "a", "c"}})
+		b:as_categorical('a')
+
+		assert.are.same(b:from_categorical(Df_Array("a", "b", "c"), 'a'),
+		                {1,2,3})
+	end)
+
+	it("Specify levels in a different order than sorted", function()
+		local b = Dataframe(Df_Dict{a={"b", "a", "c"}})
+		b:as_categorical{column_name = 'a',
+		                 levels = Df_Array("a", "c", "b")}
+
+		assert.are.same(b:from_categorical(Df_Array("a", "b", "c"), 'a'),
+		                {1,3,2})
+
+		b:as_string('a')
+		b:as_categorical('a', Df_Array("b", "a", "c"))
+
+		assert.are.same(b:from_categorical(Df_Array("a", "b", "c"), 'a'),
+		                {2,1,3})
+	end)
+
+	it("Specify fewer levels than present", function()
+		local b = Dataframe(Df_Dict{a={"b", "a", "c"}})
+		b:as_categorical('a', Df_Array("a", "b"))
+
+		assert.are.same(b:get_column('a', true)[1], 2)
+		assert.are.same(b:get_column('a', true)[2], 1)
+		assert.is_true(isnan(b:get_column('a', true)[3]))
+	end)
+
+	it("Specify labels", function()
+		local b = Dataframe(Df_Dict{a={"b", "a", "c"}})
+		b:as_categorical('a', Df_Array("a", "b"), Df_Array("A", "B"))
+
+		assert.are.same(b:get_column('a')[1], "B")
+		assert.are.same(b:get_column('a')[2], "A")
+		assert.is_true(isnan(b:get_column('a', true)[3]))
+	end)
+
+	it("Specify levels in a different order than sorted", function()
+		local b = Dataframe(Df_Dict{a={"b", "a", "c"}})
+		b:as_categorical{column_name = 'a',
+		                 exclude=Df_Array("a","B")}
+
+		assert.are.same(b:get_column('a')[1], "b")
+		assert.are.same(b:get_column('a')[3], "c")
+		assert.is_true(isnan(b:get_column('a', true)[2]))
+		assert.are.same(b:from_categorical(Df_Array("b", "c"), 'a'),
+		                {1,2})
+	end)
+
 	it("Insert new columns",function()
 		local a = Dataframe("./data/advanced_short.csv")
 
@@ -343,5 +396,4 @@ describe("Categorical column", function()
 
 		assert.is_true(sum < 1e-5)-- "The difference between the columns should be < 10^-5, it is currently " .. sum
 	end)
-
 end)

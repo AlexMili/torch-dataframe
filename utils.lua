@@ -24,7 +24,8 @@ Trims a string fro whitespace chars
 _Return value_: string
 ]],
 	{name="s", type="string", doc="The string to trim"},
-	call = function(s)
+	{name="ignore", type="number", doc="As gsub returns a number this needs to be ignored", default=false},
+	call = function(s, ignore)
 	local from = s:match"^%s*()"
 	return s:match"^%s*()" > #s and "" or s:match(".*%S", s:match"^%s*()")
 end}

@@ -2,12 +2,22 @@
 ## Categorical functions
 
 <a name="Dataframe.as_categorical">
-### Dataframe.as_categorical(self, column_name)
+### Dataframe.as_categorical(self, column_name[, levels][, labels][, exclude][, infer_schema])
 
 ```
 ({
-   self        = Dataframe  -- 
-   column_name = string     -- The column name to convert
+   self         = Dataframe          -- 
+   column_name  = string             -- The column name to convert
+  [levels       = Df_Array|boolean]  -- An optional array of the values that column might have taken.
+	 The default is the unique set of values taken by Dataframe.unique,
+	 sorted into increasing order. If you provide values that aren't present
+	 within the current column the value will still be saved and may be envoked in
+	 the future. [default=false]
+  [labels       = Df_Array|boolean]  -- An optional character vector of labels for the levels
+	 (in the same order as levels after removing those in exclude) [default=false]
+  [exclude      = Df_Array|boolean]  -- Values to be excluded when forming the set of levels. This should be
+	 of the same type as column, and will be coerced if necessary. [default=false]
+  [infer_schema = boolean]           -- Run the Dataframe.infer_schema after run [default=true]
 })
 ```
 
@@ -18,8 +28,18 @@ _Return value_: self
 
 ```
 ({
-   self         = Dataframe  -- 
-   column_array = Df_Array   -- An array with column names
+   self         = Dataframe          -- 
+   column_array = Df_Array           -- An array with column names
+  [levels       = Df_Array|boolean]  -- An optional array of the values that column might have taken.
+	 The default is the unique set of values taken by Dataframe.unique,
+	 sorted into increasing order. If you provide values that aren't present
+	 within the current column the value will still be saved and may be envoked in
+	 the future. [default=false]
+  [labels       = Df_Array|boolean]  -- An optional character vector of labels for the levels
+	 (in the same order as levels after removing those in exclude) [default=false]
+  [exclude      = Df_Array|boolean]  -- Values to be excluded when forming the set of levels. This should be
+	 of the same type as column, and will be coerced if necessary. [default=false]
+  [infer_schema = boolean]           -- Run the Dataframe.infer_schema after run [default=true]
 })
 ```
 
