@@ -31,14 +31,14 @@ a:output{digits = 2}
 print("-- Long table --")
 a:load_csv{path = "../data/realistic_29_row_data.csv",
            verbose = false}
-a.print.no_rows = 5
+a.tostring_defaults.no_rows = 5
 print(a)
 
-a.print.no_rows = 20
+a.tostring_defaults.no_rows = 20
 print(a)
 
 a:as_categorical('Gender')
-a.print.no_rows = 5
+a.tostring_defaults.no_rows = 5
 print(a)
 
 females = a:where('Gender', 'Female')
@@ -54,11 +54,36 @@ for i = 1,a:shape()["rows"] do
   end
 end
 a:add_column("Side", Df_Array(left_right))
-print(a:head(4))
+print(a:head(4):tostring(Df_Array("Weight")))
 
 a:as_categorical("Side")
-print(a:head(4))
+print(a:head(4):tostring("Comm"))
 
-print(a:value_counts())
+tbl = {
+	no = {},
+	one = {},
+	two = {},
+	three = {},
+	four = {},
+	five = {},
+	six = {},
+	seven = {},
+	eight = {},
+	nine = {}
+}
 
-print(a:version())
+local long_txt = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud ex"
+for k,v in pairs(tbl)	do
+	for i=1,4 do
+		if (k == "no") then
+			v[#v + 1] = i
+		else
+			v[#v + 1] = long_txt
+		end
+	end
+end
+
+a = Dataframe{data=Df_Dict(tbl),
+	            column_order=Df_Array("no", "one", "two", "three", "four", "five",
+	                                  "six", "seven", "eight", "nine")}
+a:output()

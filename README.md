@@ -109,15 +109,11 @@ You can discover your dataset with the following functions:
 df:output() -- prints html if in itorch otherwise prints plain table
 df:output{html=true} -- forces html output
 
--- To correctly print the dataframe with a classical print function, 
--- be sure to run setprintlevel(0) to prevent itorch from printing raw object variables.
--- run setprintlevel(2) to reset to default itorch print level
--- see http://stackoverflow.com/questions/36616423/how-does-luas-print-work-and-what-is-the-difference-between-tostring-and for further details
-setprintlevel(0)
-print(df) -- prints a plain table using the tostring() output
-setprintlevel(2)
-
 df:show() -- prints the head + tail of the table
+
+-- You can also directly call print() on the object
+-- and it will print the ascii-table
+print(df)
 ```
 
 General dataset information can be found using:
@@ -208,6 +204,37 @@ or to CSV:
 
 ```lua
 df:to_csv('data.csv')
+```
+
+### Batch loading
+
+The Dataframe provides a built-in system for handling batch loading. It also has an
+extensive set of samplers that you can use. See API docs for more on which that are available.
+
+The gist of it is:
+- The main Dataframe is initialized for batch loading via calling the `create_subsets`.
+This creates random subsets that have their own samplers. The default is a train 70%,
+validate 20%, and a test 10% split in the data but you can choose any split and any
+names.
+- Each subset is a separate dataframe subclass that has two columns,
+(1)  indexes with the corresponding index in the main dataframe,
+(2) labels that some of the samplers require.
+- When you want to retrieve a batch from a subset you call the subset using `my_dataframe:get_subset('train'):get_batch(30)` or `my_dataframe['/train']:get_batch(30)`.
+- The batch returned is also a subclass that has a custom `to_tensor` function
+that returns the data and corresponding label tensors. You can provide custom
+functions that will get the full row as an argument allowing you to use e.g. a
+filename that permits load an external resource.
+
+A simple example:
+
+```lua
+local df = Dataframe('my_csv'):
+	create_subsets()
+
+local batch = df["/train"]:get_batch(10)
+local data, label = batch:to_tensor{
+	load_data_fn = my_image_loader
+}
 ```
 
 ## Tests

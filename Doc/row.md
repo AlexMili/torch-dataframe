@@ -27,7 +27,7 @@ Inserts a row or multiple rows into database at the position of the provided ind
 })
 ```
 
-_Return value_: void
+_Return value_: self
 Note, if you provide a Dataframe the primary dataframes meta-information will
 be the ones that are kept
 
@@ -51,7 +51,7 @@ Appends the row(s) to the Dataframe.
 })
 ```
 
-_Return value_: void
+_Return value_: self
 Note, if you provide a Dataframe the primary dataframes meta-information will
 be the ones that are kept
 
@@ -74,7 +74,7 @@ Alias to Dataframe.append
 })
 ```
 
-_Return value_: void
+_Return value_: self
 Note, if you provide a Dataframe the primary dataframes meta-information will
 be the ones that are kept
 
@@ -97,4 +97,4 @@ Deletes a given row
 })
 ```
 
-_Return value_: void
+_Return value_: self

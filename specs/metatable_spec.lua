@@ -81,7 +81,7 @@ describe("Indexing the dataframe", function()
 		end)
 	end)
 
-	describe("Check the __len",function()
+	describe("Check the __len__",function()
 		local df = Dataframe(Df_Dict{a={1,2,3,4,5}})
 
 		it("__len__ should return the n_rows",function()
@@ -90,6 +90,37 @@ describe("Indexing the dataframe", function()
 
 		it("# should return the n_rows",function()
 			assert.are.same(#df, df.n_rows)
+		end)
+	end)
+
+	describe("Check the __eq__",function()
+		it("Should be equal",function()
+			local a = Dataframe(Df_Dict{a={1,2,3,4,5}})
+			local b = Dataframe(Df_Dict{a={1,2,3,4,5}})
+
+			assert.is_true(a == b)
+			assert.is_false(a ~= b)
+
+			a:set(2, Df_Dict{a=0/0})
+			b:set(2, Df_Dict{a=0/0})
+			assert.is_true(a == b, "Fails with nan values")
+			assert.is_false(a ~= b, "Fails with nan values")
+		end)
+
+		it("Should not be equal",function()
+			local a = Dataframe(Df_Dict{a={1,2,3,4,5}})
+			local b = Dataframe(Df_Dict{a={1,3,4,5}})
+			local c = Dataframe(Df_Dict{a={1,2,3,4,6}})
+			local d = Dataframe(Df_Dict{a={1,2,3,0/0,6}})
+			local e = Dataframe(Df_Dict{b={1,2,3,4,5}})
+			local f = Dataframe(Df_Dict{a={1,2,3,4,5},
+			                            b={1,2,3,4,5}})
+
+			assert.is_true(a ~= b, "Fail to differ row length")
+			assert.is_true(a ~= c, "Fail to differ values")
+			assert.is_true(a ~= d, "Fail to differ nan")
+			assert.is_true(a ~= e, "Fail to differ column names")
+			assert.is_true(a ~= f, "Fail to differ number of columns")
 		end)
 	end)
 

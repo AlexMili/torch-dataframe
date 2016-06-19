@@ -24,7 +24,8 @@ _Return value_: boolean
 	{name="self", type="Dataframe"},
 	{name="column_name", type="string", doc="The column name to check"},
 	call=function(self, column_name)
-	assert(self:has_column(column_name), "Could not find column: " .. tostring(column_name))
+	self:assert_has_column(column_name)
+
 	return self.schema[column_name] == "number"
 end}
 
@@ -50,6 +51,68 @@ _Return value_: boolean
 	return false
 end}
 
+Dataframe.assert_has_column = argcheck{
+	doc = [[
+<a name="Dataframe.assert_has_column">
+### Dataframe.assert_has_column(@ARGP)
+
+Asserts that column is in the dataset
+
+@ARGT
+
+
+_Return value_: boolean
+]],
+	{name="self", type="Dataframe"},
+	{name="column_name", type="string", doc="The column to check"},
+	{name="comment", type="string", doc="Comments that are to be displayed with the error",
+	 default=""},
+	call=function(self, column_name, comment)
+
+	local has_col = self:has_column(column_name)
+	if (not has_col) then
+		-- The get_val_string is a little expensive and therefore better
+		--  only do when the assertion actually fails
+		local err_msg = ("The column '%s' doesn't exist among: %s"):
+		 format(column_name, table.get_val_string(self.column_order))
+		if (comment ~= "") then
+			err_msg = err_msg .. ". " .. comment
+		end
+		assert(false, err_msg) -- Should probably use stop()
+	end
+end}
+
+Dataframe.assert_has_not_column = argcheck{
+	doc = [[
+<a name="Dataframe.assert_has_not_column">
+### Dataframe.assert_has_not_column(@ARGP)
+
+Asserts that column is not in the dataset
+
+@ARGT
+
+
+_Return value_: boolean
+]],
+	{name="self", type="Dataframe"},
+	{name="column_name", type="string", doc="The column to check"},
+	{name="comment", type="string", doc="Comments that are to be displayed with the error",
+	 default=""},
+	call=function(self, column_name, comment)
+
+	local has_col = self:has_column(column_name)
+	if (has_col) then
+		-- The get_val_string is a little expensive and therefore better
+		--  only do when the assertion actually fails
+		local err_msg = ("The column '%s' already exist among: %s"):
+		 format(column_name, table.get_val_string(self.column_order))
+		if (comment ~= "") then
+			err_msg = err_msg .. ". " .. comment
+		end
+		assert(false, err_msg) -- Should probably use stop()
+	end
+end}
+
 Dataframe.drop = argcheck{
 	doc = [[
 <a name="Dataframe.drop">
@@ -59,12 +122,13 @@ Dataframe.drop = argcheck{
 
 Delete column from dataset
 
-_Return value_: void
+_Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	{name="column_name", type="string", doc="The column to drop"},
 	call=function(self, column_name)
-	assert(self:has_column(column_name), "The column " .. column_name .. " doesn't exist")
+	self:assert_has_column(column_name)
+
 	self.dataset[column_name] = nil
 	temp_dataset = {}
 	-- Slightly crude method but can't get self.dataset == {} to works
@@ -84,14 +148,18 @@ _Return value_: void
 			table.insert(col_ordr, self.column_order[i])
 		end
 	end
+	self.column_order = col_ordr
 
 	if (not empty) then
 		self.dataset = temp_dataset
 		self.categorical[column_name] = nil
+		self.schema[column_name] = nil
 		self:_refresh_metadata() -- TODO: Merge column_order with columns
 	else
 		self:__init()
 	end
+
+	return self
 end}
 
 Dataframe.drop = argcheck{
@@ -108,6 +176,8 @@ You can also delete multiple columns by supplying a Df_Array
 	for i=1,#columns do
 		self:drop(columns[i])
 	end
+
+	return self
 end}
 
 Dataframe.add_column = argcheck{
@@ -120,7 +190,7 @@ the right.
 
 @ARGT
 
-_Return value_: void
+_Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	{name="column_name", type="string", doc="The column to add"},
@@ -139,7 +209,7 @@ The default_value argument will fill the new column. If omitted will be 0/0
 	{name="default_value", type="number|string|boolean", doc="The default_value"},
 	overload=Dataframe.add_column,
 	call=function(self, column_name, default_value)
-	self:add_column(column_name, -1, default_value)
+	return self:add_column(column_name, -1, default_value)
 end}
 
 Dataframe.add_column = argcheck{
@@ -161,7 +231,8 @@ specifying the position you also must provide the default_value.
 	for i=1,self.n_rows do
 		table.insert(default_values, default_value)
 	end
-	self:add_column(column_name, pos, Df_Array(default_values))
+
+	return self:add_column(column_name, pos, Df_Array(default_values))
 end}
 
 Dataframe.add_column = argcheck{
@@ -179,11 +250,16 @@ default_value
 	{name="default_values", type="Df_Array", doc="The default values"},
 	call=function(self, column_name, pos, default_values)
 	assert(isint(pos), "The pos should be an integer, you provided: " .. tostring(pos))
-	assert(not self:has_column(column_name), "The column " .. column_name .. " already exists in the dataset")
+	self:assert_has_not_column(column_name)
 	default_values = default_values.data
 
+	if (self.n_rows == 0) then
+		return self:load_table(Df_Dict({[column_name] = default_values}))
+	end
+
 	assert(table.maxn(default_values) == self.n_rows,
-	       'The default values don\'t match the number of rows')
+	       ('The number of default values (%s) don\'t match the number of rows in dataset %d'):
+				 format(table.maxn(default_values), self.n_rows))
 
 	self.dataset[column_name] = {}
 	for i = 1, self.n_rows do
@@ -194,13 +270,19 @@ default_value
 		self.dataset[column_name][i] = val
 	end
 
+	table.insert(self.columns, column_name)
+
 	-- Append column order
 	if (pos > 0 and pos <= self.n_rows) then
 		table.insert(self.column_order, pos, column_name)
 	else
 		table.insert(self.column_order, column_name)
 	end
+
+	self:_infer_schema()
 	self:_refresh_metadata()
+
+	return self
 end}
 
 Dataframe.cbind =  argcheck{
@@ -209,21 +291,21 @@ Bind data columnwise together
 
 @ARGT
 
-_Return value_: void
+_Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	{name="data", type="Dataframe", doc="The other dataframe to bind"},
 	call=function(self, data)
 	assert(self.n_rows == data.n_rows, ("The number of rows don't match %d ~= %d"):format(self.n_rows, data.n_rows))
 	for i=1,#data.column_order do
-		assert(not self:has_column(data.column_order[i]),
-		       "Column " .. data.column_order[i] .. " already present in the original dataset." ..
-		       " Note that the function is not a join that matches on columns")
+		self:assert_has_not_column(data.column_order[i])
 	end
 
 	for i=1,#data.column_order do
 		self:add_column(data.column_order[i], Df_Array(data:get_column(data.column_order[i])))
 	end
+
+	return self
 end}
 
 Dataframe.cbind =  argcheck{
@@ -257,12 +339,12 @@ _Return value_: table or tensor
 	{name='as_raw', type='boolean', doc='Convert categorical values to original', default=false},
 	{name='as_tensor', type='boolean', doc='Convert to tensor', default=false},
 	call=function(self, column_name, as_raw, as_tensor)
-	assert(self:has_column(column_name), "Could not find column: " .. tostring(column_name))
+	self:assert_has_column(column_name)
 	assert(not as_tensor or
 	       self:is_numerical(column_name),
-				 "Converting to tensor requires a numerical/categorical variable." ..
-				 " The column " .. tostring(column_name) ..
-				 " is of type " .. tostring(self.schema[column_name]))
+	       "Converting to tensor requires a numerical/categorical variable." ..
+	       " The column " .. tostring(column_name) ..
+	       " is of type " .. tostring(self.schema[column_name]))
 
 	column_data = self.dataset[column_name]
 
@@ -285,7 +367,7 @@ Change value of a whole column or columns
 
 @ARGT
 
-_Return value_: void
+_Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	{name='columns', type='Df_Array', doc='The columns to reset'},
@@ -295,6 +377,8 @@ _Return value_: void
 	for i=1,#columns do
 		self:reset_column(columns[i], new_value)
 	end
+
+	return self
 end}
 
 Dataframe.reset_column = argcheck{
@@ -308,7 +392,7 @@ Dataframe.reset_column = argcheck{
 	{name='column_name', type='string', doc='The column requested'},
 	{name='new_value', type='number|string|boolean|nan', doc='New value to set', default=0/0},
 	call=function(self, column_name, new_value)
-	assert(self:has_column(column_name), "Could not find column: " .. tostring(k))
+	self:assert_has_column(column_name)
 
 	for i = 1,self.n_rows do
 		self.dataset[column_name][i] = new_value
@@ -325,17 +409,17 @@ Rename a column
 
 @ARGT
 
-_Return value_: void
+_Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	{name='old_column_name', type='string', doc='The old column name'},
 	{name='new_column_name', type='string', doc='The new column name'},
 	call=function(self, old_column_name, new_column_name)
-	assert(self:has_column(old_column_name), "Could not find column: " .. tostring(old_column_name))
-	assert(not self:has_column(new_column_name), "There is already a column named: " .. tostring(new_column_name))
+	self:assert_has_column(old_column_name)
+	self:assert_has_not_column(new_column_name)
 	assert(type(new_column_name) == "string" or
 	       type(new_column_name) == "number",
-				 "The column name can only be a number or a string value, yours is: " .. type(new_column_name))
+	       "The column name can only be a number or a string value, yours is: " .. type(new_column_name))
 
 	temp_dataset = {}
 
@@ -361,6 +445,8 @@ _Return value_: void
 
 	self:_refresh_metadata()
 	self:_infer_schema()
+
+	return self
 end}
 
 Dataframe.get_numerical_colnames = argcheck{
@@ -403,7 +489,7 @@ _Return value_: integer
 	{name="as_tensor", type="boolean", doc="If return index position in tensor", default=false},
 	call=function(self, column_name, as_tensor)
 
-	assert(self:has_column(column_name), "Could not find column: " .. tostring(column_name))
+	self:assert_has_column(column_name)
 
 	local number_count = 0
 	for i = 1,#self.column_order do

@@ -23,6 +23,18 @@ By providing dimension you can get only that dimension, row == 1, col == 2
 ```
 
 _Return value_: integer
+	<a name="Dataframe.__tostring__">
+### Dataframe.__tostring__(self)
+
+A wrapper for `tostring()`
+
+```
+({
+   self = Dataframe  -- 
+})
+```
+
+_Return value_: string
 <a name="Dataframe.copy">
 ### Dataframe.copy(self)
 
@@ -41,3 +53,9 @@ _Return value_: Dataframe
 Returns the number of rows
 
 _Return value_: integer
+<a name="Dataframe.==">
+### Dataframe.==
+
+Checks if Dataframe's contain the same values
+
+_Return value_: boolean

@@ -18,7 +18,8 @@ dependencies = {
 		"lua >= 5.1",
 		"torch >= 7.0",
 		"argcheck >= 2.0",
-		"luafilesystem >= 1.6.3"
+		"luafilesystem >= 1.6.3",
+		"paths"
 }
 build = {
 	type = 'builtin',
@@ -31,13 +32,16 @@ build = {
 			["Dataframe.Extensions.categorical"] = 'Extensions/categorical.lua',
 			["Dataframe.Extensions.column"] = 'Extensions/column.lua',
 			["Dataframe.Extensions.row"] = 'Extensions/row.lua',
-			["Dataframe.Extensions.load_batch"] = 'Extensions/load_batch.lua',
+			["Dataframe.Extensions.subsets_and_batches"] = 'Extensions/subsets_and_batches.lua',
 			["Dataframe.Extensions.load_data"] = 'Extensions/load_data.lua',
 			["Dataframe.Extensions.missing_data"] = 'Extensions/missing_data.lua',
 			["Dataframe.Extensions.output"] = 'Extensions/output.lua',
 			["Dataframe.Extensions.export_data"] = 'Extensions/export_data.lua',
 			["Dataframe.Extensions.select_set_update"] = 'Extensions/select_set_update.lua',
 			["Dataframe.Extensions.statistics"] = 'Extensions/statistics.lua',
+			["Dataframe.sub_classes.batchframe"] = 'sub_classes/batchframe.lua',
+			["Dataframe.sub_classes.subset"] = 'sub_classes/subset.lua',
+			["Dataframe.sub_classes.subset_extensions.samplers"] = 'sub_classes/subset_extensions/samplers.lua',
 			["Dataframe.helper_classes.array"] = 'helper_classes/array.lua',
 			["Dataframe.helper_classes.dict"] = 'helper_classes/dict.lua',
 			["Dataframe.helper_classes.tbl"] = 'helper_classes/tbl.lua'

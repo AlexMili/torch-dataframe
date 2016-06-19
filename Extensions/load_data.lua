@@ -20,7 +20,7 @@ Dataframe.load_csv = argcheck{
 
 Loads a CSV file into Dataframe using csvigo as backend
 
-_Return value_: void
+_Return value_: self
 	]],
 	{name="self", type="Dataframe"},
 	{name="path", type="string", doc="path to file"},
@@ -40,7 +40,6 @@ _Return value_: void
 		            skip = skip,
 		            verbose = verbose,
 		            column_order = true}
-
 	self:_clean_columns()
 	self.column_order = trim_table_strings(self.column_order)
 	self:_refresh_metadata()
@@ -56,6 +55,8 @@ _Return value_: void
 
 	-- Change all missing values to nan
 	self:_fill_missing()
+
+	return self
 end}
 
 Dataframe.load_table = argcheck{
@@ -71,12 +72,12 @@ another column with a single element that element is duplicated 10 times, i.e.
 filling the entire column with that single value.
 
 
-_Return value_: void
+_Return value_: self
 	]],
 	{name="self", type="Dataframe"},
 	{name="data", type="Df_Dict", doc="Table (dictionary) to import. Max depth 2."},
-	{name="infer_schema", type="boolean", default=true,
-	 doc="automatically detect columns' type"},
+	{name="infer_schema", type="Df_Dict|boolean", default=true,
+	 doc="automatically detect columns' type or use previous schema"},
 	{name="column_order", type="Df_Array", default=false,
 	 doc="The order of the column (has to be array and _not_ a dictionary)"},
 	call=function(self, data, infer_schema, column_order)
@@ -150,7 +151,17 @@ _Return value_: void
 	self:_refresh_metadata()
 
 	if infer_schema then
-		self:_infer_schema()
+		if (torch.type(infer_schema) == "Df_Dict") then
+			infer_schema = infer_schema.data
+			local new_schema = {}
+			for _,column_name in ipairs(self.column_order) do
+				assert(infer_schema[column_name],
+				       ("Could not find schema column '%s' in provided schema table"):format(tostring(column_name)))
+			end
+			self.schema = infer_schema
+		else
+			self:_infer_schema()
+		end
 	else
 		-- Default value for self.schema
 		for key,value in pairs(self.column_order) do
@@ -160,6 +171,8 @@ _Return value_: void
 
 	-- Change all missing values to nan
 	self:_fill_missing()
+
+	return self
 end}
 
 Dataframe._clean_columns = argcheck{
@@ -171,7 +184,7 @@ Dataframe._clean_columns = argcheck{
 
 Internal function to clean columns names
 
-_Return value_: void
+_Return value_: self
 	]],
 	{name="self", type="Dataframe"},
 	call = function(self)
@@ -186,6 +199,8 @@ _Return value_: void
 	end
 
 	self.dataset = temp_dataset
+
+	return self
 end}
 
 -- Count missing values
@@ -226,7 +241,7 @@ Dataframe._fill_missing = argcheck{
 
 Internal function for changing missing values to NaN values.
 
-_Return value_: void
+_Return value_: self
 	]],
 	{name="self", type="Dataframe"},
 	call = function(self)
@@ -242,4 +257,6 @@ _Return value_: void
 			end
 		end
 	end
+
+	return self
 end}
