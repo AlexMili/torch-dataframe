@@ -70,33 +70,74 @@ table.exact_length = function(tbl)
 end
 
 function isint(n)
-	return n == math.floor(n)
+	if (torch.isTensor(n)) then
+		return torch.eq(n, torch.floor(n))
+	else
+		return n == math.floor(n)
+	end
 end
 
 function isnan(n)
 	return n ~= n
 end
 
-table.collapse_to_string = function(tbl)
-	assert(type(tbl) == "table")
+table.get_key_string = function(tbl)
 	local ret = ""
+	for key,_ in pairs(tbl) do
+		if (ret ~= "") then
+			ret = ret .. ", "
+		end
+		ret = ret .. ("'%s'"):format(key)
+	end
+	return ret
+end
+
+table.get_val_string = function(tbl)
+	local ret = ""
+	for _,val in pairs(tbl) do
+		if (ret ~= "") then
+			ret = ret .. ", "
+		end
+		ret = ret .. ("'%s'"):format(val)
+	end
+	return ret
+end
+
+table.collapse2str = function(tbl, indent, start)
+	assert(type(tbl) == "table", "The object isn't of type table: " .. type(tbl))
+
+	indent = indent or ""
+	start = start or indent
+	local ret = start
+
 	if(tbl == nil) then
 		ret = "No table provided"
+
 	elseif(table.exact_length(tbl) == 0) then
 		ret = "Empty table"
+
 	else
 		for k,v in pairs(tbl) do
-			if (ret ~= "") then
+			if (ret ~= start) then
 				ret = ret .. ", "
+
+				-- If deeper structure then the description should be dense
+				if (indent:len() <= 2*1) then
+					ret = ret .. "\n" .. indent
+				end
 			end
 
 			if (type(v) == "table") then
-				v = ("[%s]"):format(table.collapse_to_string(v))
+				v = ("[\n%s%s\n%s]"):
+					format(indent .. "  ",
+					       table.collapse2str(v, indent .. "  ", ""),
+					       indent)
 			end
+
 			if (isnan(v)) then
 				ret = ret .. "'" .. k .. "'=>nan"
 			else
-				ret = ret .. "'" .. k .. "'=>'" .. v .. "'"
+				ret = ret .. "'" .. k .. "'=>'" .. tostring(v) .. "'"
 			end
 		end
 	end
@@ -119,6 +160,53 @@ table.maxn = table.maxn or function(t) local maxn=0 for i in pairs(t) do maxn=ty
 
 -- Util for debugging purpose
 table._dump = function(tbl)
-	print(table.collapse_to_string(tbl))
+	print(("\n-[ Table dump ]-\n%s"):format(table.collapse2str(tbl)))
+end
+
+-- A benchmark function that can be used for checking performance
+df_bnchmrk = (function()
+	local start
+	local i =  0
+	return function(desc)
+		if (not start) then
+			start = os.clock()
+			print("Start benchmark")
+		else
+			i = i + 1
+			local new_time = os.clock()
+			local digits = math.floor(math.log10(new_time - start))
+			local out_str = "Passed time %.1f at point no %d"
+			if (digits <= 0) then
+				out_str = ("Passed time %%.%df at point no %d"):
+					format(1-digits, i)
+			end
+			out_str = out_str:format(new_time - start, i)
+			if (desc) then
+				out_str = out_str .. (" (- %s -)"):format(desc)
+			end
+			print(out_str)
+		end
+	end
+end)()
+
+if (itorch ~= nil) then
+	-- The itorch has a strange handling of tables that generate huge outputs for
+	-- large dataframe objects. This may hang the notebook as it tries to print
+	-- thousands of entries. This snippet overloads if we seem to be in an itorch environement
+	print_itorch = print
+	print_df = function(...)
+		for i = 1,select('#',...) do
+			local obj = select(i,...)
+			if torch.isTypeOf(obj, Dataframe) then
+				print_itorch(tostring(obj))
+			else
+				print_itorch(obj)
+			end
+		end
+		if select('#',...) == 0 then
+			print_itorch()
+		end
+	end
+	print = print_df
 end
 -- END UTILS

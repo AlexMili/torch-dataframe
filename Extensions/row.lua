@@ -24,8 +24,7 @@ _Return value_: A table with the row content
 	{name="self", type="Dataframe"},
 	{name='index', type='number', doc='The row index to retrieve'},
 	call=function(self, index)
-	assert(isint(index), "The index should be an integer, you've provided " .. tostring(index))
-	assert(index > 0 and index <= self.n_rows, ("The index (%d) is outside the bounds 1-%d"):format(index, self.n_rows))
+	self:assert_is_index(index)
 
 	local row = {}
 	for _,key in pairs(self.columns) do
@@ -49,7 +48,7 @@ Inserts a row or multiple rows into database at the position of the provided ind
 
 @ARGT
 
-_Return value_: void
+_Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	{name="index", type="number", doc="The row number where to insert the row(s)"},
@@ -59,8 +58,10 @@ _Return value_: void
 		return self:append{rows = rows}
 	end
 
-	assert(isint(index), "The index should be an integer, you've provided " .. tostring(index))
-	assert(index > 0 and index <= self.n_rows, ("The index (%d) is outside the bounds 1-%d"):format(index, self.n_rows))
+	self:assert_is_index{index = index, plus_one = true}
+	if (index == self:size(1) + 1) then
+		return self:append(rows)
+	end
 
 	rows, no_rows_2_insert =
 		self:_check_and_prep_row_argmnt{rows = rows,
@@ -79,6 +80,8 @@ _Return value_: void
 	end
 	self:_refresh_metadata()
 	self:_infer_schema()
+
+	return self
 end}
 
 Dataframe.insert = argcheck{
@@ -94,6 +97,10 @@ be the ones that are kept
 	{name="index", type="number", doc="The row number where to insert the row(s)"},
 	{name="rows", type="Dataframe", doc="A Dataframe that you want to insert"},
 	call=function(self, index, rows)
+	if (index == self:size(1) + 1) then
+		return self:append(rows)
+	end
+
 	return self:insert(index, Df_Dict(rows.dataset))
 end}
 
@@ -173,7 +180,7 @@ Appends the row(s) to the Dataframe.
 
 @ARGT
 
-_Return value_: void
+_Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	{name="rows", type="Df_Dict", doc="Values to append to the Dataframe"},
@@ -200,6 +207,8 @@ _Return value_: void
 
 	self:_refresh_metadata()
 	self:_infer_schema()
+
+	return self
 end}
 
 Dataframe.append = argcheck{
@@ -214,7 +223,16 @@ be the ones that are kept
 	{name="self", type="Dataframe"},
 	{name="rows", type="Dataframe", doc="A Dataframe that you want to append"},
 	call=function(self, rows)
-	self:append(Df_Dict(rows.dataset))
+	if (self:size(1) == 0) then
+		self.dataset = clone(rows.dataset)
+		self.n_rows = rows.n_rows
+		self:_infer_schema()
+		self:_refresh_metadata()
+		rows:_copy_meta(self)
+		return self
+	end
+
+	return self:append(Df_Dict(rows.dataset))
 end}
 
 
@@ -227,7 +245,7 @@ Alias to Dataframe.append
 
 @ARGT
 
-_Return value_: void
+_Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	{name="rows", type="Df_Dict", doc="Values to append to the Dataframe"},
@@ -259,13 +277,12 @@ Deletes a given row
 
 @ARGT
 
-_Return value_: void
+_Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	{name="index", type="number", doc="The row index to remove"},
 	call=function(self, index)
-	assert(isint(index), "The index should be an integer, you've provided " .. tostring(index))
-	assert(index > 0 and index <= self.n_rows, ("The index (%d) is outside the bounds 1-%d"):format(index, self.n_rows))
+	self:assert_is_index(index)
 
 	for i = 1,#self.columns do
 		table.remove(self.dataset[self.columns[i]],index)
@@ -273,4 +290,6 @@ _Return value_: void
 	self.n_rows = self.n_rows - 1
 
 	self:_refresh_metadata()
+
+	return self
 end}

@@ -55,8 +55,9 @@ The `__index__` function is a powerful tool that allows quick access to regular 
 
 - _Single integer_: it returns the raw row table (see `get_row()`)
 - _Df_Array()_: select rows of interest (see `_create_subset()`)
-- _"start:stop"_: get a row span using start/stop index, e.g. "2:5" (see `sub()`)
-- _"$column_name"_: get a column by prepending the name with $, e.g. "$a column name" (see `get_column`)
+- _"start:stop"_: get a row span using start/stop index, e.g. `"2:5"` (see `sub()`)
+- _"$column_name"_: get a column by prepending the name with `$`, e.g. `"$a column name"` (see `get_column`)
+- _"/subset_name"_: get a subset by prepending the name with `/`, e.g. `"/a subset name"` (see `get_subset`)
 
 _Return value_: Table or Dataframe
 ]]
@@ -81,6 +82,12 @@ function Dataframe:__index__(index)
 		if (index:match("^[$]")) then
 			local column_name = index:gsub("^[$]", "")
 			return self:get_column(column_name), true
+		end
+
+		-- Index a subset using a / at the beginning of a string
+		if (index:match("^[/]")) then
+			local subset_name = index:gsub("^[/]", "")
+			return self:get_subset(subset_name), true
 		end
 
 		return false
@@ -109,6 +116,23 @@ function Dataframe:__newindex__(index, value)
 
 	return false
 end
+
+Dataframe.__tostring__ = argcheck{
+	doc=[[
+	<a name="Dataframe.__tostring__">
+### Dataframe.__tostring__(@ARGP)
+
+A wrapper for `tostring()`
+
+@ARGT
+
+_Return value_: string
+]],
+	{name="self", type="Dataframe"},
+	call=function (self)
+	return self:tostring()
+end}
+
 
 Dataframe.copy = argcheck{
 	doc =  [[
@@ -148,4 +172,56 @@ Dataframe.__len__ = argcheck{
 	{name="self", type="Dataframe"},
 	call=function(self)
 	return self.n_rows
+end}
+
+Dataframe.__eq__ = argcheck{
+	doc =  [[
+<a name="Dataframe.==">
+### Dataframe.==
+
+Checks if Dataframe's contain the same values
+
+_Return value_: boolean
+]],
+	{name="self", type="Dataframe"},
+	{name="other", type="Dataframe"},
+	call=function(self, other)
+	-- Check that size matches
+	if (not torch.all(torch.eq(self:size(), other:size()))) then
+		return false
+	end
+
+	-- Check that columns match
+	for i=1,#self.columns do
+		if (not other:has_column(self.columns[i])) then
+			return false
+		end
+	end
+
+	-- Check actual content (expensive why this is left to last)
+	for i=1,#self.columns do
+		local self_col = self:get_column(self.columns[i])
+		local other_col = other:get_column(self.columns[i])
+
+		for i=1,self.n_rows do
+			-- one is nan and not the other
+			if ((not isnan(self_col[i]) and
+			     isnan(other_col[i])) or
+			    (isnan(self_col[i]) and
+			     not isnan(other_col[i]))) then
+				return false
+			end
+
+			-- Actual value check if both weren't nan
+			if (not(isnan(self_col[i]))) then
+				if (self_col[i] ~= other_col[i]) then
+					return false
+				end
+			end
+
+		end
+	end
+
+	-- If the function hasn't exited before then it means that the two dataframes are equal
+	return true
 end}

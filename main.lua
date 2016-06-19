@@ -22,21 +22,22 @@ Creates and initializes a Dataframe class. Envoked through `local my_dataframe =
 
 @ARGT
 
-_Return value_: Dataframe
 ]],
 	{name="self", type="Dataframe"},
 	call=function(self)
 	self:_clean()
-	self.print = {no_rows = 10, max_col_width = 20}
+	self.tostring_defaults =
+		{no_rows = 10,
+		min_col_width = 7,
+		max_table_width = 80}
 end}
 
 Dataframe.__init = argcheck{
 	doc =  [[
-Read in an csv-file
+Read in an csv-filef
 
 @ARGT
 
-_Return value_: Dataframe
 ]],
 	overload=Dataframe.__init,
 	{name="self", type="Dataframe"},
@@ -52,7 +53,6 @@ Directly input a table
 
 @ARGT
 
-_Return value_: Dataframe
 ]],
 	overload=Dataframe.__init,
 	{name="self", type="Dataframe"},
@@ -78,7 +78,8 @@ Dataframe._clean = argcheck{
 	self.n_rows = 0
 	self.categorical = {}
 	self.schema = {}
-	self.__version = "1.1.dev"
+	self:set_version()
+	return self
 end}
 
 -- Private function for copying core settings to new Dataframe
@@ -88,7 +89,7 @@ Dataframe._copy_meta = argcheck{
 	call=function(self, to)
 	to.column_order = clone(self.column_order)
 	to.schema = clone(self.schema)
-	to.print = clone(self.print)
+	to.tostring_defaults = clone(self.tostring_defaults)
 	to.categorical = clone(self.categorical)
 
 	return to
@@ -123,6 +124,8 @@ Dataframe._refresh_metadata = argcheck{
 
 	self.columns = keyset
 	self.n_rows = rows
+
+	return self
 end}
 
 -- Internal function to detect columns types
@@ -159,6 +162,8 @@ Dataframe._infer_schema = argcheck{
 			end
 		end
 	end
+
+	return self
 end}
 
 --
@@ -216,6 +221,114 @@ _Return value_: string
 	{name="self", type="Dataframe"},
 	call=function(self)
 	return torch.version(self)
+end}
+
+Dataframe.set_version = argcheck{
+	doc =  [[
+<a name="Dataframe.set_version">
+### Dataframe.set_version(@ARGP)
+
+Sets the data-frame version
+
+@ARGT
+
+_Return value_: self
+]],
+	{name="self", type="Dataframe"},
+	call=function(self)
+	self.__version = "1.2.dev"
+	return self
+end}
+
+Dataframe.upgrade_frame = argcheck{doc =  [[
+<a name="Dataframe.upgrade_frame">
+### Dataframe.upgrade_frame(@ARGP)
+
+Upgrades an dataframe using the old batch loading framework to the new framework
+by instantiating the subsets argument, copying the indexes and setting the
+samplers to either:
+- linear for test/validate or shuffle = false
+- permutation if shuffle = true and none of above names
+
+@ARGT
+
+_Return value_: void
+]],
+	{name = "self", type = "Dataframe"},
+	call = function(self)
+	local current_version = self:version()
+	self:set_version()
+	if (current_version == self.__version) then
+		print(("No need to update dataframe as it already is version '%s'"):format(current_version))
+		return
+	end
+
+	assert(self.subsets == nil, "The dataframe seems to be upgraded as it already has a subset property")
+
+	if (self.batch == nil) then
+		print("No need to update batch info")
+	else
+
+		-- Initiate the subsets
+		self:create_subsets(Df_Dict(self.batch.data_types))
+		self.batch.data_types = nil
+
+		-- Copy the old indexes into the subsets created
+		for sub_name,sub_keys in pairs(self.batch.datasets) do
+			-- Note, can't use drop/add since this breaks with __init call
+			self.subsets.sub_objs[sub_name].dataset["indexes"] = sub_keys
+			self.subsets.sub_objs[sub_name].nrows = #sub_keys
+
+			if (self.batch.shuffle and
+					(sub_name ~= "test" and sub_name ~= "validate")) then
+				self.subsets.sub_objs[sub_name]:set_sampler("permutation")
+			else
+				self.subsets.sub_objs[sub_name]:set_sampler("linear")
+			end
+
+		end
+		self.batch = nil
+
+		print("Updated batch metadata")
+	end
+
+	if (type(self.print) == "table") then
+		-- Do silently as this is rather unimportant
+		self.tostring_defaults = self.print
+		self.tostring_defaults.max_col_width = nil
+	end
+end}
+
+Dataframe.assert_is_index = argcheck{doc =  [[
+<a name="Dataframe.assert_is_index">
+### Dataframe.assert_is_index(@ARGP)
+
+Asserts that the number is a valid index.
+
+@ARGT
+
+_Return value_: void
+]],
+	{name = "self", type = "Dataframe"},
+	{name = "index", type = "number", doc="The index to investigate"},
+	{name = "plus_one", type = "boolean", default = false,
+	 doc= "When adding rows, an index of size(1) + 1 is OK"},
+	call = function(self, index, plus_one)
+	if (plus_one) then
+		if (not isint(index) or
+				index < 0 or
+				index > self:size(1) + 1) then
+				assert(false, ("The index has to be an integer between 1 and %d - you've provided %s"):
+					format(self:size(1) + 1, index))
+		end
+	else
+		if (not isint(index) or
+				index < 0 or
+				index > self:size(1)) then
+				assert(false, ("The index has to be an integer between 1 and %d - you've provided %s"):
+					format(self:size(1), index))
+		end
+	end
 end}
 
 return Dataframe

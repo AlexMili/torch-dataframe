@@ -14,7 +14,7 @@
 Set a column to categorical type. Adds the column to self.categorical table with
 the keuys retrieved from Dataframe.unique.
 
-_Return value_: void
+_Return value_: self
 
 ```
 ({
@@ -50,7 +50,7 @@ _Return value_: index value for key (integer)
 Converts a categorical column to a string column. This can be used to revert
 the Dataframe.as_categorical or as a way to convert numericals into strings.
 
-_Return value_: void
+_Return value_: self
 <a name="Dataframe.clean_categorical">
 ### Dataframe.clean_categorical(self, column_name[, reset_keys])
 
@@ -64,7 +64,7 @@ _Return value_: void
 
 Removes any categories no longer present from the keys
 
-_Return value_: void
+_Return value_: self
 <a name="Dataframe.is_categorical">
 ### Dataframe.is_categorical(self, column_name)
 

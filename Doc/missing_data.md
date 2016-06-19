@@ -45,7 +45,7 @@ Replace missing value in a specific column
 })
 ```
 
-_Return value_: void
+_Return value_: self
 <a name="Dataframe.fill_na">
 ### Dataframe.fill_na(self[, default_value])
 
@@ -58,4 +58,4 @@ Replace missing value in all columns
 })
 ```
 
-_Return value_: void
+_Return value_: self

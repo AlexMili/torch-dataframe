@@ -27,6 +27,36 @@ _Return value_: boolean
 Checks if column is present in the dataset
 
 _Return value_: boolean
+<a name="Dataframe.assert_has_column">
+### Dataframe.assert_has_column(self, column_name[, comment])
+
+Asserts that column is in the dataset
+
+```
+({
+   self        = Dataframe  -- 
+   column_name = string     -- The column to check
+  [comment     = string]    -- Comments that are to be displayed with the error [default=]
+})
+```
+
+
+_Return value_: boolean
+<a name="Dataframe.assert_has_not_column">
+### Dataframe.assert_has_not_column(self, column_name[, comment])
+
+Asserts that column is not in the dataset
+
+```
+({
+   self        = Dataframe  -- 
+   column_name = string     -- The column to check
+  [comment     = string]    -- Comments that are to be displayed with the error [default=]
+})
+```
+
+
+_Return value_: boolean
 <a name="Dataframe.drop">
 ### Dataframe.drop(self, column_name)
 
@@ -39,7 +69,7 @@ _Return value_: boolean
 
 Delete column from dataset
 
-_Return value_: void
+_Return value_: self
 You can also delete multiple columns by supplying a Df_Array
 
 ```
@@ -61,7 +91,7 @@ the right.
 })
 ```
 
-_Return value_: void
+_Return value_: self
 The default_value argument will fill the new column. If omitted will be 0/0
 
 ```
@@ -103,7 +133,7 @@ Bind data columnwise together
 })
 ```
 
-_Return value_: void
+_Return value_: self
 
 ```
 ({
@@ -140,7 +170,7 @@ Change value of a whole column or columns
 })
 ```
 
-_Return value_: void
+_Return value_: self
 
 ```
 ({
@@ -163,7 +193,7 @@ Rename a column
 })
 ```
 
-_Return value_: void
+_Return value_: self
 <a name="Dataframe.get_numerical_colnames">
 ### Dataframe.get_numerical_colnames(self)
 

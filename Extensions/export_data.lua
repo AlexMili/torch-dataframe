@@ -15,11 +15,12 @@ Dataframe.to_csv = argcheck{
 <a name="Dataframe.to_csv">
 ### Dataframe.to_csv(@ARGP)
 
-@ARGT
-
 Saves a Dataframe into a CSV using csvigo as backend
 
-_Return value_: void
+_Return value_: self (Dataframe)
+
+@ARGT
+
 ]],
 	{name="self", type="Dataframe"},
 	{name='path', type='string', doc='path to file'},
@@ -39,6 +40,8 @@ _Return value_: void
 	            verbose = verbose,
 	            column_order = self.column_order,
 	            nan_as_missing = true}
+
+	return self
 end}
 
 Dataframe.to_tensor = argcheck{
@@ -46,11 +49,12 @@ Dataframe.to_tensor = argcheck{
 <a name="Dataframe.to_tensor">
 ### Dataframe.to_tensor(@ARGP)
 
-@ARGT
-
 Convert the numeric section or specified columns of the dataset to a tensor
 
+@ARGT
+
 _Return value_: (1) torch.tensor with self.n_rows rows and #columns, (2) exported column names
+
 ]],
 	{name="self", type="Dataframe"},
 	call = function(self)
@@ -74,8 +78,7 @@ You can export selected columns using the columns argument:
 	-- Check data integrity
 	numeric_dataset = {}
 	for _,k in pairs(columns) do
-		assert(self:has_column(k), "Could not find column: '" .. tostring(k) .. "'"..
-		                           " in " .. table.collapse_to_string(self.columns))
+		self:assert_has_column(k)
 		assert(self:is_numerical(k), "Column " .. tostring(k) .. " is not numerical")
 		numeric_dataset[k] =  self:get_column{column_name = k,
 		                                      as_tensor = true}
@@ -104,6 +107,11 @@ You can export selected columns using the columns argument:
 			count = count + 1
 			table.insert(tensor_col_names, column_name)
 		end
+	end
+
+	if (#tensor_col_names == 1) then
+		-- Reshape to tabular if this is only a single column
+		tensor_data	= tensor_data:reshape(tensor_data:size(1), 1)
 	end
 
 	return tensor_data, tensor_col_names

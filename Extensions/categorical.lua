@@ -20,7 +20,7 @@ Dataframe.as_categorical = argcheck{
 Set a column to categorical type. Adds the column to self.categorical table with
 the keuys retrieved from Dataframe.unique.
 
-_Return value_: void
+_Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	{name="column_name", type="string",
@@ -43,7 +43,7 @@ Dataframe.as_categorical = argcheck{
 	column_array = column_array.data
 
 	for _,cn in pairs(column_array) do
-		assert(self:has_column(cn), "Could not find column: " .. cn)
+		self:assert_has_column(cn)
 		assert(not self:is_categorical(cn), "Column already categorical")
 
 		keys = self:unique(cn, true, true)
@@ -60,8 +60,9 @@ Dataframe.as_categorical = argcheck{
 		end
 	end
 	self:_infer_schema()
-end
-}
+
+	return self
+end}
 
 Dataframe.add_cat_key = argcheck{
 	doc =  [[
@@ -78,7 +79,7 @@ _Return value_: index value for key (integer)
 	{name="column_name", type="string", doc="The column name"},
 	{name="key", type="number|string", doc="The new key to insert"},
 	call = function(self, column_name, key)
-	assert(self:has_column(column_name), "Could not find column: " .. tostring(column_name))
+	self:assert_has_column(column_name)
 	assert(self:is_categorical(column_name), "The column isn't categorical: " .. tostring(column_name))
 	assert(not isnan(key), "You can't add a nan key to "  .. tostring(column_name))
 	keys = self:get_cat_keys(column_name)
@@ -98,12 +99,12 @@ Dataframe.as_string = argcheck{
 Converts a categorical column to a string column. This can be used to revert
 the Dataframe.as_categorical or as a way to convert numericals into strings.
 
-_Return value_: void
+_Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	{name="column_name", type="string", doc="The column name"},
 	call= function(self, column_name)
-	assert(self:has_column(column_name), "Could not find column: " .. column_name)
+	self:assert_has_column(column_name)
 	if (self:is_categorical(column_name)) then
 		self.dataset[column_name] = self:get_column{column_name = column_name,
 	                                              as_raw = false}
@@ -119,6 +120,8 @@ _Return value_: void
 	end
 	self:_refresh_metadata()
 	self:_infer_schema()
+
+	return self
 end}
 
 Dataframe.clean_categorical = argcheck{
@@ -130,13 +133,13 @@ Dataframe.clean_categorical = argcheck{
 
 Removes any categories no longer present from the keys
 
-_Return value_: void
+_Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	{name='column_name', type='string', doc='the name of the column'},
 	{name='reset_keys', type='boolean', doc='if all the keys should be reinitialized', default=false},
 	call=function(self, column_name, reset_keys)
-	assert(self:has_column(column_name), "Couldn't find column: " .. tostring(column_name))
+	self:assert_has_column(column_name)
 	assert(self:is_categorical(column_name), tostring(column_name) .. " isn't categorical")
 	if (reset_keys) then
 		self:as_string(column_name)
@@ -157,6 +160,8 @@ _Return value_: void
 		end
 		self.categorical[column_name] = keys
 	end
+
+	return self
 end}
 
 Dataframe.is_categorical = argcheck{
@@ -173,7 +178,7 @@ _Return value_: boolean
 	{name="self", type="Dataframe"},
 	{name='column_name', type='string', doc='the name of the column'},
 	call=function(self, column_name)
-	assert(self:has_column(column_name), "This column doesn't exist")
+	self:assert_has_column(column_name)
 	return self.categorical[column_name] ~= nil
 end}
 
@@ -191,7 +196,7 @@ _Return value_: table with `["key"] = number` structure
 	{name="self", type="Dataframe"},
 	{name='column_name', type='string', doc='the name of the column'},
 	call=function(self, column_name)
-	assert(self:has_column(column_name), "Could not find column: " .. tostring(column_name))
+	self:assert_has_column(column_name)
 	assert(self:is_categorical(column_name), "The " .. tostring(column_name) .. " isn't a categorical column")
   return self.categorical[column_name]
 end}
@@ -246,7 +251,7 @@ _Return value_: table with values
 	{name='data', type='Df_Array', doc='The integers to be converted'},
 	{name='column_name', type='string', doc='The name of the column  which keys to use'},
 	call=function(self, data, column_name)
-	assert(self:has_column(column_name), "Invalid column name: " .. column_name)
+	self:assert_has_column(column_name)
 	assert(self:is_categorical(column_name), "Column isn't categorical")
 
 	data = data.data
@@ -275,7 +280,8 @@ _Return value_: table with values
 				end
 			end
 			assert(val ~= nil,
-			       v .. " isn't present in the keyset")
+			       v .. " isn't present in the keyset among " ..
+			table.get_key_string(self.categorical[column_name]))
 		end
 		table.insert(ret, val)
 	end
@@ -316,7 +322,7 @@ _Return value_: table or tensor
 	{name='column_name', type='string', doc='The name of the column'},
 	{name='as_tensor', type='boolean', doc='If the returned value should be a tensor', default=false},
 	call=function(self, data, column_name, as_tensor)
-	assert(self:has_column(column_name), "Can't find the column: " .. column_name)
+	self:assert_has_column(column_name)
 	assert(self:is_categorical(column_name), "Column isn't categorical")
 
 	data = data.data

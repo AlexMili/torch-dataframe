@@ -21,9 +21,9 @@ describe("Serialization", function()
 
 		b = torch.serialize(df)
 		c = torch.deserialize(b)
-		
+
 		assert.is.equal(torch.typename(c), "Dataframe")
-		
+
 		--tester:eq(df, c)
 	end)
 
@@ -34,23 +34,23 @@ describe("Serialization", function()
 		os.remove("test.t7")
 
 		assert.is.equal(torch.typename(c), "Dataframe")
-		
+
 		--tester:eq(df, c)
 	end)
 
 	it("Saves with init",function()
 		local a = Dataframe("./data/realistic_29_row_data.csv")
 
-		a:init_batch()
+		a:create_subsets()
 		a:fill_all_na()
 
 		torch.save("test.t7", a)
 		c = torch.load("test.t7")
 
 		os.remove("test.t7")
-		
+
 		assert.is.equal(torch.typename(c), "Dataframe")
-		
+
 		--tester:eq(a, c)
 	end)
 end)
