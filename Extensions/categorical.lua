@@ -25,8 +25,75 @@ _Return value_: self
 	{name="self", type="Dataframe"},
 	{name="column_name", type="string",
 	 doc="The column name to convert"},
-	call = function(self, column_name)
-		return self:as_categorical(Df_Array(column_name))
+	{name="levels", type="Df_Array|boolean",
+	 doc=[[An optional array of the values that column might have taken.
+	 The default is the unique set of values taken by Dataframe.unique,
+	 sorted into increasing order. If you provide values that aren't present
+	 within the current column the value will still be saved and may be envoked in
+	 the future.]], default=false},
+	{name="labels", type="Df_Array|boolean",
+	 doc=[[An optional character vector of labels for the levels
+	 (in the same order as levels after removing those in exclude)]],
+	 default=false},
+	{name="exclude", type="Df_Array|boolean",
+	 doc=[[Values to be excluded when forming the set of levels. This should be
+	 of the same type as column, and will be coerced if necessary.]],
+	 default=false},
+	{name="infer_schema", type="boolean", doc="Run the Dataframe.infer_schema after run",
+	 default=true},
+	call = function(self, column_name, levels, labels, exclude, infer_schema)
+	self:assert_has_column(column_name)
+	assert(not self:is_categorical(column_name), "Column is already categorical")
+
+	if (not levels) then
+		levels = self:unique(column_name, true, true)
+	else
+		levels = table.array2hash(levels.data)
+	end
+
+	if (exclude) then
+		for _,v in ipairs(exclude.data) do
+			if (levels[v] ~= nil) then
+				-- Reduce all elements with a higher index by 1
+				for key,index in pairs(levels) do
+					if (index > levels[v]) then
+						levels[key] = index - 1
+					end
+				end
+
+				-- Delete element
+				levels[v] = nil
+			end
+		end
+	end
+
+	-- drop '' as a key
+	levels[''] = nil
+
+	-- Do the conversion
+	column_data = self:get_column(column_name)
+	self.categorical[column_name] = levels
+	for i,v in ipairs(column_data) do
+		if (levels[v] == nil) then
+			self.dataset[column_name][i] = 0/0
+		else
+			self.dataset[column_name][i] = levels[v]
+		end
+	end
+
+	if (labels) then
+		labels = labels.data
+		assert(table.exact_length(levels),
+		       #labels,
+		       "The labels must match the levels in length")
+		self.categorical[column_name] = table.array2hash(labels)
+	end
+
+	if (infer_schema) then
+		self:_infer_schema()
+	end
+
+	return self
 end}
 
 Dataframe.as_categorical = argcheck{
@@ -39,27 +106,32 @@ Dataframe.as_categorical = argcheck{
 	{name="self", type="Dataframe"},
 	{name="column_array", type="Df_Array",
 	 doc="An array with column names"},
-	call = function(self, column_array)
+	{name="levels", type="Df_Array|boolean",
+	 doc=[[An optional array of the values that column might have taken.
+	 The default is the unique set of values taken by Dataframe.unique,
+	 sorted into increasing order. If you provide values that aren't present
+	 within the current column the value will still be saved and may be envoked in
+	 the future.]], default=false},
+	{name="labels", type="Df_Array|boolean",
+	 doc=[[An optional character vector of labels for the levels
+	 (in the same order as levels after removing those in exclude)]],
+	 default=false},
+	{name="exclude", type="Df_Array|boolean",
+	 doc=[[Values to be excluded when forming the set of levels. This should be
+	 of the same type as column, and will be coerced if necessary.]],
+	 default=false},
+	{name="infer_schema", type="boolean", doc="Run the Dataframe.infer_schema after run",
+	 default=true},
+	call = function(self, column_array, levels, labels, exclude, infer_schema)
 	column_array = column_array.data
 
 	for _,cn in pairs(column_array) do
-		self:assert_has_column(cn)
-		assert(not self:is_categorical(cn), "Column already categorical")
-
-		keys = self:unique(cn, true, true)
-		-- drop '' as a key
-		keys[''] = nil
-		column_data = self:get_column(cn)
-		self.categorical[cn] = keys
-		for i,v in ipairs(column_data) do
-			if (keys[v] == nil) then
-				self.dataset[cn][i] = 0/0
-			else
-				self.dataset[cn][i] = keys[v]
-			end
-		end
+		self:as_categorical(cn, levels, labels, exclude, infer_schema)
 	end
-	self:_infer_schema()
+
+	if (infer_schema) then
+		self:_infer_schema()
+	end
 
 	return self
 end}
