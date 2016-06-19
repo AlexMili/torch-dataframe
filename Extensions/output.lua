@@ -178,8 +178,14 @@ _Return value_: string
 				v = self:get_column(k)
 				for i = 1,no_rows do
 					if (v[i] ~= nil) then
-						if (digits and self:is_numerical(k)) then
-							val = _numeric2string(v[i], digits)
+						if (self:is_numerical(k)) then
+							if (digits) then
+								val = _numeric2string(v[i], digits)
+							else
+								val = tostring(v[i])
+							end
+						elseif(self:is_boolean(k)) then
+							val = tostring(v[i])
 						else
 							val = v[i]
 						end
@@ -244,6 +250,7 @@ _Return value_: string
 
 				elseif (value ~= nil) then
 					-- Pad right
+					value = tostring(value) -- convert boolean values to string
 					value = add_padding(value, string.len(value), widths[key])
 				else
 					value = add_padding(value, 0, widths[key])
