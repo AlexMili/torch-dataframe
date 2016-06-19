@@ -5,6 +5,7 @@ Version: development
 --------------------
 * Added new subset and batch loading functionality (issue #22)
 * Added metatable functionality (issue #18)
+* The as_categorical can now receive levels, labels and exclusions (issue #23)
 * Changed insert to insert with an index
 * Added append that does the same as index previously did
 * Added rbind as an append alias
@@ -18,6 +19,8 @@ Version: development
 * The tostring now has a more advanced printing that aims at total table width
   instead of just making sure that certain columns didn't end up too wide.
 * Added upgrade_frame that handles upgrades from previous Dataframe versions
+* The unique sorts the results before returning, thereby preventing the order to
+  depend on any irrelevant changes in the original table order
 
 Version: 1.1
 -----------
