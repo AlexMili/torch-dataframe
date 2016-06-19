@@ -146,9 +146,8 @@ Dataframe._infer_schema = argcheck{
 				local val = self.dataset[key][i]
 				if tonumber(val) == nil and
 				  val ~= nil and
-					val ~= '' and
-					not isnan(val)
-					then
+				  val ~= '' and
+				  not isnan(val) then
 					is_a_numeric_column = false
 					break
 				end
