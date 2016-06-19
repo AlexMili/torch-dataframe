@@ -15,9 +15,9 @@ Dataframe.is_numerical = argcheck{
 <a name="Dataframe.is_numerical">
 ### Dataframe.is_numerical(@ARGP)
 
-@ARGT
-
 Checks if column is numerical
+
+@ARGT
 
 _Return value_: boolean
 ]],
@@ -27,6 +27,44 @@ _Return value_: boolean
 	self:assert_has_column(column_name)
 
 	return self.schema[column_name] == "number"
+end}
+
+Dataframe.is_string = argcheck{
+	doc = [[
+<a name="Dataframe.is_string">
+### Dataframe.is_string(@ARGP)
+
+Checks if column is of string type
+
+@ARGT
+
+_Return value_: boolean
+]],
+	{name="self", type="Dataframe"},
+	{name="column_name", type="string", doc="The column name to check"},
+	call=function(self, column_name)
+	self:assert_has_column(column_name)
+
+	return self.schema[column_name] == "string"
+end}
+
+Dataframe.is_boolean = argcheck{
+	doc = [[
+<a name="Dataframe.is_boolean">
+### Dataframe.is_boolean(@ARGP)
+
+Checks if column is of boolean type
+
+@ARGT
+
+_Return value_: boolean
+]],
+	{name="self", type="Dataframe"},
+	{name="column_name", type="string", doc="The column name to check"},
+	call=function(self, column_name)
+	self:assert_has_column(column_name)
+
+	return self.schema[column_name] == "boolean"
 end}
 
 Dataframe.has_column = argcheck{
