@@ -135,6 +135,12 @@ Dataframe._infer_schema = argcheck{
 	call=function(self, max_rows)
 	local rows_to_explore = math.min(max_rows, self.n_rows)
 
+	local is_empty = function(val)
+		return val == nil or
+			val == '' or
+			isnan(val)
+	end
+
 	for _,key in pairs(self.columns) do
 		local is_a_numeric_column = true
 		self.schema[key] = 'string'
@@ -144,10 +150,8 @@ Dataframe._infer_schema = argcheck{
 			for i = 1, rows_to_explore do
 				-- If the current cell is not a number and not nil (in case of empty cell, type inference is not compromised)
 				local val = self.dataset[key][i]
-				if tonumber(val) == nil and
-				  val ~= nil and
-				  val ~= '' and
-				  not isnan(val) then
+				if (tonumber(val) == nil and
+				    not is_empty(val)) then
 					is_a_numeric_column = false
 					break
 				end
@@ -158,6 +162,23 @@ Dataframe._infer_schema = argcheck{
 				for i = 1, self.n_rows do
 					self.dataset[key][i] = tonumber(self.dataset[key][i])
 				end
+			else
+				local is_a_boolean_column = true
+				-- Check if we have a boolean column
+				for i = 1, rows_to_explore do
+					local val = self.dataset[key][i]
+					if (torch.type(val) ~= "boolean" and
+					    not is_empty(val)) then
+						is_a_boolean_column = false
+						break
+					end
+				end
+
+				if (is_a_boolean_column) then
+					self.schema[key] = 'boolean'
+					-- TODO: Should string boolean columns be converted to boolean values?
+				end
+
 			end
 		end
 	end
