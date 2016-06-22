@@ -24,6 +24,9 @@ Version: development
   The previous Dataframe.print default arguments for printing have been moved to
   Dataframe.tostring_defaults
 * Fixed bug with outputting categorical columns
+* Fixed bug related to boolean columns. *Note*: columns that are created using the
+  csv-option are currently not being converted to boolean columns but will remain
+  as strings with 'true' and 'false'
 
 Version: 1.1
 -----------
