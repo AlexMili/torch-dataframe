@@ -195,4 +195,14 @@ describe("Dataframe class", function()
 		['Col C']=1000
 		})
 	end)
+
+	it("A column with boolean values should not be a numerical nor a string column",
+	function()
+		local a = Dataframe("./data/simple_short.csv")
+		a:add_column('bool', true)
+
+		assert.is_false(a:is_numerical('bool'), "A boolean column is not numerical")
+		assert.is_false(a:is_string('bool'), "A boolean column is not a string column")
+		assert.is_true(a:is_boolean('bool'), "A boolean column should be a boolean column")
+	end)
 end)

@@ -14,7 +14,11 @@ lfs.chdir("specs/output")
 local a = Dataframe()
 a:load_csv{path = "../data/simple_short.csv",
            verbose = false}
-print("-- Simple table --")
+a:add_column('boolean', true)
+a:set(2, Df_Dict{boolean = false})
+a:set(3, Df_Dict{boolean = 0/0})
+
+print("-- Simple table with boolean column --")
 print(a)
 
 a:output()
