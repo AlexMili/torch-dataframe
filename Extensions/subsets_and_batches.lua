@@ -340,14 +340,14 @@ _Return value_: Df_Subset, Dataframe or Batchframe
 
 	if (return_type == "Dataframe") then
 		return self:
-			_create_subset{index_items = Df_Array[sub_obj:get_column('indexes')],
+			_create_subset{index_items = Df_Array(sub_obj:get_column('indexes')),
 			               as_batchframe = false}
 	end
 
 	if (return_type == "Batchframe") then
 	return self:
-		_create_subset{index_items = Df_Array[sub_obj:get_column('indexes')],
-		               as_batchframe = false}
+		_create_subset{index_items = Df_Array(sub_obj:get_column('indexes')),
+		               as_batchframe = true}
 	end
 
 	error("Invalid return type: " .. return_type)

@@ -175,5 +175,19 @@ describe("Test if we can get a batch with data and labels",function()
 		assert.is_true(reset)
 	end)
 
+	describe("Test the alternative get_subset formats",function()
+		local a = Dataframe("./data/realistic_29_row_data.csv")
+		a:create_subsets()
+
+		it("Should be a Dataframe", function()
+			local subset = a:get_subset("train", "Dataframe")
+			assert.are.equal(torch.type(subset), "Dataframe")
+		end)
+
+		it("Should be a Batchframe", function()
+			local subset = a:get_subset("train", "Batchframe")
+			assert.are.equal(torch.type(subset), "Batchframe")
+		end)
+	end)
 	-- TODO: Add tests for custom subset splits and samplers
 end)
