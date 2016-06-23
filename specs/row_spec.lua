@@ -102,4 +102,26 @@ describe("Row functions", function()
 		a:remove_index(1)
 		assert.are.same(a:shape(), {rows=0, cols=3})
 	end)
+
+	it("Check that append calls load_table", function()
+		local a =  Dataframe()
+		a:append(Df_Dict{b=1, a=2})
+
+		a:assert_has_column('a')
+		a:assert_has_column('b')
+
+		assert.are.same(a:get_column('a')[1], 2)
+	end)
+
+	it("Check that append calls load_table with column order", function()
+		local a =  Dataframe()
+		a:append(Df_Dict{b=1, a=2}, Df_Array("b", "a"))
+
+		local b =  Dataframe()
+		b:append(Df_Dict{b=1, a=2}, Df_Array("a", "b"))
+
+		assert.are.not_equal(a.column_order, b.column_order)
+		assert.are.same(a:get_column('a'), b:get_column('a'))
+		assert.are.same(a:get_column('b'), b:get_column('b'))
+	end)
 end)
