@@ -184,9 +184,15 @@ _Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	{name="rows", type="Df_Dict", doc="Values to append to the Dataframe"},
-	call=function(self, rows)
+	{name="column_order", type="Df_Array", default=false,
+	 doc="The order of the column (has to be array and _not_ a dictionary). Only used when the Dataframe is empty"},
+	call=function(self, rows, column_order)
 	if (self:size(1) == 0) then
-		return self:load_table{data = rows}
+		if (column_order) then
+			return self:load_table{data = rows, column_order = column_order}
+		else
+			return self:load_table{data = rows}
+		end
 	end
 
 	rows, no_rows_2_insert =
