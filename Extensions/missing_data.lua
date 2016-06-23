@@ -15,17 +15,18 @@ Dataframe.count_na = argcheck{
 <a name="Dataframe.count_na">
 ### Dataframe.count_na(@ARGP)
 
-@ARGT
-
 Count missing values in dataset
 
-_Return value_: table containing missing values per column
+@ARGT
+
+_Return value_: Datafrmae or table containing missing values per column
 ]],
 	{name="self", type="Dataframe"},
-	call=function(self)
+	{name='as_dataframe', type='boolean', default=true,
+	 doc="Return a dataframe"},
+	call=function(self, as_dataframe)
 
-	return self:count_na(Df_Array(self.column_order))
-
+	return self:count_na(Df_Array(self.column_order), as_dataframe)
 end}
 
 Dataframe.count_na = argcheck{
@@ -38,7 +39,9 @@ You can manually choose the columns by providing a Df_Array
 	overload=Dataframe.count_na,
 	{name="self", type="Dataframe"},
 	{name="columns", type="Df_Array", doc="The columns to count"},
-	call=function(self, columns)
+	{name='as_dataframe', type='boolean', default=true,
+	 doc="Return a dataframe"},
+	call=function(self, columns, as_dataframe)
 	columns = columns.data
 
 	local ret = {}
@@ -46,7 +49,16 @@ You can manually choose the columns by providing a Df_Array
 		ret[columns[i]] = self:count_na(columns[i])
 	end
 
-	return ret
+	if (as_dataframe) then
+		local ret_df = Dataframe.new()
+		for name,val in pairs(ret) do
+			ret_df:append(Df_Dict{Column = name, Value = val},
+			              Df_Array("Column", "Value"))
+		end
+		return ret_df
+	else
+		return ret
+	end
 end}
 
 Dataframe.count_na = argcheck{
