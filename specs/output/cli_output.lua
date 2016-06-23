@@ -91,3 +91,16 @@ a = Dataframe{data=Df_Dict(tbl),
 	            column_order=Df_Array("no", "one", "two", "three", "four", "five",
 	                                  "six", "seven", "eight", "nine")}
 a:output()
+
+a = Dataframe(Df_Dict{
+	Filename = 11,
+	fracture = 11,
+	Side = 11,
+	Exam_view = 11,
+	osteoarthritis = 11,
+	styloid = 11,
+	prev_fracture = 11,
+	Exam_body_part = 11
+})
+
+print(a)

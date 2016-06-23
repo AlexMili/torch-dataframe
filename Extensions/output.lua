@@ -333,7 +333,12 @@ _Return value_: string
 
 			-- Calculat a new minimum column width based on above
 			local new_min_col_width = math.floor(available_width/no_elmnts2large)
-			assert(new_min_col_width > min_col_width, "Script bug")
+			assert(new_min_col_width >= min_col_width,
+			       ([[
+There is a script bug that results in invalid number of columns.The new minimum
+column width (%d) should not be smaller than the last one (%d). The number of
+elements that were too large were %d while the available width was %d]]):
+			        format(new_min_col_width, min_col_width, no_elmnts2large, available_width))
 
 			-- Reset the widths using this new width setting
 			local tmp = {}
