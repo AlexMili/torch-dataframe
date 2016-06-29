@@ -1,6 +1,6 @@
 language: python
 
-sudo: false
+sudo: true
 
 branches:
   only:
@@ -8,21 +8,28 @@ branches:
     - develop
 env:
   global:
-    - LUAROCKS=2.3.0
     - TORCH_SERVER=https://raw.githubusercontent.com/torch/rocks/master/
   matrix:
-    - LUA="lua 5.1"
-    - LUA="lua 5.2"
-    - LUA="lua 5.3"
-    - LUA="luajit 2.0"
-    - LUA="luajit 2.1"
+    - LUA="LUA51"
+    - LUA="LUA52"
+    - LUA="LUA53"
+    - LUA="LUAJIT20"
+    - LUA="LUAJIT21"
 
 before_install:
-  - pip install hererocks
-  - hererocks lua_install -r^ --$LUA
-  - export PATH=$PATH:$PWD/lua_install/bin
+  - if [[ ! -d torch ]]; then git clone https://github.com/torch/distro.git torch --recursive ; fi
+  - cd torch
+  - git pull
+  - git submodule update
+  - git submodule foreach git pull origin master
+  - cd ..
+  - cp -rf torch torch_$LUA
+  - cd torch_$LUA
+  - TORCH_LUA_VERSION=$LUA ./install.sh -b
+  - cd ..
 
 install:
+  - source ./torch_$LUA/install/bin/torch-activate
   - luarocks --from=$TORCH_SERVER install dok
   - luarocks --from=$TORCH_SERVER install argcheck
   - luarocks --from=$TORCH_SERVER install torch
