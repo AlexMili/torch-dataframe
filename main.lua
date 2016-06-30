@@ -1,4 +1,4 @@
-	-- Main Dataframe file
+-- Main Dataframe file
 require 'torch'
 
 local argcheck = require "argcheck"
@@ -264,11 +264,11 @@ Dataframe.upgrade_frame = argcheck{doc =  [[
 <a name="Dataframe.upgrade_frame">
 ### Dataframe.upgrade_frame(@ARGP)
 
-Upgrades an dataframe using the old batch loading framework to the new framework
+Upgrades a dataframe using the old batch loading framework to the new framework
 by instantiating the subsets argument, copying the indexes and setting the
 samplers to either:
-- linear for test/validate or shuffle = false
-- permutation if shuffle = true and none of above names
+_ linear for test/validate or shuffle = false
+_ permutation if shuffle = true and none of above names
 
 @ARGT
 
