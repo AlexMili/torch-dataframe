@@ -89,7 +89,7 @@ df:load_csv{path='./data/training.csv', header=true}
 Load from table:
 
 ```lua
-df:load_table{data={['firstColumn']={1,2,3},['secondColumn']={4,5,6}}}
+df:load_table{data=Df_Dict({['firstColumn']={1,2,3},['secondColumn']={4,5,6}})}
 ```
 
 You can also instantiate the object with a csv-filename or a table by passing
