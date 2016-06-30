@@ -13,9 +13,9 @@ for f in *_spec.lua; do
     echo "Running specs in $f";
 
     if [ "$1" == "--coverage" ]; then
-        busted --coverage $f;
+        busted -v --coverage $f;
     else
-        busted $f;
+        busted -v $f;
     fi
     
     fail=$?
