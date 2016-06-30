@@ -32,7 +32,6 @@ install:
   - source ./torch_$LUA/install/bin/torch-activate
   - luarocks --from=$TORCH_SERVER install dok
   - luarocks --from=$TORCH_SERVER install argcheck
-  - luarocks --from=$TORCH_SERVER install torch
   - luarocks --from=$TORCH_SERVER install csvigo
   - luarocks install luafilesystem
   - luarocks install busted
