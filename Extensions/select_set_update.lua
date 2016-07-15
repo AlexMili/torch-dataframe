@@ -15,9 +15,9 @@ Dataframe.sub = argcheck{
 <a name="Dataframe.sub">
 ### Dataframe.sub(@ARGP)
 
-@ARGT
-
 Selects a subset of rows and returns those
+
+@ARGT
 
 _Return value_: Dataframe
 ]],
@@ -442,7 +442,7 @@ _Return value_: Dataframe
 	columns = columns.data
 	self:assert_has_not_column(id_name)
 	self:assert_has_not_column(value_name)
-	
+
 	for _,column_name in ipairs(columns) do
 		self:assert_has_column(column_name)
 	end

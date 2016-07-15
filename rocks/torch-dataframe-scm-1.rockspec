@@ -9,6 +9,7 @@ description = {
 		detailed = [[
 			 Dataframe is a Torch7 class to load and manipulate
 			 Kaggle-style CSVs inspired from R's and pandas' Dataframes.
+			 Compatible with torchnet.
 		]],
 		homepage = "https://github.com/alexmili/torch-dataframe",
 		license = "MIT/X11",
@@ -19,7 +20,8 @@ dependencies = {
 		"torch >= 7.0",
 		"argcheck >= 2.0",
 		"luafilesystem >= 1.6.3",
-		"paths"
+		"paths",
+		"torchnet" >= "1.0"
 }
 build = {
 	type = 'builtin',
