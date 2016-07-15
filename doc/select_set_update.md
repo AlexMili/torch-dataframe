@@ -4,6 +4,8 @@
 <a name="Dataframe.sub">
 ### Dataframe.sub(self[, start][, stop])
 
+Selects a subset of rows and returns those
+
 ```
 ({
    self  = Dataframe  -- 
@@ -11,8 +13,6 @@
   [stop  = number]    -- Last row to include [default=false]
 })
 ```
-
-Selects a subset of rows and returns those
 
 _Return value_: Dataframe
 <a name="Dataframe.get_random">
