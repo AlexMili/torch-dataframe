@@ -258,7 +258,7 @@ cd specs/
 
 ## Documentation
 
-The package relies on self-documenting functions via the [argcheck](https://github.com/torch/argcheck) package that reside in the [Doc](https://github.com/AlexMili/torch-dataframe/tree/master/Doc) folder. The [GitHub Wiki](https://github.com/AlexMili/torch-dataframe/wiki) is intended for more extensive in detail documentation.
+The package relies on self-documenting functions via the [argcheck](https://github.com/torch/argcheck) package that reside in the [doc](https://github.com/AlexMili/torch-dataframe/tree/master/doc) folder. The [GitHub Wiki](https://github.com/AlexMili/torch-dataframe/wiki) is intended for more extensive in detail documentation.
 
 To generate the documentation please run:
 

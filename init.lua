@@ -22,8 +22,8 @@ assert(loadfile(argcheck_file))()
 local main_file = string.gsub(dataframe_path,"?", "main")
 local Dataframe = assert(loadfile(main_file))()
 
--- Load all extensions, i.e. .lua files in Extensions directory
-ext_path = string.gsub(dataframe_path, "[^/]+$", "") .. "Extensions/"
+-- Load all extensions, i.e. .lua files in extensions directory
+ext_path = string.gsub(dataframe_path, "[^/]+$", "") .. "extensions/"
 for extension_file,_ in lfs.dir (ext_path) do
   if (string.match(extension_file, "[.]lua$")) then
     local file = ext_path .. extension_file
