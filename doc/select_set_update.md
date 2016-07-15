@@ -55,17 +55,21 @@ Retrieves the last elements of a table
 
 _Return value_: Dataframe
 <a name="Dataframe._create_subset">
-### Dataframe._create_subset(self, index_items[, as_batchframe])
+### Dataframe._create_subset(self, index_items[, frame_type])
 
 Creates a class and returns a subset based on the index items. Intended for internal
 use. The method is primarily intended for internal use.
 
 ```
 ({
-   self          = Dataframe  -- 
-   index_items   = Df_Array   -- The indexes to retrieve
-  [as_batchframe = boolean]   -- Return a Batchframe with a different `to_tensor` functionality that allows
-	 loading data, label tensors simultaneously [default=false]
+   self        = Dataframe  -- 
+   index_items = Df_Array   -- The indexes to retrieve
+  [frame_type  = string]    -- Choose any of the avaiable frame Dataframe classes to be returned as:
+	 - Dataframe
+	 - Batchframe
+	 - Df_Subset
+	 If left empty it will default to the given torch.type(self)
+	 
 })
 ```
 

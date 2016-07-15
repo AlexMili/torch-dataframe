@@ -324,31 +324,22 @@ _Return value_: Df_Subset, Dataframe or Batchframe
 ]],
 	{name="self", type="Dataframe"},
 	{name='subset', type='string', doc='Type of data to load'},
-	{name='return_type', type='string',
+	{name='frame_type', type='string',
 	 doc=[[Choose the type of return object that you're interested in.
 	 Return a Batchframe with a different `to_tensor` functionality that allows
 	 loading data, label tensors simultaneously]], default="Df_Subset"},
-	call = function(self, subset, return_type)
+	call = function(self, subset, frame_type)
 	assert(self:has_subset(subset),
 	       ("There is no subset named '%s' among the subsets: %s"):
 	       format(subset, table.get_key_string(self.subsets.sub_objs)))
 
 	local sub_obj = self.subsets.sub_objs[subset]
-	if (return_type == "Df_Subset") then
+	if (frame_type == "Df_Subset") then
 		return sub_obj
 	end
 
-	if (return_type == "Dataframe") then
-		return self:
-			_create_subset{index_items = Df_Array(sub_obj:get_column('indexes')),
-			               as_batchframe = false}
-	end
-
-	if (return_type == "Batchframe") then
 	return self:
 		_create_subset{index_items = Df_Array(sub_obj:get_column('indexes')),
-		               as_batchframe = true}
-	end
+		               frame_type = frame_type}
 
-	error("Invalid return type: " .. return_type)
 end}

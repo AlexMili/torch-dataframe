@@ -107,15 +107,15 @@ Checks if subset used in batch loading is available
 
 _Return value_: boolean
 <a name="Dataframe.get_subset">
-### Dataframe.get_subset(self, subset[, return_type])
+### Dataframe.get_subset(self, subset[, frame_type])
 
 Returns the entire subset as either a Df_Subset, Dataframe or Batchframe
 
 ```
 ({
-   self        = Dataframe  -- 
-   subset      = string     -- Type of data to load
-  [return_type = string]    -- Choose the type of return object that you're interested in.
+   self       = Dataframe  -- 
+   subset     = string     -- Type of data to load
+  [frame_type = string]    -- Choose the type of return object that you're interested in.
 	 Return a Batchframe with a different `to_tensor` functionality that allows
 	 loading data, label tensors simultaneously [default=Df_Subset]
 })

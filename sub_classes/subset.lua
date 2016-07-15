@@ -153,7 +153,7 @@ _Return value_: integer
 	{name="index", type="number", doc="The subset's index that you want the original index for"},
 	call=function(self, index)
 	self:assert_is_index(index)
-	
+
 	return self:get_column('indexes')[index]
 end}
 
@@ -267,7 +267,7 @@ _Return value_: Batchframe, boolean (if reset_sampler() should be called)
 	end
 
 	return self.parent:_create_subset{index_items = Df_Array(indexes),
-	                                  as_batchframe = true}, reset
+	                                  frame_type = "Batchframe"}, reset
 end}
 
 subset.reset_sampler = argcheck{
