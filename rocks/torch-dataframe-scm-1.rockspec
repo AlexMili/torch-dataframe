@@ -21,7 +21,7 @@ dependencies = {
 		"argcheck >= 2.0",
 		"luafilesystem >= 1.6.3",
 		"paths",
-		"torchnet" >= "1.0"
+		"torchnet >= 1.0"
 }
 build = {
 	type = 'builtin',
