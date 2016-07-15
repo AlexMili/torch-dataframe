@@ -141,4 +141,16 @@ describe("Exporting data process", function()
 			assert.is_true(sum < 10^-5)
 		end)
 	end)
+
+	describe("torchnet get compatibility",function()
+		it("The get should retrieve a single row in tensor format",function()
+			local a = Dataframe("./data/advanced_short.csv")
+
+			tnsr = a:get(1)
+
+			assert.is.equal(tnsr:size(1),1)
+			assert.is.equal(tnsr:size(2),table.exact_length(a:get_numerical_colnames()))
+		end)
+	end)
+
 end)

@@ -140,3 +140,23 @@ If a filename is provided the tensor will be saved (`torch.save`) to that file:
 
 	return tensor_data, tensor_col_names
 end}
+
+Dataframe.get = argcheck{
+	doc =  [[
+<a name="Dataframe.get">
+### Dataframe.get(@ARGP)
+
+A funtion for *torchnet* compliance. It subsets a single index and returns the
+`to_tensor` on that example.
+
+@ARGT
+
+_Return value_: (1) torch.tensor with 1 row and #numerical columns
+
+]],
+	{name="self", type="Dataframe"},
+	{name="idx", type="number"},
+	call = function(self, idx)
+	local row = self:sub(idx, idx)
+	return row:to_tensor()
+end}

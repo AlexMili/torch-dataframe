@@ -15,15 +15,15 @@ Dataframe.size = argcheck{
 <a name="Dataframe.size">
 ### Dataframe.size(@ARGP)
 
-Returns the number of rows and columns in a tensor
+Returns the number of rows in order to comply with the torchnet dataset standard
 
 @ARGT
 
-_Return value_: tensor (rows, columns)
+_Return value_: rows
 ]],
 	{name="self", type="Dataframe"},
 	call=function(self)
-	return torch.IntTensor({self.n_rows,#self.columns})
+	return self.n_rows
 end}
 
 Dataframe.size = argcheck{
@@ -187,7 +187,8 @@ _Return value_: boolean
 	{name="other", type="Dataframe"},
 	call=function(self, other)
 	-- Check that size matches
-	if (not torch.all(torch.eq(self:size(), other:size()))) then
+	if (self:size(1) ~= other:size(1) or
+	    self:size(2) ~= other:size(2)) then
 		return false
 	end
 

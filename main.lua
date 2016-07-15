@@ -3,6 +3,7 @@ require 'torch'
 
 local argcheck = require "argcheck"
 local doc = require "argcheck.doc"
+local torchnet = require "torchnet"
 
 doc[[
 
@@ -11,7 +12,7 @@ doc[[
 ]]
 
 -- create class object
-local Dataframe = torch.class('Dataframe')
+local Dataframe = torch.class('Dataframe', 'tnt.Dataset')
 
 Dataframe.__init = argcheck{
 	doc =  [[
