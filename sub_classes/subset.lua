@@ -3,6 +3,7 @@ local Dataframe = params[1]
 local current_file_path = params[2] -- used for loading extensions at the end
 
 require 'torch'
+local tnt = require 'torchnet'
 
 local argcheck = require "argcheck"
 local doc = require "argcheck.doc"
@@ -19,7 +20,7 @@ in a particular subset.
 ]]
 
 -- create class object
-local subset = torch.class('Df_Subset', 'Dataframe')
+local subset, parent_class = torch.class('Df_Subset', 'Dataframe')
 
 subset.__init = argcheck{
 	doc =  [[
@@ -32,53 +33,42 @@ Creates and initializes a Df_Subset class.
 
 ]],
 	{name="self", type="Df_Subset"},
-	{name="indexes", type="Df_Array", doc="The indexes in the original dataset to use for sampling"},
-	{name="sampler", type="string", doc="The sampler to use with this data"},
 	{name="parent", type="Dataframe", doc="The parent Dataframe that will be stored by reference"},
-	call=function(self, indexes, sampler, parent)
-	Dataframe.__init(self)
+	{name="indexes", type="Df_Array", doc="The indexes in the original dataset to use for sampling"},
+	{name="sampler", type="string", opt=true,
+	 doc="The sampler to use with this data"},
+	{name="labels", type="Df_Array", opt=true,
+	 doc="The column with all the labels (note this is passed by reference)"},
+	{name="sampler_args", type="Df_Dict", opt=true,
+	 doc=[[Optional arguments for the sampler function, currently only used for
+		the label-distribution sampler.]]},
+	{name='batch_args', type='Df_Tbl', opt=true,
+	 doc="Arguments to be passed to the Batchframe class initializer"},
+	call=function(self, parent,
+		indexes, sampler, labels,
+		sampler_args, batch_args)
+	parent_class.__init(self)
 	self:
 		_clean():
-		set_idxs(indexes):
-		set_sampler(sampler)
+		set_idxs(indexes)
 
 	self.parent = parent
-end}
 
-subset.__init = argcheck{
-doc =  [[
-Some of the samplers require a label column to which the samples will be balanced.
-The label-distribution furthermore also requires a distribution,
-e.g. `{train = {distribution = Df_Dict({A = 2, B=10})}}`
-
-@ARGT
-
-]],
-	overload=subset.__init,
-	{name="self", type="Df_Subset"},
-	{name="indexes", type="Df_Array", doc="The indexes in the original dataset to use for sampling"},
-	{name="sampler", type="string", doc="The sampler to use with this data"},
-	{name="labels", type="Df_Array",
-	 doc="The column with all the labels (note this is passed by reference)"},
-	{name="sampler_args", type="Df_Dict",
-	 doc=[[Optional arguments for the sampler function, currently only used for
-	 the label-distribution sampler.]],
-	 default=false},
-	{name="parent", type="Dataframe", doc="The parent Dataframe that will be stored by reference"},
-	call=function(self, indexes, sampler, labels, sampler_args, parent)
-	Dataframe.__init(self)
-
-	self:
-		_clean():
-		set_idxs(indexes):
-		set_labels(labels)
-	if (sampler_args) then
-			self:set_sampler(sampler, sampler_args)
-	else
-		self:set_sampler(sampler)
+	if (labels) then
+		self:set_labels(labels)
 	end
 
-	self.parent = parent
+	if (sampler) then
+		if (sampler_args) then
+			self:set_sampler(sampler, sampler_args)
+		else
+			self:set_sampler(sampler)
+		end
+	end
+
+	if (batch_args) then
+		self.batch_args = batch_args.data
+	end
 end}
 
 subset._clean = argcheck{
@@ -235,16 +225,22 @@ _Return value_: Batchframe, boolean (if reset_sampler() should be called)
 ]],
 	{name="self", type="Df_Subset"},
 	{name='no_lines', type='number', doc='The number of lines/rows to include (-1 for all)'},
-	call=function(self, no_lines)
+	{name='class_args', type='Df_Tbl', opt=true,
+		doc='Arguments to be passed to the class initializer'},
+	call=function(self, no_lines, class_args)
 
 	assert(isint(no_lines) and
-				 (no_lines > 0 or
-					no_lines == -1) and
-					no_lines <= self:size(1),
-				 "The number of files to load has to be either -1 for all files or " ..
-				 " a positive integer less or equeal to the number of observations in that category " ..
-				 self:size(1) .. "." ..
-				 " You provided " .. tostring(no_lines))
+	       (no_lines > 0 or
+	      	no_lines == -1) and
+	      	no_lines <= self:size(1),
+	       "The number of files to load has to be either -1 for all files or " ..
+	       " a positive integer less or equeal to the number of observations in that category " ..
+	       self:size(1) .. "." ..
+	       " You provided " .. tostring(no_lines))
+
+	if (not class_args) then
+		class_args = Df_Tbl(self.batch_args)
+	end
 
 	local reset = false
 	if (no_lines == -1) then
@@ -267,7 +263,8 @@ _Return value_: Batchframe, boolean (if reset_sampler() should be called)
 	end
 
 	return self.parent:_create_subset{index_items = Df_Array(indexes),
-	                                  frame_type = "Batchframe"}, reset
+	                                  frame_type = "Batchframe",
+	                                  class_args = class_args}, reset
 end}
 
 subset.reset_sampler = argcheck{
@@ -286,6 +283,64 @@ _Return value_: self
 	call=function(self)
 	self.reset()
 	return self
+end}
+
+subset.get_iterator = argcheck{
+	doc = [[
+<a name="Df_Subset.get_iterator">
+### Df_Subset.get_iterator(@ARGP)
+
+When used used with torchnet it is convenient to have a `tnt.DatasetIterator`
+that has a get method implemented that returns a table with the two key elements
+`input` and `target` that `tnt.SGDEngine` and `tnt.OptimEngine` require.
+
+
+@ARGT
+
+_Return value_: `tnt.DatasetIterator`
+	]],
+	{name="self", type="Df_Subset"},
+	{name="batch_size", type="number", doc="The size of the batches"},
+	{name='filter', type='function', default=function(sample) return true end,
+	 doc="See `tnt.DatasetIterator` definition"},
+	{name='transform', type='function', default=function(sample) return sample end,
+	 doc="See `tnt.DatasetIterator` definition. Runs immediately after the `get_batch` call"},
+	{name='input_transform', type='function', default=function(val) return val end,
+	 doc="Allows transforming the input (data) values after the `Batchframe:to_tensor` call"},
+	{name='target_transform', type='function', default=function(val) return val end,
+	 doc="Allows transforming the target (label) values after the `Batchframe:to_tensor` call"},
+	call=function(self, batch_size, filter, transform, input_transform, target_transform)
+	assert(self.batch_args,
+	       "If you want to use the iterator you must prespecify the batch data/label loaders")
+
+	local iterator = tnt.DatasetIterator{dataset = self}
+
+	iterator.run = function()
+		local size = math.ceil(iterator.dataset:size()/batch_size)
+		local idx = 1
+		return function()
+			while idx <= size do
+				local sample, reset = transform(iterator.dataset:get_batch(batch_size))
+
+				if (reset) then
+					idx = size + 1
+				else
+					idx = idx + 1
+				end
+
+				filter(sample)
+
+				local input, target = sample:to_tensor()
+				return {
+					input = input_transform(input),
+					target = target_transform(target)
+				}
+			end
+
+		end
+	end
+
+	return iterator
 end}
 
 return subset

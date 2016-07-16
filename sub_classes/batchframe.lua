@@ -18,8 +18,72 @@ process that then will
 ]]
 
 -- create class object
-local Batchframe = torch.class('Batchframe', 'Dataframe')
+local Batchframe, parent_class = torch.class('Batchframe', 'Dataframe')
 
+Batchframe.__init = argcheck{
+	doc =  [[
+<a name="Batchframe.__init">
+### Batchframe.__init(@ARGP)
+
+Calls the parent init and then adds `batchframe_defaults` table. Se the
+set_load and set_data methods
+
+@ARGT
+
+]],
+	{name="self", type="Batchframe"},
+	{name="data", type="function|Df_Array", doc="The data loading procedure/columns", opt=true},
+	{name="label", type="function|Df_Array", doc="The label loading procedure/columns", opt=true},
+	call=function(self, data, label)
+	parent_class.__init(self)
+
+	self.batchframe_defaults = {
+		data = data,
+		label = label
+	}
+end}
+
+Batchframe.setDataRetriever = argcheck{
+	doc =  [[
+<a name="Batchframe.setDataRetriever">
+### Batchframe.setDataRetriever(@ARGP)
+
+Sets the self.batchframe_defaults.data to either a function for loading data or
+a set of columns that should be used in the to_tensor functions.
+
+@ARGT
+
+_Return value_: self
+]],
+	{name="self", type="Batchframe"},
+	{name="data", type="function|Df_Array", doc="The data loading procedure/columns"},
+	call=function(self, data)
+
+	self.batchframe_defaults.data = data
+
+	return self
+end}
+
+Batchframe.setLabelRetriever = argcheck{
+	doc =  [[
+<a name="Batchframe.setLabelRetriever">
+### Batchframe.setLabelRetriever(@ARGP)
+
+Sets the self.batchframe_defaults.data to either a function for loading data or
+a set of columns that should be used in the to_tensor functions.
+
+@ARGT
+
+_Return value_: self
+]],
+	{name="self", type="Batchframe"},
+	{name="label", type="function|Df_Array", doc="The label loading procedure/columns"},
+	call=function(self, label)
+
+	self.batchframe_defaults.label = label
+
+	return self
+end}
 
 Batchframe.to_tensor  = argcheck{
 	doc =  [[
@@ -44,7 +108,7 @@ _Return value_: data (tensor), label (tensor), column names (lua table)
 	{name='data_columns', type='Df_Array',
 	 doc='The columns that are to be the data'},
 	{name='label_columns', type='Df_Array',
- 	 doc='The columns that are to be the label'},
+	 doc='The columns that are to be the label'},
 	call = function(self, data_columns, label_columns)
 
 	data_columns = data_columns.data
@@ -74,16 +138,12 @@ Batchframe.to_tensor  = argcheck{
 	{name='load_data_fn', type='function',
 	 doc='Receives a row and returns a tensor assumed to be the data'},
 	{name='label_columns', type='Df_Array',
- 	 doc='The columns that are to be the label. If omitted defaults to all numerical.',
- 	 default=false},
+	 doc='The columns that are to be the label. If omitted defaults to all numerical.'},
 	call = function(self, load_data_fn, label_columns)
-	if (label_columns) then
-		label_columns = label_columns.data
-		for _,column_name in ipairs(label_columns) do
-			self:assert_has_column(column_name)
-		end
-	else
-		label_columns = self:get_numerical_colnames()
+
+	label_columns = label_columns.data
+	for _,column_name in ipairs(label_columns) do
+		self:assert_has_column(column_name)
 	end
 
 	tensor_label, tensor_col_names = Dataframe.to_tensor(self, Df_Array(label_columns))
@@ -114,7 +174,7 @@ Batchframe.to_tensor  = argcheck{
 	{name='data_columns', type='Df_Array',
 	 doc='Receives a row and returns a tensor assumed to be the data'},
 	{name='load_label_fn', type='function',
- 	 doc='The columns that are to be the label.'},
+	 doc='The columns that are to be the label.'},
 	call = function(self, data_columns, load_label_fn)
 	data_columns = data_columns.data
 	for _,column_name in ipairs(data_columns) do
@@ -177,6 +237,49 @@ Batchframe.to_tensor  = argcheck{
 	end
 
 	return tensor_data, tensor_label
+end}
+
+
+Batchframe.to_tensor  = argcheck{
+	doc =  [[
+*Note*: you can use the defaults if you want to avoid providing the loader
+each time. If there is only a retriever function provided and no label default
+is present then the we will assume that the labels are the default numerical
+columns while the retriever is for the data.
+
+@ARGT
+
+]],
+	overload=Batchframe.to_tensor,
+	{name="self", type="Dataframe"},
+	{name="retriever", type="function|Df_Array", opt=true,
+		doc="If you have only provided one of the defaults you can add the other retriever here"},
+	call = function(self, retriever)
+
+	if (not retriever) then
+		assert(self.batchframe_defaults.data, "You must call the setDataRetriever function before omitting the arguments")
+		assert(self.batchframe_defaults.label, "You must call the setLabelRetriever function before omitting the arguments")
+
+		return self:to_tensor(self.batchframe_defaults.data,
+		                      self.batchframe_defaults.label)
+	end
+
+	-- Assume that the retriever is for the data column
+	if (not self.batchframe_defaults.data and
+	    not self.batchframe_defaults.label) then
+		return self:to_tensor(retriever,
+		                      Df_Array(self:get_numerical_colnames()))
+	end
+
+	if (self.batchframe_defaults.data) then
+		return self:to_tensor(self.batchframe_defaults.data,
+		                      retriever)
+	elseif(self.batchframe_defaults.label) then
+		return self:to_tensor(retriever,
+		                      self.batchframe_defaults.label)
+	end
+
+	error("Invalid parameter specified - could not find a useful combination (should be impossible to end up here)")
 end}
 
 -- Helper for adding a single first dimension to help with torch.cat
