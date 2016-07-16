@@ -9,6 +9,11 @@ Version: development
 * The unique sorts the results before returning, thereby preventing the order to
   depend on any irrelevant changes in the original table order. _IMPORTANT_: This
   will affect the numbers corresponding to categoricals (part of issue #23)
+* Added compatibility with the *torchnet* infrastructure via inheritance and a custom
+  iterator that allows utilizing the internal permutation logistic (issue #24)
+* The Batchframe can now have default data/load options allowing a simpler `to_tensor` call
+* Added so that `__init` parameters can be passed along the subset line primary for
+  allowing default Batchframe load/data arguments
 * Insert now takes an index argument allowing insertion of rows. Backward compatibility retained.
 * Added append that does the same as index previously did, i.e. adding a row at the bottom of the table
 * Added rbind (row-bind) as an append alias
@@ -23,6 +28,8 @@ Version: development
   instead of just making sure that certain columns didn't end up too wide.
   The previous Dataframe.print default arguments for printing have been moved to
   Dataframe.tostring_defaults
+* The helper classes Df_Array, Df_Dict and Df_Tbl now have a metatable `__len__` option
+* The as_batchframe has been renamed to frame_type that defaults to current frame type
 * Fixed bug with outputting categorical columns
 * Fixed bug related to boolean columns. *Note*: columns that are created using the
   csv-option are currently not being converted to boolean columns but will remain
