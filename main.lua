@@ -12,7 +12,7 @@ doc[[
 ]]
 
 -- create class object
-local Dataframe = torch.class('Dataframe', 'tnt.Dataset')
+local Dataframe, parent_class = torch.class('Dataframe', 'tnt.Dataset')
 
 Dataframe.__init = argcheck{
 	doc =  [[
@@ -26,6 +26,8 @@ Creates and initializes a Dataframe class. Envoked through `local my_dataframe =
 ]],
 	{name="self", type="Dataframe"},
 	call=function(self)
+	parent_class.__init(self)
+
 	self:_clean()
 	self.tostring_defaults =
 		{no_rows = 10,
