@@ -34,34 +34,23 @@ local function getIterator(mode)
 
    -- Since the mnist package already has taken care of the data
    --  splitting we create a single subsetter
-   df:create_subsets{subsets = Df_Dict{core = 1}}
+   df:create_subsets{
+      subsets = Df_Dict{core = 1},
+      class_args = Df_Tbl({
+         batch_args = Df_Tbl({
+            label = Df_Array("label"),
+            data = function(row)
+               return ext_resource[row.row_id]
+            end
+         })
+      })
+   }
 
-   local subset_data = df:get_subset("core", "Batchframe")
-
-   return tnt.DatasetIterator{
-      dataset = tnt.BatchDataset{
-         batchsize = 128,
-         dataset = tnt.ListDataset{  -- replace this by your own dataset
-            list = torch.range(1, subset_data:size(1)):long(),
-            load = function(idx)
-              local row = subset_data:sub(idx, idx)
-              input, target = row:to_tensor{
-              label_columns = Df_Array("label"),
-              load_data_fn = function(r)
-               local id = r.row_id
-               local ret =  ext_resource[id]
-               return ret
-              end
-              }
-
-              -- The to_tensor in Batchframe adds an additional dimension that needs to be removed
-              return {
-                input  = input[1],
-                target = (target[1] + 1):long()
-              }  -- sample contains input and target
-            end,
-         }
-      }
+   return df["/core"]:get_iterator{
+      batch_size = 128,
+      target_transform = function(val)
+         return val + 1
+      end
    }
 end
 
