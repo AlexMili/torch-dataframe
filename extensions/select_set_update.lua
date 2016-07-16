@@ -132,11 +132,16 @@ _Return value_: Dataframe or Batchframe
 	 - Df_Subset
 	 If left empty it will default to the given torch.type(self)
 	 ]], opt = true},
-	call = function(self, index_items, frame_type)
+	{name='class_args', type='Df_Tbl', doc='Arguments to be passed to the class initializer', opt=true},
+	call = function(self, index_items, frame_type, class_args)
 	index_items = index_items.data
 
 	if (not frame_type) then
 		frame_type = torch.type(self)
+	end
+
+	if (class_args) then
+		class_args = class_args.data
 	end
 
 	for i=1,#index_items do
@@ -150,11 +155,38 @@ _Return value_: Dataframe or Batchframe
 	self.categorical = {}
 	local ret
 	if (frame_type == "Dataframe") then
-		ret = Dataframe.new()
+		if (class_args) then
+			if (class_args[1]) then
+				-- unnamed parameters
+				ret = Dataframe.new(unpack(class_args))
+			else
+				ret = Dataframe.new(class_args)
+			end
+		else
+			ret = Dataframe.new()
+		end
 	elseif (frame_type == "Batchframe") then
-		ret = Batchframe()
+		if (class_args) then
+			if (class_args[1]) then
+				-- unnamed parameters
+				ret = Batchframe(unpack(class_args))
+			else
+				ret = Batchframe(class_args)
+			end
+		else
+			ret = Batchframe()
+		end
 	elseif (frame_type == "Df_Subset") then
-		ret = Df_Subset()
+		if (class_args) then
+			if (class_args[1]) then
+				-- unnamed parameters
+				ret = Df_Subset(unpack(class_args))
+			else
+				ret = Df_Subset(class_args)
+			end
+		else
+			ret = Df_Subset()
+		end
 	end
 
 	for _,i in pairs(index_items) do
