@@ -105,6 +105,8 @@ describe("Loading dataframe and creaing adequate subsets", function()
 		local a = Dataframe("./data/realistic_29_row_data.csv")
 		a:create_subsets()
 
+		assert.are.equal(a["/test"]:size(1), #a["/test"])
+		
 		assert.are.equal(a["/test"]:size(1) +
 		                 a["/train"]:size(1) +
 		                 a["/validate"]:size(1), a:size(1), "Number of cases don't match")
@@ -139,7 +141,7 @@ describe("Test if we can get a batch with data and labels",function()
 			a["/train"]:
 			get_batch{no_lines = 5}:
 			to_tensor{
-				load_data_fn = fake_loader
+				retriever = fake_loader
 			}
 
 		assert.is.equal(data:size(1), 5)-- "The data has invalid rows"
@@ -188,6 +190,49 @@ describe("Test if we can get a batch with data and labels",function()
 			local subset = a:get_subset("train", "Batchframe")
 			assert.are.equal(torch.type(subset), "Batchframe")
 		end)
+	end)
+
+	describe("The get_subset should forward the information in #class_args",function()
+		local a = Dataframe("./data/realistic_29_row_data.csv")
+		local class_args = Df_Tbl({
+			batch_args = Df_Tbl({
+				data = Df_Array("Weight"),
+				label = Df_Array("Gender")
+			})
+		})
+		a:create_subsets{
+			class_args = class_args
+		}
+		local subset = a:get_subset('train')
+		local batch = subset:get_batch(5)
+
+		it("The class arguments should be stored within the subset property", function()
+			assert.are.same(
+				a.subsets.class_args,
+				class_args.data
+			)
+		end)
+
+		it("The batch arguments should be present in the subset object", function()
+			assert.are.same(
+				subset.batch_args,
+				class_args.data.batch_args.data
+			)
+		end)
+
+		it("The batch arguments from the subset object should be forwarded to the batch itself", function()
+			local passed_args = class_args.data.batch_args.data
+			assert.are.same(
+				batch.batchframe_defaults.data.data,
+				passed_args.data.data
+			)
+
+			assert.are.same(
+				batch.batchframe_defaults.label.data,
+				passed_args.label.data
+			)
+		end)
+
 	end)
 	-- TODO: Add tests for custom subset splits and samplers
 end)
