@@ -122,6 +122,7 @@ on which `Df_ParallelIterator` relies.
 					end
 
 					if (batch) then
+						-- TODO: the retriever functions can be unexpectedly large see http://stackoverflow.com/questions/38421366/torch-out-of-memory-in-thread-when-using-torch-serialize-twice/
 						local serialized_batch = torch.serialize(batch)
 
 						-- In the parallel section only the to_tensor is run in parallel

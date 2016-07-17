@@ -24,8 +24,6 @@ local function getIterator(mode)
 	-- load MNIST dataset:
 	local mnist = require 'mnist'
 	local dataset = mnist[mode .. 'dataset']()
-	local ext_resource = dataset.data:reshape(dataset.data:size(1),
-		dataset.data:size(2) * dataset.data:size(3)):double()
 
 	-- Create a Dataframe with the label. The actual images will be loaded
 	--  as an external resource
@@ -99,6 +97,11 @@ engine.hooks.onForwardCriterion = function(state)
 		print(string.format('avg. loss: %2.4f; avg. error: %2.4f',
 			meter:value(), clerr:value{k = 1}))
 	end
+end
+-- After each epoch we need to envoke the sampler reset (only needed for some samples)
+engine.hooks.onEndEpoch = function(state)
+	print("End epoch")
+	state.iterator.dataset:reset_sampler()
 end
 
 -- set up GPU training:
