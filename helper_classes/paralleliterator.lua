@@ -122,6 +122,7 @@ on which `Df_ParallelIterator` relies.
 					end
 
 					if (batch) then
+						local serialized_batch = torch.serialize(batch)
 
 						-- In the parallel section only the to_tensor is run in parallel
 						--  this should though be the computationally expensive operation
@@ -137,6 +138,8 @@ on which `Df_ParallelIterator` relies.
 								if (filter(batch)) then
 									sample = {}
 									sample.input, sample.target = batch:to_tensor()
+									sample.input = input_transform(sample.input)
+									sample.target = target_transform(sample.target)
 								end
 
 								collectgarbage()
@@ -150,8 +153,13 @@ on which `Df_ParallelIterator` relies.
 							function(argList)
 								sample, sampleOrigIdx = unpack(argList)
 							end,
-							{idx, torch.serialize(batch), samplePlaceholder}
+							{idx, serialized_batch, samplePlaceholder}
 						)
+
+						-- The serialized_batch takes a lot of memory and needs to be destroyed
+						serialized_batch = nil
+						collectgarbage()
+						collectgarbage()
 					end
 				end
 			end
