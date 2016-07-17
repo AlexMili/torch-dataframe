@@ -47,6 +47,7 @@ build = {
 			["Dataframe.sub_classes.subset"] = 'sub_classes/subset.lua',
 			["Dataframe.sub_classes.subset_extensions.samplers"] = 'sub_classes/subset_extensions/samplers.lua',
 			["Dataframe.helper_classes.array"] = 'helper_classes/array.lua',
+			["Dataframe.helper_classes.iterator"] = 'helper_classes/iterator.lua',
 			["Dataframe.helper_classes.paralleliterator"] = 'helper_classes/paralleliterator.lua',
 			["Dataframe.helper_classes.dict"] = 'helper_classes/dict.lua',
 			["Dataframe.helper_classes.tbl"] = 'helper_classes/tbl.lua'
