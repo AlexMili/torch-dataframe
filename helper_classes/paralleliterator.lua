@@ -64,13 +64,13 @@ on which `Df_ParallelIterator` relies.
 	 doc="Allows transforming the input (data) values after the `Batchframe:to_tensor` call"},
 	{name='target_transform', type='function', default=function(val) return val end,
 	 doc="Allows transforming the target (label) values after the `Batchframe:to_tensor` call"},
-	{name='ordered', type='boolean', default=false,
-	 doc=[[When `ordered` is set to true the ordering of samples returned by the iterator
-	 is guaranteed. This option is particularly useful for repeatable experiments.
+	{name='ordered', type='boolean', opt=true,
+	 doc=[[This option is particularly useful for repeatable experiments.
 	 By default `ordered` is false, which means that order is not guaranteed by
 	 `run()` (though often the ordering is similar in practice).]]},
 	call =
-	function(self, data, batch_size, init, nthread, filter, transform, input_transform, target_transform, ordered)
+	function(self, data, batch_size, init, nthread,
+		       filter, transform, input_transform, target_transform, ordered)
 		assert(isint(batch_size) and batch_size > 0, "The batch size must be a positive integer")
 		assert(data.batch_args,
 		       "If you want to use the iterator you must prespecify the batch data/label loaders")
@@ -128,7 +128,9 @@ on which `Df_ParallelIterator` relies.
 						threads:addjob(
 							function(argList)
 								local origIdx, serialized_batch, samplePlaceholder = unpack(argList)
+
 								local batch = torch.deserialize(serialized_batch)
+
 								batch = transform(batch)
 
 								local sample = samplePlaceholder

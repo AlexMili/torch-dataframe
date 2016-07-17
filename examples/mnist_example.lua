@@ -58,6 +58,12 @@ local function getIterator(mode)
 				-- Load the libraries needed
 				require 'torch'
 				require 'Dataframe'
+
+				-- Load the datasets external resource
+				local mnist = require 'mnist'
+				local dataset = mnist[mode .. 'dataset']()
+				ext_resource = dataset.data:reshape(dataset.data:size(1),
+					dataset.data:size(2) * dataset.data:size(3)):double()
 			end,
 			nthread = 1,
 			target_transform =  function(val)
