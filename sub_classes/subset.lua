@@ -290,23 +290,11 @@ subset.get_iterator = argcheck{
 <a name="Df_Subset.get_iterator">
 ### Df_Subset.get_iterator(@ARGP)
 
-When used used with torchnet it is convenient to have a `tnt.DatasetIterator`
-that has a get method implemented that returns a table with the two key elements
-`input` and `target` that `tnt.SGDEngine` and `tnt.OptimEngine` require.
-
-**Important:** The `tnt.DatasetIterator` does not reset the iterator after running
-to the end. In order to do this you must add a reset_sampler call in the endEpoch
-hook for the engine:
-
-```lua
-engine.hooks.onEndEpoch = function(state)
-	state.iterator.dataset:reset_sampler()
-end
-```
+**Important**: See the docs for Df_Iterator
 
 @ARGT
 
-_Return value_: `tnt.DatasetIterator`
+_Return value_: `Df_Iterator`
 	]],
 	{name="self", type="Df_Subset"},
 	{name="batch_size", type="number", doc="The size of the batches"},
@@ -319,40 +307,68 @@ _Return value_: `tnt.DatasetIterator`
 	{name='target_transform', type='function', default=function(val) return val end,
 	 doc="Allows transforming the target (label) values after the `Batchframe:to_tensor` call"},
 	call=function(self, batch_size, filter, transform, input_transform, target_transform)
-	assert(self.batch_args,
-	       "If you want to use the iterator you must prespecify the batch data/label loaders")
-	assert(isint(batch_size) and batch_size > 0, "The batch size must be a positive integer")
+	return Df_Iterator{
+		dataset = self,
+		batch_size = batch_size,
+		filter = filter,
+		transform = transform,
+		input_transform = input_transform,
+		target_transform = target_transform
+	}
+end}
 
-	local iterator = tnt.DatasetIterator{dataset = self}
+subset.get_parallel_iterator = argcheck{
+	doc = [[
+<a name="Df_Subset.get_parallel_iterator">
+### Df_Subset.get_parallel_iterator(@ARGP)
 
-	iterator.run = function()
-		local size = math.ceil(iterator.dataset:size()/batch_size)
-		local idx = 1
-		return function()
-			while idx <= size do
-				local sample, reset = iterator.dataset:get_batch(batch_size)
-				sample = transform(sample)
+**Important**: See the docs for Df_Iterator and Df_ParallelIterator
 
-				if (reset) then
-					idx = size + 1
-				else
-					idx = idx + 1
-				end
+@ARGT
 
-				-- Only return non-nil values
-				if (filter(sample)) then
-					local input, target = sample:to_tensor()
-					return {
-						input = input_transform(input),
-						target = target_transform(target)
-					}
-				end
-			end
-
-		end
-	end
-
-	return iterator
+_Return value_: `Df_ParallelIterator`
+	]],
+	{name="self", type="Df_Subset"},
+	{name='dataset', type='Df_Subset', doc='The Dataframe subset to use for the iterator'},
+	{name="batch_size", type="number", doc="The size of the batches"},
+	{name='init', type='function', default=function(idx)
+		-- Load the libraries needed
+		require 'torch'
+		require 'Dataframe'
+	end,
+	 doc=[[`init(threadid)` (where threadid=1..nthread) is a closure which may
+	 initialize the specified thread as needed, if needed. It is loading
+	 the libraries 'torch' and 'Dataframe' by default.]]},
+	{name='nthread', type='number',
+	 doc='The number of threads used to parallelize is specified by `nthread`.'},
+	{name='filter', type='function', default=function(sample) return true end,
+	 doc=[[is a closure which returns `true` if the given sample
+	 should be considered or `false` if not. Note that filter is called _after_
+	 fetching the data in a threaded manner and _before_ the `to_tensor` is called.]]},
+	{name='transform', type='function', default=function(sample) return sample end,
+	 doc='a function which maps the given sample to a new value. This transformation occurs before filtering.'},
+	{name='input_transform', type='function', default=function(val) return val end,
+	 doc="Allows transforming the input (data) values after the `Batchframe:to_tensor` call"},
+	{name='target_transform', type='function', default=function(val) return val end,
+	 doc="Allows transforming the target (label) values after the `Batchframe:to_tensor` call"},
+	{name='ordered', type='boolean', opt=true,
+	 doc=[[This option is particularly useful for repeatable experiments.
+	 By default `ordered` is false, which means that order is not guaranteed by
+	 `run()` (though often the ordering is similar in practice).]]},
+	call =
+	function(self, dataset, batch_size, init, nthread,
+		       filter, transform, input_transform, target_transform, ordered)
+	return Df_ParallelIterator{
+		dataset = self,
+		batch_size = batch_size,
+		init = init,
+		nthread = nthread,
+		filter = filter,
+		transform = transform,
+		input_transform = input_transform,
+		target_transform = target_transform,
+		ordered = ordered
+	}
 end}
 
 return subset
