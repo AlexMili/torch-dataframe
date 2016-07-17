@@ -172,8 +172,15 @@ table.collapse2str = function(tbl, indent, start)
 
 			if (isnan(v)) then
 				ret = ret .. "'" .. k .. "'=>nan"
+			elseif (torch.type(v):match("Tensor")) then
+				ret = ret .. "'" .. k .. "'=> Tensor with size: '" .. tostring(v:size()) .. "'"
 			else
-				ret = ret .. "'" .. k .. "'=>'" .. tostring(v) .. "'"
+				local v_string = tostring(v)
+				if (#v_string > 50) then
+					ret = ret .. "'" .. k .. "'=> '" .. v_string:sub(1, 50) .. "...'"
+				else
+					ret = ret .. "'" .. k .. "'=> '" .. v_string .. "'"
+				end
 			end
 		end
 	end
@@ -222,7 +229,26 @@ table.maxn = table.maxn or function(t) local maxn=0 for i in pairs(t) do maxn=ty
 
 -- Util for debugging purpose
 table._dump = function(tbl)
-	print(("\n-[ Table dump ]-\n%s"):format(table.collapse2str(tbl)))
+	local dump_str = ""
+	if (torch.type(tbl) == "table") then
+		dump_str = ("\n-[ Table dump ]-\n%s"):format(table.collapse2str(tbl))
+	else
+		dump_str = ("\n-[ not a table: '%s' ]-\ntostring(): %s"):format(torch.type(tbl), tostring(tbl))
+	end
+	io.stderr:write(dump_str)
+end
+
+_dump = function(var)
+	local dump_str = ""
+	if (torch.type(var) == "table") then
+		dump_str = ("\n-[ Table dump ]-\n%s"):format(table.collapse2str(var))
+	elseif(torch.type(var):match("Tensor")) then
+		dump_str = ("\n-[ Tensor dump ]-\n%s"):format(tostring(var:size()))
+	else
+		dump_str = ("\n-[ not a table: '%s' ]-\ntostring(): %s"):format(torch.type(var), tostring(var))
+	end
+
+	io.stderr:write(dump_str)
 end
 
 -- A benchmark function that can be used for checking performance
