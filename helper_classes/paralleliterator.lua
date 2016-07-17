@@ -12,6 +12,9 @@ require 'torchnet'
 local Threads = require 'threads'
 local argcheck = require 'argcheck'
 local doc = require 'argcheck.doc'
+if (not Df_Iterator) then
+	require 'Dataframe.helper_classes.iterator'
+end
 
 local Df_ParallelIterator, parent_class = torch.class('Df_ParallelIterator', 'Df_Iterator')
 
