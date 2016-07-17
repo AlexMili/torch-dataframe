@@ -300,7 +300,7 @@ hook for the engine:
 
 ```lua
 engine.hooks.onEndEpoch = function(state)
-   my_subset_data:reset_sampler()
+	state.iterator.dataset:reset_sampler()
 end
 ```
 
