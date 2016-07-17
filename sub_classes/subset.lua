@@ -294,6 +294,15 @@ When used used with torchnet it is convenient to have a `tnt.DatasetIterator`
 that has a get method implemented that returns a table with the two key elements
 `input` and `target` that `tnt.SGDEngine` and `tnt.OptimEngine` require.
 
+**Important:** The `tnt.DatasetIterator` does not reset the iterator after running
+to the end. In order to do this you must add a reset_sampler call in the endEpoch
+hook for the engine:
+
+```lua
+engine.hooks.onEndEpoch = function(state)
+   my_subset_data:reset_sampler()
+end
+```
 
 @ARGT
 
@@ -312,6 +321,7 @@ _Return value_: `tnt.DatasetIterator`
 	call=function(self, batch_size, filter, transform, input_transform, target_transform)
 	assert(self.batch_args,
 	       "If you want to use the iterator you must prespecify the batch data/label loaders")
+	assert(isint(batch_size) and batch_size > 0, "The batch size must be a positive integer")
 
 	local iterator = tnt.DatasetIterator{dataset = self}
 
@@ -320,7 +330,8 @@ _Return value_: `tnt.DatasetIterator`
 		local idx = 1
 		return function()
 			while idx <= size do
-				local sample, reset = transform(iterator.dataset:get_batch(batch_size))
+				local sample, reset = iterator.dataset:get_batch(batch_size)
+				sample = transform(sample)
 
 				if (reset) then
 					idx = size + 1
@@ -328,13 +339,14 @@ _Return value_: `tnt.DatasetIterator`
 					idx = idx + 1
 				end
 
-				filter(sample)
-
-				local input, target = sample:to_tensor()
-				return {
-					input = input_transform(input),
-					target = target_transform(target)
-				}
+				-- Only return non-nil values
+				if (filter(sample)) then
+					local input, target = sample:to_tensor()
+					return {
+						input = input_transform(input),
+						target = target_transform(target)
+					}
+				end
 			end
 
 		end
