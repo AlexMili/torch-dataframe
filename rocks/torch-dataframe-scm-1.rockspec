@@ -19,10 +19,11 @@ dependencies = {
 		"lua >= 5.1",
 		"torch >= 7.0",
 		"argcheck >= 2.0",
+		"lpeg >= 1.0.0",
 		"luafilesystem >= 1.6.3",
 		"paths",
 		"torchnet >= 1.0",
-		"lpeg >= 1.0.0"
+		"threads >= 1.0"
 }
 build = {
 	type = 'builtin',
@@ -46,6 +47,7 @@ build = {
 			["Dataframe.sub_classes.subset"] = 'sub_classes/subset.lua',
 			["Dataframe.sub_classes.subset_extensions.samplers"] = 'sub_classes/subset_extensions/samplers.lua',
 			["Dataframe.helper_classes.array"] = 'helper_classes/array.lua',
+			["Dataframe.helper_classes.paralleliterator"] = 'helper_classes/paralleliterator.lua',
 			["Dataframe.helper_classes.dict"] = 'helper_classes/dict.lua',
 			["Dataframe.helper_classes.tbl"] = 'helper_classes/tbl.lua'
 	}
