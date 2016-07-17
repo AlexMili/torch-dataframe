@@ -17,20 +17,20 @@ cmd:option('-usegpu', false, 'use gpu for training')
 cmd:option('-parallel', false, 'use multithreaded loading for training')
 local config = cmd:parse(arg)
 print(string.format('running on %s', config.usegpu and 'GPU' or 'CPU'))
-print(string.format('using %s execution', config.parallel and 'parallel' or 'sinle thread'))
+print(string.format('using %s execution', config.parallel and 'parallel' or 'single thread'))
 
 -- function that sets of dataset iterator:
 local function getIterator(mode)
 	-- load MNIST dataset:
 	local mnist = require 'mnist'
-	local dataset = mnist[mode .. 'dataset']()
+	local mnist_dataset = mnist[mode .. 'dataset']()
 
 	-- Create a Dataframe with the label. The actual images will be loaded
 	--  as an external resource
 	local df = Dataframe(
 		Df_Dict{
-			label = dataset.label:totable(),
-			row_id = torch.range(1, dataset.data:size(1)):totable()
+			label = mnist_dataset.label:totable(),
+			row_id = torch.range(1, mnist_dataset.data:size(1)):totable()
 		})
 
 	-- Since the mnist package already has taken care of the data
@@ -50,7 +50,7 @@ local function getIterator(mode)
 	local subset = df["/core"]
 	if (config.parallel) then
 		return Df_ParallelIterator{
-			data = subset,
+			dataset = subset,
 			batch_size = 128,
 			init = function(idx)
 				-- Load the libraries needed
@@ -59,9 +59,9 @@ local function getIterator(mode)
 
 				-- Load the datasets external resource
 				local mnist = require 'mnist'
-				local dataset = mnist[mode .. 'dataset']()
-				ext_resource = dataset.data:reshape(dataset.data:size(1),
-					dataset.data:size(2) * dataset.data:size(3)):double()
+				local mnist_dataset = mnist[mode .. 'dataset']()
+				ext_resource = mnist_dataset.data:reshape(mnist_dataset.data:size(1),
+					mnist_dataset.data:size(2) * mnist_dataset.data:size(3)):double()
 			end,
 			nthread = 1,
 			target_transform =  function(val)
@@ -69,7 +69,11 @@ local function getIterator(mode)
 			end
 		}
 	else
-		return subset:get_iterator{
+		ext_resource = mnist_dataset.data:reshape(mnist_dataset.data:size(1),
+			mnist_dataset.data:size(2) * mnist_dataset.data:size(3)):double()
+
+		return Df_Iterator{
+			dataset = subset,
 			batch_size = 128,
 			target_transform = function(val)
 				return val + 1
