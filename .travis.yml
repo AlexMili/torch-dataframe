@@ -34,6 +34,9 @@ install:
   - luarocks --from=$TORCH_SERVER install argcheck
   - luarocks --from=$TORCH_SERVER install csvigo
   - luarocks install luafilesystem
+  - luarocks install paths
+  - luarocks install threads
+  - luarocks install torchnet
   - luarocks install busted
   - luarocks install luacov
   - luarocks make rocks/torch-dataframe-scm-1.rockspec CFLAGS="-O2 -fPIC -fprofile-arcs -ftest-coverage" LIBFLAG="-shared --coverage"
