@@ -1,13 +1,5 @@
 local env = require 'argcheck.env' -- retrieve argcheck environement
 
--- Should be a fast and more convenient alternative to built-in regular expression
---  the re could be used that is a layer on top of lpeg but there is currently no need for that
-local lpeg = require 'lpeg'
-local r_batchframe = lpeg.Cg("Batchframe")
-local r_dataframe = lpeg.Cg("Dataframe")
-local r_subset = lpeg.Cg("Df_Subset")
-local any_frame = r_batchframe + r_dataframe + r_subset
-
 env.istype = function(obj, typename)
 	local thtype = torch.type(obj)
 	-- Either a number or string

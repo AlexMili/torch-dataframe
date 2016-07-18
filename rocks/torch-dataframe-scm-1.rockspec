@@ -19,7 +19,6 @@ dependencies = {
 		"lua >= 5.1",
 		"torch >= 7.0",
 		"argcheck >= 2.0",
-		"lpeg >= 1.0.0",
 		"luafilesystem >= 1.6.3",
 		"paths",
 		"torchnet >= 1.0",
