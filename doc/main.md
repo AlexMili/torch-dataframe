@@ -70,11 +70,11 @@ _Return value_: self
 <a name="Dataframe.upgrade_frame">
 ### Dataframe.upgrade_frame(self)
 
-Upgrades an dataframe using the old batch loading framework to the new framework
+Upgrades a dataframe using the old batch loading framework to the new framework
 by instantiating the subsets argument, copying the indexes and setting the
 samplers to either:
-- linear for test/validate or shuffle = false
-- permutation if shuffle = true and none of above names
+_ linear for test/validate or shuffle = false
+_ permutation if shuffle = true and none of above names
 
 ```
 ({
