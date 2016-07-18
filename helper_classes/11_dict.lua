@@ -32,4 +32,11 @@ function dict:__init(table)
 	self.data = dict_data
 end
 
+dict.__len__ = argcheck{
+	{name="self", type="Df_Dict"},
+	{name="other", type="Df_Dict", opt=true},
+	call=function(self, other)
+	return table.exact_length(self.data)
+end}
+
 return dict

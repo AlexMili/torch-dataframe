@@ -9,6 +9,7 @@ description = {
 		detailed = [[
 			 Dataframe is a Torch7 class to load and manipulate
 			 Kaggle-style CSVs inspired from R's and pandas' Dataframes.
+			 Compatible with torchnet.
 		]],
 		homepage = "https://github.com/alexmili/torch-dataframe",
 		license = "MIT/X11",
@@ -18,8 +19,11 @@ dependencies = {
 		"lua >= 5.1",
 		"torch >= 7.0",
 		"argcheck >= 2.0",
+		"lpeg >= 1.0.0",
 		"luafilesystem >= 1.6.3",
-		"paths"
+		"paths",
+		"torchnet >= 1.0",
+		"threads >= 1.0"
 }
 build = {
 	type = 'builtin',
@@ -28,22 +32,26 @@ build = {
 			["Dataframe.utils"] = 'utils.lua',
 			["Dataframe.argcheck"] = 'argcheck.lua',
 			["Dataframe.main"] = 'main.lua',
-			["Dataframe.Extensions.metatable"] = 'Extensions/metatable.lua',
-			["Dataframe.Extensions.categorical"] = 'Extensions/categorical.lua',
-			["Dataframe.Extensions.column"] = 'Extensions/column.lua',
-			["Dataframe.Extensions.row"] = 'Extensions/row.lua',
-			["Dataframe.Extensions.subsets_and_batches"] = 'Extensions/subsets_and_batches.lua',
-			["Dataframe.Extensions.load_data"] = 'Extensions/load_data.lua',
-			["Dataframe.Extensions.missing_data"] = 'Extensions/missing_data.lua',
-			["Dataframe.Extensions.output"] = 'Extensions/output.lua',
-			["Dataframe.Extensions.export_data"] = 'Extensions/export_data.lua',
-			["Dataframe.Extensions.select_set_update"] = 'Extensions/select_set_update.lua',
-			["Dataframe.Extensions.statistics"] = 'Extensions/statistics.lua',
-			["Dataframe.sub_classes.batchframe"] = 'sub_classes/batchframe.lua',
-			["Dataframe.sub_classes.subset"] = 'sub_classes/subset.lua',
+			["Dataframe.extensions.metatable"] = 'extensions/metatable.lua',
+			["Dataframe.extensions.categorical"] = 'extensions/categorical.lua',
+			["Dataframe.extensions.column"] = 'extensions/column.lua',
+			["Dataframe.extensions.row"] = 'extensions/row.lua',
+			["Dataframe.extensions.subsets_and_batches"] = 'extensions/subsets_and_batches.lua',
+			["Dataframe.extensions.load_data"] = 'extensions/load_data.lua',
+			["Dataframe.extensions.missing_data"] = 'extensions/missing_data.lua',
+			["Dataframe.extensions.output"] = 'extensions/output.lua',
+			["Dataframe.extensions.export_data"] = 'extensions/export_data.lua',
+			["Dataframe.extensions.select_set_update"] = 'extensions/select_set_update.lua',
+			["Dataframe.extensions.statistics"] = 'extensions/statistics.lua',
+
+			["Dataframe.sub_classes.01_subset"] = 'sub_classes/01_subset.lua',
+			["Dataframe.sub_classes.10_batchframe"] = 'sub_classes/10_batchframe.lua',
 			["Dataframe.sub_classes.subset_extensions.samplers"] = 'sub_classes/subset_extensions/samplers.lua',
-			["Dataframe.helper_classes.array"] = 'helper_classes/array.lua',
-			["Dataframe.helper_classes.dict"] = 'helper_classes/dict.lua',
-			["Dataframe.helper_classes.tbl"] = 'helper_classes/tbl.lua'
+
+			["Dataframe.helper_classes.01_iterator"] = 'helper_classes/01_iterator.lua',
+			["Dataframe.helper_classes.02_paralleliterator"] = 'helper_classes/02_paralleliterator.lua',
+			["Dataframe.helper_classes.10_array"] = 'helper_classes/10_array.lua',
+			["Dataframe.helper_classes.11_dict"] = 'helper_classes/11_dict.lua',
+			["Dataframe.helper_classes.12_tbl"] = 'helper_classes/12_tbl.lua'
 	}
 }

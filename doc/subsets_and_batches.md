@@ -13,7 +13,7 @@ for the sampler is hidden inside the samplers local environement and the main th
 has no way of knowing that you've sampled the next 30 cases in the data in a subthread.
 
 <a name="Dataframe.create_subsets">
-### Dataframe.create_subsets(self)
+### Dataframe.create_subsets(self[, class_args])
 
 Initializes the metadata needed for batch loading:
 - Subsets e.g. for training, validating, and testing
@@ -30,6 +30,23 @@ The samplers defaults to permutation for the train set while the validate and
 test have a linear. If you provide a string identifying the sampler it will be
 used by all the subsets.
 
+You can specify the data and label loaders used in the `Batchframe` by passing
+the class argument. This is passed to the `Df_Subset` that then in turn passes
+the information forward to the batches themself. As this is cascading through
+the objects you must wrap the argument in multiple `Df_Tbl` for it to work, here
+is a basic example:
+
+```lua
+my_data:create_subsets{
+	class_args = Df_Tbl({
+		batch_args = Df_Tbl({
+			data = function(row) image_loader(row.filename) end,
+			label = Df_Array("Gender")
+		})
+	})
+}
+```
+
 The metadata is stored under `self.subsets.*`.
 
 _Note_: This function must be called prior to load_batch as it needs the
@@ -39,15 +56,17 @@ _Return value_: self
 
 ```
 ({
-   self = Dataframe  -- 
+   self       = Dataframe  -- 
+  [class_args = Df_Tbl]    -- Arguments to be passed to the class initializer
 })
 ```
 
 
 ```
 ({
-   self    = Dataframe  -- 
-   subsets = Df_Dict    -- The default data subsets
+   self       = Dataframe  -- 
+   subsets    = Df_Dict    -- The default data subsets
+  [class_args = Df_Tbl]    -- Arguments to be passed to the class initializer
 })
 ```
 
@@ -62,6 +81,7 @@ _Return value_: self
 	 the label-distribution sampler that needs the distribution. Note that
 	 you need to have a somewhat complex table:
 	 `Df_Tbl({train = Df_Dict({distribution = Df_Dict({A = 2, B=10})})})`. [default=false]
+  [class_args   = Df_Tbl]    -- Arguments to be passed to the class initializer
 })
 ```
 
@@ -71,11 +91,12 @@ _Return value_: self
    self         = Dataframe  -- 
    subsets      = Df_Dict    -- The default data subsets
    samplers     = Df_Dict    -- The samplers to use together with the subsets.
-  [label_column = string]    -- The label based samplers need a column with labels [default=false]
+  [label_column = string]    -- The label based samplers need a column with labels
   [sampler_args = Df_Tbl]    -- Arguments needed for some of the samplers - currently only used by
- 	 the label-distribution sampler that needs the distribution. Note that
+	 the label-distribution sampler that needs the distribution. Note that
 	 you need to have a somewhat complex table:
-	 `Df_Tbl({train = Df_Dict({distribution = Df_Dict({A = 2, B=10})})})`. [default=false]
+	 `Df_Tbl({train = Df_Dict({distribution = Df_Dict({A = 2, B=10})})})`.
+  [class_args   = Df_Tbl]    -- Arguments to be passed to the class initializer
 })
 ```
 
@@ -107,17 +128,20 @@ Checks if subset used in batch loading is available
 
 _Return value_: boolean
 <a name="Dataframe.get_subset">
-### Dataframe.get_subset(self, subset[, return_type])
+### Dataframe.get_subset(self, subset[, frame_type][, class_args])
 
 Returns the entire subset as either a Df_Subset, Dataframe or Batchframe
 
 ```
 ({
-   self        = Dataframe  -- 
-   subset      = string     -- Type of data to load
-  [return_type = string]    -- Choose the type of return object that you're interested in.
+   self       = Dataframe  -- 
+   subset     = string     -- Type of data to load
+  [frame_type = string]    -- Choose the type of return object that you're interested in.
 	 Return a Batchframe with a different `to_tensor` functionality that allows
 	 loading data, label tensors simultaneously [default=Df_Subset]
+  [class_args = Df_Tbl]    -- 	 Arguments to be passed to the class initializer - overrides the arguments within the
+	 self.subsets that is stored after the `create_subsets` call.
+	 
 })
 ```
 

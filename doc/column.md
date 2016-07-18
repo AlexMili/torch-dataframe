@@ -4,6 +4,8 @@
 <a name="Dataframe.is_numerical">
 ### Dataframe.is_numerical(self, column_name)
 
+Checks if column is numerical
+
 ```
 ({
    self        = Dataframe  -- 
@@ -11,7 +13,31 @@
 })
 ```
 
-Checks if column is numerical
+_Return value_: boolean
+<a name="Dataframe.is_string">
+### Dataframe.is_string(self, column_name)
+
+Checks if column is of string type
+
+```
+({
+   self        = Dataframe  -- 
+   column_name = string     -- The column name to check
+})
+```
+
+_Return value_: boolean
+<a name="Dataframe.is_boolean">
+### Dataframe.is_boolean(self, column_name)
+
+Checks if column is of boolean type
+
+```
+({
+   self        = Dataframe  -- 
+   column_name = string     -- The column name to check
+})
+```
 
 _Return value_: boolean
 <a name="Dataframe.has_column">

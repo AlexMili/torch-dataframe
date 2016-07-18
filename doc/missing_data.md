@@ -2,23 +2,25 @@
 ## Missing data functions
 
 <a name="Dataframe.count_na">
-### Dataframe.count_na(self)
-
-```
-({
-   self = Dataframe  -- 
-})
-```
+### Dataframe.count_na(self[, as_dataframe])
 
 Count missing values in dataset
 
-_Return value_: table containing missing values per column
+```
+({
+   self         = Dataframe  -- 
+  [as_dataframe = boolean]   -- Return a dataframe [default=true]
+})
+```
+
+_Return value_: Datafrmae or table containing missing values per column
 You can manually choose the columns by providing a Df_Array
 
 ```
 ({
-   self    = Dataframe  -- 
-   columns = Df_Array   -- The columns to count
+   self         = Dataframe  -- 
+   columns      = Df_Array   -- The columns to count
+  [as_dataframe = boolean]   -- Return a dataframe [default=true]
 })
 ```
 

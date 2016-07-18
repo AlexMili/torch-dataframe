@@ -2,9 +2,13 @@
 [![Build Status](https://travis-ci.org/AlexMili/torch-dataframe.svg?branch=master)](https://travis-ci.org/AlexMili/torch-dataframe)
 
 # Dataframe
-Dataframe is a [Torch7]((http://torch.ch/)) class to load and manipulate tabular data (e.g. Kaggle-style CSVs)
-inspired from [R's](https://cran.r-project.org/) and [pandas'](http://pandas.pydata.org/)
-[data frames](https://github.com/mobileink/data.frame/wiki/What-is-a-Data-Frame%3F).
+Dataframe is a [Torch7]((http://torch.ch/)) class to load and manipulate tabular
+data (e.g. Kaggle-style CSVs) inspired from [R's](https://cran.r-project.org/) and
+[pandas'](http://pandas.pydata.org/) [data frames](https://github.com/mobileink/data.frame/wiki/What-is-a-Data-Frame%3F).
+
+As of release 1.5 it fully supports the [torchnet](https://github.com/torchnet/torchnet)
+data structure. It also has custom iterators to convenient integration with
+torchnet's engines, see the [mnist example](https://github.com/AlexMili/torch-dataframe/blob/master/examples/mnist_example.lua).
 
 <!-- TOC depthFrom:2 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
 
@@ -18,6 +22,7 @@ inspired from [R's](https://cran.r-project.org/) and [pandas'](http://pandas.pyd
 	- [Categorical variables](#categorical-variables)
 	- [Subsetting](#subsetting)
 	- [Exporting](#exporting)
+	- [Batch loading](#batch-loading)
 - [Tests](#tests)
 - [Documentation](#documentation)
 - [Contributing](#contributing)
@@ -220,7 +225,8 @@ names.
 - Each subset is a separate dataframe subclass that has two columns,
 (1)  indexes with the corresponding index in the main dataframe,
 (2) labels that some of the samplers require.
-- When you want to retrieve a batch from a subset you call the subset using `my_dataframe:get_subset('train'):get_batch(30)` or `my_dataframe['/train']:get_batch(30)`.
+- When you want to retrieve a batch from a subset you call the subset using
+ `my_dataframe:get_subset('train'):get_batch(30)` or `my_dataframe['/train']:get_batch(30)`.
 - The batch returned is also a subclass that has a custom `to_tensor` function
 that returns the data and corresponding label tensors. You can provide custom
 functions that will get the full row as an argument allowing you to use e.g. a
@@ -238,13 +244,18 @@ local data, label = batch:to_tensor{
 }
 ```
 
+As of version 1.5 you may also want to consider using th iterators that integrate
+with the torchnet infrastructure. Take a look at the iterator API and the mnist
+example for how an implementation may look.
+
 ## Tests
 
 The package contains an extensive test suite and tries to apply a [behavior driven
 development](https://en.wikipedia.org/wiki/Behavior-driven_development) approach.
 All features should be accompanied by a test-case.
 
-To launch the tests you need to install ```busted``` (See: [Olivine-Labs/busted](http://olivinelabs.com/busted/)) via luarocks:
+To launch the tests you need to install ```busted``` (See:
+[Olivine-Labs/busted](http://olivinelabs.com/busted/)) via luarocks:
 
 ```bash
 luarocks install busted
@@ -259,7 +270,11 @@ cd specs/
 
 ## Documentation
 
-The package relies on self-documenting functions via the [argcheck](https://github.com/torch/argcheck) package that reside in the [Doc](https://github.com/AlexMili/torch-dataframe/tree/master/Doc) folder. The [GitHub Wiki](https://github.com/AlexMili/torch-dataframe/wiki) is intended for more extensive in detail documentation.
+The package relies on self-documenting functions via the
+[argcheck](https://github.com/torch/argcheck) package that reside in the
+[doc](https://github.com/AlexMili/torch-dataframe/tree/master/doc) folder.
+The [GitHub Wiki](https://github.com/AlexMili/torch-dataframe/wiki) is intended
+for more extensive in detail documentation.
 
 To generate the documentation please run:
 
@@ -269,5 +284,10 @@ th doc.lua > /dev/null
 
 ## Contributing
 
-Feel free to report a bug, suggest enhancements or submit new cool features using [Issues](https://github.com/AlexMili/torch-dataframe/issues) or directly send us a [Pull Request](https://github.com/AlexMili/torch-dataframe/pulls) :).
-Don't forget to test your code and generate the doc before submitting. You can find how we implemented our tests in the [specs directory](https://github.com/AlexMili/torch-dataframe/tree/readme/specs). See "Behavior Driven Development" for more details on this technique.
+Feel free to report a bug, suggest enhancements or submit new cool features using
+[Issues](https://github.com/AlexMili/torch-dataframe/issues) or directly send us
+a [Pull Request](https://github.com/AlexMili/torch-dataframe/pulls) :).
+Don't forget to test your code and generate the doc before submitting.
+You can find how we implemented our tests in the
+[specs directory](https://github.com/AlexMili/torch-dataframe/tree/readme/specs).
+See "Behavior Driven Development" for more details on this technique.
