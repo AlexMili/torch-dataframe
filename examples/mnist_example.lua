@@ -15,6 +15,7 @@ require 'Dataframe'
 local cmd = torch.CmdLine()
 cmd:option('-usegpu', false, 'use gpu for training')
 cmd:option('-parallel', false, 'use multithreaded loading for training')
+
 local config = cmd:parse(arg)
 print(string.format('running on %s', config.usegpu and 'GPU' or 'CPU'))
 print(string.format('using %s execution', config.parallel and 'parallel' or 'single thread'))
