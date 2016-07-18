@@ -4,6 +4,16 @@ require 'torch'
 local argcheck = require "argcheck"
 local doc = require "argcheck.doc"
 
+-- Since torchnet also uses docs we need to escape them when recording the documentation
+local torchnet
+if (doc.__record) then
+	doc.stop()
+	torchnet = require "torchnet"
+	doc.record()
+else
+	torchnet = require "torchnet"
+end
+
 doc[[
 
 ## Core functions
@@ -11,7 +21,7 @@ doc[[
 ]]
 
 -- create class object
-local Dataframe = torch.class('Dataframe')
+local Dataframe, parent_class = torch.class('Dataframe', 'tnt.Dataset')
 
 Dataframe.__init = argcheck{
 	doc =  [[
@@ -25,6 +35,8 @@ Creates and initializes a Dataframe class. Envoked through `local my_dataframe =
 ]],
 	{name="self", type="Dataframe"},
 	call=function(self)
+	parent_class.__init(self)
+
 	self:_clean()
 	self.tostring_defaults =
 		{no_rows = 10,

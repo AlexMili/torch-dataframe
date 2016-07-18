@@ -2,7 +2,7 @@
 
 local argcheck = require "argcheck"
 local doc = require "argcheck.doc"
-
+local paths = require "paths"
 doc[[
 
 ## Utility functions
@@ -172,8 +172,15 @@ table.collapse2str = function(tbl, indent, start)
 
 			if (isnan(v)) then
 				ret = ret .. "'" .. k .. "'=>nan"
+			elseif (torch.type(v):match("Tensor")) then
+				ret = ret .. "'" .. k .. "'=> Tensor with size: '" .. tostring(v:size()) .. "'"
 			else
-				ret = ret .. "'" .. k .. "'=>'" .. tostring(v) .. "'"
+				local v_string = tostring(v)
+				if (#v_string > 50) then
+					ret = ret .. "'" .. k .. "'=> '" .. v_string:sub(1, 50) .. "...'"
+				else
+					ret = ret .. "'" .. k .. "'=> '" .. v_string .. "'"
+				end
 			end
 		end
 	end
@@ -222,7 +229,26 @@ table.maxn = table.maxn or function(t) local maxn=0 for i in pairs(t) do maxn=ty
 
 -- Util for debugging purpose
 table._dump = function(tbl)
-	print(("\n-[ Table dump ]-\n%s"):format(table.collapse2str(tbl)))
+	local dump_str = ""
+	if (torch.type(tbl) == "table") then
+		dump_str = ("\n-[ Table dump ]-\n%s"):format(table.collapse2str(tbl))
+	else
+		dump_str = ("\n-[ not a table: '%s' ]-\ntostring(): %s"):format(torch.type(tbl), tostring(tbl))
+	end
+	io.stderr:write(dump_str)
+end
+
+_dump = function(var)
+	local dump_str = ""
+	if (torch.type(var) == "table") then
+		dump_str = ("\n-[ Table dump ]-\n%s"):format(table.collapse2str(var))
+	elseif(torch.type(var):match("Tensor")) then
+		dump_str = ("\n-[ Tensor dump ]-\n%s"):format(tostring(var:size()))
+	else
+		dump_str = ("\n-[ not a table: '%s' ]-\ntostring(): %s"):format(torch.type(var), tostring(var))
+	end
+
+	io.stderr:write(dump_str)
 end
 
 -- A benchmark function that can be used for checking performance
@@ -272,3 +298,32 @@ if (itorch ~= nil) then
 	print = print_df
 end
 -- END UTILS
+
+paths.get_sorted_files  = argcheck{
+	doc=[[
+<a name="table.get_sorted_lua_files">
+### table.get_sorted_lua_files(@ARGP)
+
+Calls the `paths.files()` with the directory and sorts the files according to
+name.
+
+@ARGT
+
+_Return value_: table with sorted file names
+]],
+	{name="path", type="string",
+	 doc="The directory path"},
+	{name="match_str", type="string", default="[.]lua$",
+	 doc="The file matching string to search for. Defaults to lua file endings."},
+	call=function(path, match_str)
+	local files = {}
+	for f in paths.files(path) do
+	  if (f:match(match_str)) then
+	    files[#files + 1] = f
+	  end
+	end
+
+	table.sort(files)
+
+	return files
+end}

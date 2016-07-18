@@ -39,4 +39,11 @@ function da:__init(...)
 	self.data = array_data
 end
 
+da.__len__ = argcheck{
+	{name="self", type="Df_Array"},
+	{name="other", type="Df_Array", opt=true},
+	call=function(self, other)
+	return #self.data
+end}
+
 return da

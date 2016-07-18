@@ -40,14 +40,15 @@ be the ones that are kept
 ```
 
 <a name="Dataframe.append">
-### Dataframe.append(self, rows)
+### Dataframe.append(self, rows[, column_order])
 
 Appends the row(s) to the Dataframe.
 
 ```
 ({
-   self = Dataframe  -- 
-   rows = Df_Dict    -- Values to append to the Dataframe
+   self         = Dataframe  -- 
+   rows         = Df_Dict    -- Values to append to the Dataframe
+  [column_order = Df_Array]  -- The order of the column (has to be array and _not_ a dictionary). Only used when the Dataframe is empty [default=false]
 })
 ```
 

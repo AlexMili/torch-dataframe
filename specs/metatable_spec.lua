@@ -59,15 +59,18 @@ describe("Indexing the dataframe", function()
 		it("Check that it's a true copy and not a reference",function()
 			local new_df = df:copy()
 			new_df[1] = {a=2}
-			assert.is_true(torch.all(torch.eq(new_df:size(), df:size())))
+			assert.are.same(new_df:size(1), df:size(1))
+			assert.are.same(new_df:size(2), df:size(2))
 			assert.is_false(new_df[1].a == df[1].a)
+
+			-- Check that htis matches also the shape
+			assert.are.same(new_df:shape(), df:shape())
 		end)
 	end)
 
 	it("Returns the size of the Dataframe",function()
 		local a = Dataframe(Df_Dict({test = {1,nil,3, 4}, test2 = {5, 9, 99, 88}}))
 
-		assert.is_true(torch.all(torch.eq(a:size(), torch.IntTensor({4, 2}))))
 		assert.are.same(a:size(1), 4)
 		assert.are.same(a:size(2), 2)
 	end)

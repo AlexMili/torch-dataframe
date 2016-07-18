@@ -15,9 +15,9 @@ Dataframe.sub = argcheck{
 <a name="Dataframe.sub">
 ### Dataframe.sub(@ARGP)
 
-@ARGT
-
 Selects a subset of rows and returns those
+
+@ARGT
 
 _Return value_: Dataframe
 ]],
@@ -64,7 +64,10 @@ _Return value_: Dataframe
 	for i = 1,n_items do
 		table.insert(indexes, rperm[i])
 	end
-	return self:_create_subset(Df_Array(indexes))
+
+	return self:_create_subset{
+		index_items = Df_Array(indexes)
+	}
 end}
 
 Dataframe.head = argcheck{
@@ -122,11 +125,24 @@ _Return value_: Dataframe or Batchframe
 ]],
 	{name="self", type="Dataframe"},
 	{name='index_items', type='Df_Array', doc='The indexes to retrieve'},
-	{name='as_batchframe', type='boolean',
-	 doc=[[Return a Batchframe with a different `to_tensor` functionality that allows
-	 loading data, label tensors simultaneously]], default=false},
-	call = function(self, index_items, as_batchframe)
+	{name='frame_type', type='string',
+	 doc=[[Choose any of the avaiable frame Dataframe classes to be returned as:
+	 - Dataframe
+	 - Batchframe
+	 - Df_Subset
+	 If left empty it will default to the given torch.type(self)
+	 ]], opt = true},
+	{name='class_args', type='Df_Tbl', doc='Arguments to be passed to the class initializer', opt=true},
+	call = function(self, index_items, frame_type, class_args)
 	index_items = index_items.data
+
+	if (not frame_type) then
+		frame_type = torch.type(self)
+	end
+
+	if (class_args) then
+		class_args = class_args.data
+	end
 
 	for i=1,#index_items do
 		local val = index_items[i]
@@ -138,11 +154,41 @@ _Return value_: Dataframe or Batchframe
 	local tmp = clone(self.categorical)
 	self.categorical = {}
 	local ret
-	if (as_batchframe) then
-		ret = Batchframe()
-	else
-		ret = Dataframe.new()
+	if (frame_type == "Dataframe") then
+		if (class_args) then
+			if (class_args[1]) then
+				-- unnamed parameters
+				ret = Dataframe.new(unpack(class_args))
+			else
+				ret = Dataframe.new(class_args)
+			end
+		else
+			ret = Dataframe.new()
+		end
+	elseif (frame_type == "Batchframe") then
+		if (class_args) then
+			if (class_args[1]) then
+				-- unnamed parameters
+				ret = Batchframe(unpack(class_args))
+			else
+				ret = Batchframe(class_args)
+			end
+		else
+			ret = Batchframe()
+		end
+	elseif (frame_type == "Df_Subset") then
+		if (class_args) then
+			if (class_args[1]) then
+				-- unnamed parameters
+				ret = Df_Subset(unpack(class_args))
+			else
+				ret = Df_Subset(class_args)
+			end
+		else
+			ret = Df_Subset()
+		end
 	end
+
 	for _,i in pairs(index_items) do
 		local val = self:get_row(i)
 		if (ret:size(1) == 0) then
@@ -442,7 +488,7 @@ _Return value_: Dataframe
 	columns = columns.data
 	self:assert_has_not_column(id_name)
 	self:assert_has_not_column(value_name)
-	
+
 	for _,column_name in ipairs(columns) do
 		self:assert_has_column(column_name)
 	end

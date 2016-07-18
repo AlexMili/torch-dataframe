@@ -41,6 +41,23 @@ The samplers defaults to permutation for the train set while the validate and
 test have a linear. If you provide a string identifying the sampler it will be
 used by all the subsets.
 
+You can specify the data and label loaders used in the `Batchframe` by passing
+the class argument. This is passed to the `Df_Subset` that then in turn passes
+the information forward to the batches themself. As this is cascading through
+the objects you must wrap the argument in multiple `Df_Tbl` for it to work, here
+is a basic example:
+
+```lua
+my_data:create_subsets{
+	class_args = Df_Tbl({
+		batch_args = Df_Tbl({
+			data = function(row) image_loader(row.filename) end,
+			label = Df_Array("Gender")
+		})
+	})
+}
+```
+
 The metadata is stored under `self.subsets.*`.
 
 _Note_: This function must be called prior to load_batch as it needs the
@@ -52,10 +69,17 @@ _Return value_: self
 
 ]],
   {name='self', type='Dataframe'},
-	call=function(self)
+	{name='class_args', type='Df_Tbl', opt=true,
+	 doc='Arguments to be passed to the class initializer'},
+	call=function(self, class_args)
 	-- Add default subsets
 	local subsets = Df_Dict({['train'] = 0.7, ['validate'] = 0.2, ['test'] = 0.1})
-	return self:create_subsets(subsets)
+
+	if (class_args) then
+		return self:create_subsets(subsets, class_args)
+	else
+		return self:create_subsets(subsets)
+	end
 end}
 
 Dataframe.create_subsets = argcheck{
@@ -68,7 +92,8 @@ Dataframe.create_subsets = argcheck{
   {name='self', type='Dataframe'},
 	{name='subsets', type='Df_Dict',
 	 doc="The default data subsets"},
-	call=function(self, subsets)
+	{name='class_args', type='Df_Tbl', doc='Arguments to be passed to the class initializer', opt=true},
+	call=function(self, subsets, class_args)
 	subsets = subsets.data
 
 	-- Add default samplers
@@ -89,7 +114,14 @@ Dataframe.create_subsets = argcheck{
 		end
 	end
 
-	return self:create_subsets(Df_Dict(subsets), Df_Dict(samplers))
+	if (class_args) then
+		return self:create_subsets{
+			subsets = Df_Dict(subsets),
+			samplers = Df_Dict(samplers),
+			class_args = class_args}
+	else
+		return self:create_subsets(Df_Dict(subsets), Df_Dict(samplers))
+	end
 end}
 
 Dataframe.create_subsets = argcheck{
@@ -113,7 +145,8 @@ Dataframe.create_subsets = argcheck{
 	 you need to have a somewhat complex table:
 	 `Df_Tbl({train = Df_Dict({distribution = Df_Dict({A = 2, B=10})})})`.]],
 	 default=false},
-	call=function(self, subsets, sampler, label_column, sampler_args)
+	{name='class_args', type='Df_Tbl', doc='Arguments to be passed to the class initializer', opt=true},
+	call=function(self, subsets, sampler, label_column, sampler_args, class_args)
 	subsets = subsets.data
 	-- Set to nil so that we can easily rely on argcheck passing when label and args are missing
 	if (not label_column) then
@@ -129,11 +162,20 @@ Dataframe.create_subsets = argcheck{
 		samplers[key] = sampler
 	end
 
-	return self:create_subsets{
-		subsets = Df_Dict(subsets),
-		samplers = Df_Dict(samplers),
-		label_column = label_column,
-		sampler_args = sampler_args}
+	if (class_args) then
+		return self:create_subsets{
+			subsets = Df_Dict(subsets),
+			samplers = Df_Dict(samplers),
+			label_column = label_column,
+			sampler_args = sampler_args,
+			class_args = class_args}
+	else
+		return self:create_subsets{
+			subsets = Df_Dict(subsets),
+			samplers = Df_Dict(samplers),
+			label_column = label_column,
+			sampler_args = sampler_args}
+	end
 end}
 
 Dataframe.create_subsets = argcheck{
@@ -148,16 +190,16 @@ Dataframe.create_subsets = argcheck{
 	 doc="The default data subsets"},
 	{name='samplers', type='Df_Dict',
 	 doc="The samplers to use together with the subsets."},
-	{name='label_column', type='string',
- 	 doc="The label based samplers need a column with labels",
- 	 default = false},
-	{name='sampler_args', type="Df_Tbl",
- 	 doc=[[Arguments needed for some of the samplers - currently only used by
- 	 the label-distribution sampler that needs the distribution. Note that
+	{name='label_column', type='string', opt=true,
+	 doc="The label based samplers need a column with labels"},
+	{name='sampler_args', type="Df_Tbl", opt=true,
+	 doc=[[Arguments needed for some of the samplers - currently only used by
+	 the label-distribution sampler that needs the distribution. Note that
 	 you need to have a somewhat complex table:
-	 `Df_Tbl({train = Df_Dict({distribution = Df_Dict({A = 2, B=10})})})`.]],
- 	 default=false},
- 	call=function(self, subsets, samplers, label_column, sampler_args)
+	 `Df_Tbl({train = Df_Dict({distribution = Df_Dict({A = 2, B=10})})})`.]]},
+	{name='class_args', type='Df_Tbl', opt=true,
+	 doc='Arguments to be passed to the class initializer'},
+	call=function(self, subsets, samplers, label_column, sampler_args, class_args)
 	subsets = subsets.data
 	samplers = samplers.data
 	-- Set to nil or empty table so that we can easily rely on argcheck passing
@@ -198,11 +240,19 @@ Dataframe.create_subsets = argcheck{
 		end
 	end
 
+	if (class_args) then
+		class_args = class_args.data
+		assert(not class_args[1], "All class arguments for subsets have to be named")
+	else
+		class_args = {}
+	end
+
 	self.subsets = {
 		subset_splits = subsets,
 		samplers = samplers,
 		label_column = label_column,
-		sampler_args = sampler_args
+		sampler_args = sampler_args,
+		class_args = class_args
 	}
 
 	return self:reset_subsets()
@@ -225,8 +275,10 @@ _Return value_: self
 	call=function(self)
 	assert(self.subsets ~= nil and
 	       self.subsets.subset_splits ~= nil and
-	       self.subsets.samplers ~= nil,
-	       "You haven't initiated your subsets correctly. Please call create_subsets() before the reset_subsets()")
+	       self.subsets.samplers ~= nil and
+	       self.subsets.class_args ~= nil,
+	       [[ You haven't initiated your subsets correctly. Please call
+	       create_subsets() before the reset_subsets()]])
 
 	local n_subsets = table.exact_length(self.subsets.subset_splits)
 	local permuations = torch.randperm(self:size(1))
@@ -265,28 +317,25 @@ _Return value_: self
 			offset = offset + no_to_select
 		end
 
-		if (not label_column) then
-			self.subsets.sub_objs[name] =
-				Df_Subset{
-					indexes = Df_Array(subset_permutations),
-					sampler = self.subsets.samplers[name],
-					sampler_args = self.subsets.sampler_args[name],
-					parent = self}
-		else
+		-- The arguments forthe subsets
+		local subset_args = clone(self.subsets.class_args)
+		subset_args.sampler = self.subsets.samplers[name]
+		subset_args.sampler_args = self.subsets.sampler_args[name]
+		subset_args.parent = self
+
+		-- If the label_column exists then each entry is index + label
+		subset_args.indexes = Df_Array(subset_permutations)
+		if (label_column) then
 			-- A little hacky but it should speed up and cheking tensor data makes no sense
 			local labels = Df_Array()
 			subset_permutations:apply(function(key)
 				labels.data[#labels.data + 1] = label_column[key]
 			end)
-
-			self.subsets.sub_objs[name] =
-				Df_Subset{
-					indexes = Df_Array(subset_permutations),
-					sampler = self.subsets.samplers[name],
-					labels = labels,
-					sampler_args = self.subsets.sampler_args[name],
-					parent = self}
+			subset_args.labels = labels
 		end
+
+		self.subsets.sub_objs[name] =
+			Df_Subset.new(subset_args)
 	end
 
 	return self
@@ -324,31 +373,36 @@ _Return value_: Df_Subset, Dataframe or Batchframe
 ]],
 	{name="self", type="Dataframe"},
 	{name='subset', type='string', doc='Type of data to load'},
-	{name='return_type', type='string',
+	{name='frame_type', type='string',
 	 doc=[[Choose the type of return object that you're interested in.
 	 Return a Batchframe with a different `to_tensor` functionality that allows
 	 loading data, label tensors simultaneously]], default="Df_Subset"},
-	call = function(self, subset, return_type)
+	{name='class_args', type='Df_Tbl', opt=true,
+	 doc=[[
+	 Arguments to be passed to the class initializer - overrides the arguments within the
+	 self.subsets that is stored after the `create_subsets` call.
+	 ]]},
+	call = function(self, subset, frame_type, class_args)
 	assert(self:has_subset(subset),
 	       ("There is no subset named '%s' among the subsets: %s"):
 	       format(subset, table.get_key_string(self.subsets.sub_objs)))
 
 	local sub_obj = self.subsets.sub_objs[subset]
-	if (return_type == "Df_Subset") then
+	if (frame_type == "Df_Subset") then
 		return sub_obj
 	end
 
-	if (return_type == "Dataframe") then
-		return self:
-			_create_subset{index_items = Df_Array(sub_obj:get_column('indexes')),
-			               as_batchframe = false}
+	local create_args = {
+		index_items = Df_Array(sub_obj:get_column('indexes')),
+		frame_type = frame_type
+	}
+
+	if (class_args) then
+		create_args.class_args = Df_Tbl(class_args.data)
+	elseif(self.subsets.class_args) then
+		create_args.class_args = Df_Tbl(self.subsets.class_args)
 	end
 
-	if (return_type == "Batchframe") then
 	return self:
-		_create_subset{index_items = Df_Array(sub_obj:get_column('indexes')),
-		               as_batchframe = true}
-	end
-
-	error("Invalid return type: " .. return_type)
+		_create_subset(create_args)
 end}

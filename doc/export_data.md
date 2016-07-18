@@ -49,3 +49,18 @@ If a filename is provided the tensor will be saved (`torch.save`) to that file:
   [columns  = Df_Array]  -- The columns to export to labels [default=false]
 })
 ```
+<a name="Dataframe.get">
+### Dataframe.get(self, idx)
+
+A funtion for *torchnet* compliance. It subsets a single index and returns the
+`to_tensor` on that example.
+
+```
+({
+   self = Dataframe  -- 
+   idx  = number     -- 
+})
+```
+
+_Return value_: (1) torch.tensor with 1 row and #numerical columns
+

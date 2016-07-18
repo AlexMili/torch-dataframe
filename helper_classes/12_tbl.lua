@@ -21,4 +21,11 @@ function dtbl:__init(table)
 	self.data = table
 end
 
+dtbl.__len__ = argcheck{
+	{name="self", type="Df_Tbl"},
+	{name="other", type="Df_Tbl", opt=true},
+	call=function(self, other)
+	return table.exact_length(self.data)
+end}
+
 return dtbl

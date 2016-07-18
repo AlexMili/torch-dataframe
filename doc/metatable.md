@@ -4,7 +4,7 @@
 <a name="Dataframe.size">
 ### Dataframe.size(self)
 
-Returns the number of rows and columns in a tensor
+Returns the number of rows in order to comply with the torchnet dataset standard
 
 ```
 ({
@@ -12,7 +12,7 @@ Returns the number of rows and columns in a tensor
 })
 ```
 
-_Return value_: tensor (rows, columns)
+_Return value_: rows
 By providing dimension you can get only that dimension, row == 1, col == 2
 
 ```
