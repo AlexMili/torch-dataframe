@@ -63,7 +63,7 @@ local function getIterator(mode)
 				ext_resource = mnist_dataset.data:reshape(mnist_dataset.data:size(1),
 					mnist_dataset.data:size(2) * mnist_dataset.data:size(3)):double()
 			end,
-			nthread = 1,
+			nthread = 2,
 			target_transform =  function(val)
 				return val + 1
 			end
@@ -98,13 +98,13 @@ engine.hooks.onForwardCriterion = function(state)
 	meter:add(state.criterion.output)
 	clerr:add(state.network.output, state.sample.target)
 	if state.training then
-		print(string.format('avg. loss: %2.4f; avg. error: %2.4f',
+		print(string.format('avg. loss: %2.2f; avg. error: %2.2f',
 			meter:value(), clerr:value{k = 1}))
 	end
 end
 -- After each epoch we need to envoke the sampler reset (only needed for some samples)
 engine.hooks.onEndEpoch = function(state)
-	print("End epoch")
+	print("End epoch no " .. state.epoch)
 	state.iterator.dataset:reset_sampler()
 end
 
@@ -132,7 +132,7 @@ engine:train{
 	iterator  = getIterator('train'),
 	criterion = criterion,
 	lr        = 0.2,
-	maxepoch  = 5,
+	maxepoch  = 3,
 }
 
 -- measure test loss and error:
@@ -143,5 +143,6 @@ engine:test{
 	iterator  = getIterator('test'),
 	criterion = criterion,
 }
-print(string.format('test loss: %2.4f; test error: %2.4f',
+print("\n ***** Done *****")
+print(string.format('test loss: %2.2f; test error: %2.2f',
 	meter:value(), clerr:value{k = 1}))
