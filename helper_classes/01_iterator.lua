@@ -20,8 +20,10 @@ returns the training tensors. This is a complement to the subset `get_batch`
 function and relies on the same core functions.
 
 Iterators implement two methods:
-  * `run()` which returns a Lua iterator usable in a for loop.
-  * `exec(funcname, ...)` which execute a given funcname on the underlying dataset.
+
+_ `run()` which returns a Lua iterator usable in a for loop.
+
+_ `exec(funcname, ...)` which execute a given funcname on the underlying dataset.
 
 Typical usage is achieved with a for loop:
 ```lua
