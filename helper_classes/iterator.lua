@@ -14,11 +14,9 @@ with a list function you can create so that the iterators returns a table with
 the two key elements `input` and `target` that `tnt.SGDEngine` and
 `tnt.OptimEngine` require.
 
-
 The Dataframe approach is to combine everything into a single iterator that does
 returns the training tensors. This is a complement to the subset `get_batch`
 function and relies on the same core functions.
-
 
 Iterators implement two methods:
   * `run()` which returns a Lua iterator usable in a for loop.
@@ -38,7 +36,6 @@ for sample in iterator() do
 end
 ```
 
-
 **Important:** The `tnt.DatasetIterator` does not reset the iterator after running
 to the end. In order to do this you must add a `reset_sampler` call in the endEpoch
 hook for the engine:
@@ -48,6 +45,11 @@ engine.hooks.onEndEpoch = function(state)
 	state.iterator.dataset:reset_sampler()
 end
 ```
+
+As torchnet is epoch-centered all samplers will be behave as if there was an underlying
+epoch mechanism. E.g. the uniform sampler will never trigger a reset but the epoch
+hook will still be called as there is a "fake epoch" calculated by
+`math.ceil(dataset:size()/batch_size)`.
 
 **Note**: An important note is that the transform and filters are ran before the
 `to_tensor` as they are assumed to be more valuable with the raw data. As transformations

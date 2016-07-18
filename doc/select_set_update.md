@@ -55,7 +55,7 @@ Retrieves the last elements of a table
 
 _Return value_: Dataframe
 <a name="Dataframe._create_subset">
-### Dataframe._create_subset(self, index_items[, frame_type])
+### Dataframe._create_subset(self, index_items[, frame_type][, class_args])
 
 Creates a class and returns a subset based on the index items. Intended for internal
 use. The method is primarily intended for internal use.
@@ -70,6 +70,7 @@ use. The method is primarily intended for internal use.
 	 - Df_Subset
 	 If left empty it will default to the given torch.type(self)
 	 
+  [class_args  = Df_Tbl]    -- Arguments to be passed to the class initializer
 })
 ```
 
