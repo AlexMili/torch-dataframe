@@ -74,38 +74,35 @@ on which `Df_ParallelIterator` relies.
 	call =
 	function(self, dataset, batch_size, init, nthread,
 		       filter, transform, input_transform, target_transform, ordered)
-	assert(isint(batch_size) and batch_size > 0, "The batch size must be a positive integer")
-	assert(dataset.batch_args,
-	       "If you want to use the iterator you must prespecify the batch data/label loaders")
+	parent_class.__init(self, dataset, batch_size, filter, transform, input_transform, target_transform)
+
+	-- Since the retrievers are identical for all batches we want to export
+	--  them once in order to save communication load
+	local retrievers = self.dataset.batch_args
+	local upvalue_data_retr = retrievers.data
+	local upvalue_label_retr = retrievers.label
+	local msd = "test"
+	self.dataset.batch_args = nil
+
+	local function data_copy()
+		gdata_retr = upvalue_data_retr
+		glabel_retr = upvalue_label_retr
+	end
 
 	-- The sharing allows shared access to tds/tensors
 	Threads.serialization('threads.sharedserialize')
 
 	-- Initialize the threads and the environement
-	local threads = Threads(nthread, init)
+	local threads = Threads(nthread, init, data_copy)
 	self.__threads = threads
 	self.__nthread = nthread
-
-	self.dataset = dataset
-
-	-- The size should be the number of batches that will be performed
-	local size = math.ceil(self:exec("size")/batch_size)
 
 	local sample -- beware: do not put this line in loop()
 	local sampleOrigIdx
 
 	function self.run()
-		-- loading size of the dataset each time run() is called
-		threads:addjob(
-			function(argList)
-				-- make the mod/filter functions global
-				filter, transform, input_transform, target_transform = unpack(argList)
-			end,
-			function()
-			end,
-			{filter, transform, input_transform, target_transform}
-		)
-		threads:dojob()
+		-- The size should be the number of batches that will be performed
+		local size = math.ceil(self:exec("size")/batch_size)
 
 		-- `samplePlaceholder` stands in for samples which have been
 		-- filtered out by the `filter` function
@@ -124,7 +121,6 @@ on which `Df_ParallelIterator` relies.
 				end
 
 				if (batch) then
-					-- TODO: the retriever functions can be unexpectedly large see http://stackoverflow.com/questions/38421366/torch-out-of-memory-in-thread-when-using-torch-serialize-twice/
 					local serialized_batch = torch.serialize(batch)
 
 					-- In the parallel section only the to_tensor is run in parallel
@@ -134,6 +130,8 @@ on which `Df_ParallelIterator` relies.
 							local origIdx, serialized_batch, samplePlaceholder = unpack(argList)
 
 							local batch = torch.deserialize(serialized_batch)
+							batch:set_data_retriever(gdata_retr)
+								:set_label_retriever(glabel_retr)
 
 							batch = transform(batch)
 
