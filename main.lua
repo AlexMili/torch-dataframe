@@ -3,7 +3,16 @@ require 'torch'
 
 local argcheck = require "argcheck"
 local doc = require "argcheck.doc"
-local torchnet = require "torchnet"
+
+-- Since torchnet also uses docs we need to escape them when recording the documentation
+local torchnet
+if (doc.__record) then
+	doc.stop()
+	torchnet = require "torchnet"
+	doc.record()
+else
+	torchnet = require "torchnet"
+end
 
 doc[[
 

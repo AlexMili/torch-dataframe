@@ -43,13 +43,15 @@ build = {
 			["Dataframe.extensions.export_data"] = 'extensions/export_data.lua',
 			["Dataframe.extensions.select_set_update"] = 'extensions/select_set_update.lua',
 			["Dataframe.extensions.statistics"] = 'extensions/statistics.lua',
-			["Dataframe.sub_classes.batchframe"] = 'sub_classes/batchframe.lua',
-			["Dataframe.sub_classes.subset"] = 'sub_classes/subset.lua',
+
+			["Dataframe.sub_classes.01_subset"] = 'sub_classes/01_subset.lua',
+			["Dataframe.sub_classes.10_batchframe"] = 'sub_classes/10_batchframe.lua',
 			["Dataframe.sub_classes.subset_extensions.samplers"] = 'sub_classes/subset_extensions/samplers.lua',
-			["Dataframe.helper_classes.array"] = 'helper_classes/array.lua',
-			["Dataframe.helper_classes.iterator"] = 'helper_classes/iterator.lua',
-			["Dataframe.helper_classes.paralleliterator"] = 'helper_classes/paralleliterator.lua',
-			["Dataframe.helper_classes.dict"] = 'helper_classes/dict.lua',
-			["Dataframe.helper_classes.tbl"] = 'helper_classes/tbl.lua'
+
+			["Dataframe.helper_classes.01_iterator"] = 'helper_classes/01_iterator.lua',
+			["Dataframe.helper_classes.02_paralleliterator"] = 'helper_classes/02_paralleliterator.lua',
+			["Dataframe.helper_classes.10_array"] = 'helper_classes/10_array.lua',
+			["Dataframe.helper_classes.11_dict"] = 'helper_classes/11_dict.lua',
+			["Dataframe.helper_classes.12_tbl"] = 'helper_classes/12_tbl.lua'
 	}
 }

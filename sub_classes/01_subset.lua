@@ -10,7 +10,7 @@ local doc = require "argcheck.doc"
 
 doc[[
 
-## Df_Subset class
+## Df_Subset
 
 The subset class contains all the information for a specific subset of an
 associated Dataframe. It is generally owned by a dataframe and simply initiates
@@ -204,12 +204,12 @@ end}
 
 -- Load the extensions
 local ext_path = string.gsub(current_file_path, "[^/]+$", "") .. "subset_extensions/"
-for extension_file,_ in lfs.dir (ext_path) do
-  if (string.match(extension_file, "[.]lua$")) then
-    local file = ext_path .. extension_file
-    assert(loadfile(file))(subset)
-  end
+local ext_files = paths.get_sorted_files(ext_path)
+for _, extension_file in pairs(ext_files) do
+  local file = ext_path .. extension_file
+  assert(loadfile(file))(subset)
 end
+
 
 subset.get_batch = argcheck{
 	doc =  [[

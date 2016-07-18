@@ -1,14 +1,5 @@
--- Skip if the Df_Iterator has already been loaded via paralleliterator
-if (Df_Iterator) then
-	return true
-end
+## Df_Iterator and general about Dataframe's iterators
 
-local tnt = require 'torchnet.env'
-local argcheck = require 'argcheck'
-local doc = require 'argcheck.doc'
-
-doc[[
-#### Dataframe Iterators
 The `torchnet` iterators allow a simple iteration over a dataset. If combined
 with a list function you can create so that the iterators returns a table with
 the two key elements `input` and `target` that `tnt.SGDEngine` and
@@ -56,15 +47,8 @@ hook will still be called as there is a "fake epoch" calculated by
 can be useful after the tensors have been generated the `target_transform` and `input_transform`
 have been added that allow transforming the two tensor elements in the return table.
 
-]]
-
-local Df_Iterator, parent_class = torch.class('Df_Iterator', 'tnt.DatasetIterator')
-
--- iterate over a dataset
-Df_Iterator.__init = argcheck{
-	doc = [[
 <a name="Df_Iterator">
-##### Df_Iterator(@ARGP)
+##### Df_Iterator(self, dataset, batch_size[, filter][, transform][, input_transform][, target_transform])
 
 After creating your data split (`create_subsets`) you call the `get_subset` and
 get the subset that you need to feed to this method. Remember that you must define
@@ -82,57 +66,17 @@ my_data:create_subsets{
 }
 ```
 
-@ARGT
-
-]],
-	{name='self', type='Df_Iterator'},
-	{name='dataset', type='Df_Subset'},
-	{name="batch_size", type="number", doc="The size of the batches"},
-	{name='filter', type='function', default=function(sample) return true end,
-	 doc=[[is a closure which returns `true` if the given sample
+```
+({
+   self             = Df_Iterator  -- 
+   dataset          = Df_Subset    -- 
+   batch_size       = number       -- The size of the batches
+  [filter           = function]    -- is a closure which returns `true` if the given sample
 	 should be considered or `false` if not. Note that filter is called _after_
-	 fetching the data in a threaded manner and _before_ the `to_tensor` is called.]]},
-	{name='transform', type='function', default=function(sample) return sample end,
-	 doc='a function which maps the given sample to a new value. This transformation occurs before filtering.'},
-	{name='input_transform', type='function', default=function(val) return val end,
-	 doc="Allows transforming the input (data) values after the `Batchframe:to_tensor` call"},
-	{name='target_transform', type='function', default=function(val) return val end,
-	 doc="Allows transforming the target (label) values after the `Batchframe:to_tensor` call"},
-	call = function(self, dataset, batch_size, filter, transform, input_transform, target_transform)
-	assert(dataset.batch_args,
-	      "If you want to use the iterator you must prespecify the batch data/label loaders")
-	assert(isint(batch_size) and batch_size > 0, "The batch size must be a positive integer")
+	 fetching the data in a threaded manner and _before_ the `to_tensor` is called. [has default value]
+  [transform        = function]    -- a function which maps the given sample to a new value. This transformation occurs before filtering. [has default value]
+  [input_transform  = function]    -- Allows transforming the input (data) values after the `Batchframe:to_tensor` call [has default value]
+  [target_transform = function]    -- Allows transforming the target (label) values after the `Batchframe:to_tensor` call [has default value]
+})
+```
 
-	self.dataset = dataset
-
-	function self.run()
-		local size = math.ceil(self:exec("size")/batch_size)
-		local idx = 1 -- TODO: Should the idx be skipped since the Dataframe implementation doesn require it?
-		return function()
-			while idx <= size do
-				local sample, reset = self:exec("get_batch", batch_size)
-
-				if (reset) then
-					idx = size + 1
-				else
-					idx = idx + 1
-				end
-
-				-- The samplers may return nil value if a reset is needed
-				if (sample) then
-					sample = transform(sample)
-
-					-- Only return non-nil values
-					if (filter(sample)) then
-						local input, target = sample:to_tensor()
-						return {
-							input = input_transform(input),
-							target = target_transform(target)
-						}
-					end
-				end
-			end -- End while
-
-		end
-	end
-end}
