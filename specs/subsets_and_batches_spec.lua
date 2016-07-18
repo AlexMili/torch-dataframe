@@ -106,7 +106,7 @@ describe("Loading dataframe and creaing adequate subsets", function()
 		a:create_subsets()
 
 		assert.are.equal(a["/test"]:size(1), #a["/test"])
-		
+
 		assert.are.equal(a["/test"]:size(1) +
 		                 a["/train"]:size(1) +
 		                 a["/validate"]:size(1), a:size(1), "Number of cases don't match")
@@ -223,12 +223,12 @@ describe("Test if we can get a batch with data and labels",function()
 		it("The batch arguments from the subset object should be forwarded to the batch itself", function()
 			local passed_args = class_args.data.batch_args.data
 			assert.are.same(
-				batch.batchframe_defaults.data.data,
+				batch:get_data_retriever().data,
 				passed_args.data.data
 			)
 
 			assert.are.same(
-				batch.batchframe_defaults.label.data,
+				batch:get_label_retriever().data,
 				passed_args.label.data
 			)
 		end)

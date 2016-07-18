@@ -32,8 +32,10 @@ set_load and set_data methods
 
 ]],
 	{name="self", type="Batchframe"},
-	{name="data", type="function|Df_Array", doc="The data loading procedure/columns", opt=true},
-	{name="label", type="function|Df_Array", doc="The label loading procedure/columns", opt=true},
+	{name="data", type="function|Df_Array", opt=true,
+	 doc="The data loading procedure/columns"},
+	{name="label", type="function|Df_Array", opt=true,
+	 doc="The label loading procedure/columns"},
 	call=function(self, data, label)
 	parent_class.__init(self)
 
@@ -43,10 +45,10 @@ set_load and set_data methods
 	}
 end}
 
-Batchframe.setDataRetriever = argcheck{
+Batchframe.set_data_retriever = argcheck{
 	doc =  [[
-<a name="Batchframe.setDataRetriever">
-### Batchframe.setDataRetriever(@ARGP)
+<a name="Batchframe.set_data_retriever">
+### Batchframe.set_data_retriever(@ARGP)
 
 Sets the self.batchframe_defaults.data to either a function for loading data or
 a set of columns that should be used in the to_tensor functions.
@@ -56,7 +58,8 @@ a set of columns that should be used in the to_tensor functions.
 _Return value_: self
 ]],
 	{name="self", type="Batchframe"},
-	{name="data", type="function|Df_Array", doc="The data loading procedure/columns"},
+	{name="data", type="function|Df_Array", opt=true,
+	 doc="The data loading procedure/columns. If omitted the retriever will be erased"},
 	call=function(self, data)
 
 	self.batchframe_defaults.data = data
@@ -64,10 +67,28 @@ _Return value_: self
 	return self
 end}
 
-Batchframe.setLabelRetriever = argcheck{
+
+Batchframe.get_data_retriever = argcheck{
+	doc = [[
+<a name="Batchframe.get_data_retriever">
+### Batchframe.get_data_retriever(@ARGP)
+
+Returns the self.batchframe_defaults.data for loading data or
+a set of columns that should be used in the to_tensor functions.
+
+@ARGT
+
+_Return value_: function
+]],
+	{name="self", type="Batchframe"},
+	call=function(self)
+	return self.batchframe_defaults.data
+end}
+
+Batchframe.set_label_retriever = argcheck{
 	doc =  [[
-<a name="Batchframe.setLabelRetriever">
-### Batchframe.setLabelRetriever(@ARGP)
+<a name="Batchframe.set_label_retriever">
+### Batchframe.set_label_retriever(@ARGP)
 
 Sets the self.batchframe_defaults.data to either a function for loading data or
 a set of columns that should be used in the to_tensor functions.
@@ -77,12 +98,30 @@ a set of columns that should be used in the to_tensor functions.
 _Return value_: self
 ]],
 	{name="self", type="Batchframe"},
-	{name="label", type="function|Df_Array", doc="The label loading procedure/columns"},
+	{name="label", type="function|Df_Array", opt=true,
+	 doc="The label loading procedure/columns. If omitted the retriever will be erased"},
 	call=function(self, label)
 
 	self.batchframe_defaults.label = label
 
 	return self
+end}
+
+Batchframe.get_label_retriever = argcheck{
+	doc = [[
+<a name="Batchframe.get_label_retriever">
+### Batchframe.get_label_retriever(@ARGP)
+
+Returns the self.batchframe_defaults.label for loading label or
+a set of columns that should be used in the to_tensor functions.
+
+@ARGT
+
+_Return value_: function
+]],
+	{name="self", type="Batchframe"},
+	call=function(self)
+	return self.batchframe_defaults.label
 end}
 
 Batchframe.to_tensor  = argcheck{
@@ -257,26 +296,26 @@ columns while the retriever is for the data.
 	call = function(self, retriever)
 
 	if (not retriever) then
-		assert(self.batchframe_defaults.data, "You must call the setDataRetriever function before omitting the arguments")
-		assert(self.batchframe_defaults.label, "You must call the setLabelRetriever function before omitting the arguments")
+		assert(self:get_data_retriever(), "You must call the set_data_retriever function before omitting the arguments")
+		assert(self:get_label_retriever(), "You must call the set_label_retriever function before omitting the arguments")
 
-		return self:to_tensor(self.batchframe_defaults.data,
-		                      self.batchframe_defaults.label)
+		return self:to_tensor(self:get_data_retriever(),
+		                      self:get_label_retriever())
 	end
 
 	-- Assume that the retriever is for the data column
-	if (not self.batchframe_defaults.data and
-	    not self.batchframe_defaults.label) then
+	if (not self:get_data_retriever() and
+	    not self:get_label_retriever()) then
 		return self:to_tensor(retriever,
 		                      Df_Array(self:get_numerical_colnames()))
 	end
 
-	if (self.batchframe_defaults.data) then
-		return self:to_tensor(self.batchframe_defaults.data,
+	if (self:get_data_retriever()) then
+		return self:to_tensor(self:get_data_retriever(),
 		                      retriever)
-	elseif(self.batchframe_defaults.label) then
+	elseif(self:get_label_retriever()) then
 		return self:to_tensor(retriever,
-		                      self.batchframe_defaults.label)
+		                      self:get_label_retriever())
 	end
 
 	error("Invalid parameter specified - could not find a useful combination (should be impossible to end up here)")

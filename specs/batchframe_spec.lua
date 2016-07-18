@@ -156,8 +156,8 @@ describe("Loading batch data", function()
 	describe("Test with default Batchframe #retrievers", function()
 		it("Setting both data and retriever through the functions", function()
 			local batch = a["/train"]:get_batch(5)
-			batch:setDataRetriever(fake_loader_vec)
-			batch:setLabelRetriever(fake_loader_mtrx)
+			batch:set_data_retriever(fake_loader_vec)
+			batch:set_label_retriever(fake_loader_mtrx)
 
 			local data, label =
 				batch:to_tensor()
@@ -171,7 +171,7 @@ describe("Loading batch data", function()
 
 		it("Setting only data function", function()
 			local batch = a["/train"]:get_batch(5)
-			batch:setDataRetriever(fake_loader_mtrx)
+			batch:set_data_retriever(fake_loader_mtrx)
 
 			local data, label =
 				batch:to_tensor{retriever = fake_loader_vec}
@@ -185,7 +185,7 @@ describe("Loading batch data", function()
 
 		it("Setting only label function", function()
 			local batch = a["/train"]:get_batch(5)
-			batch:setLabelRetriever(fake_loader_vec)
+			batch:set_label_retriever(fake_loader_vec)
 
 			local data, label =
 				batch:to_tensor{retriever = fake_loader_mtrx}
