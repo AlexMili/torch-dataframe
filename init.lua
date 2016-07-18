@@ -12,7 +12,6 @@ assert(loadfile(argcheck_file))()
 -- Load all helper classes
 hlpr_clss_path = string.gsub(dataframe_path, "[^/]+$", "") .. "helper_classes/"
 local hlpr_files = paths.get_sorted_files(hlpr_clss_path)
-
 for _,hlpr_file in pairs(hlpr_files) do
   local file = hlpr_clss_path .. hlpr_file
   assert(loadfile(file))(hlpr_clss_path)
