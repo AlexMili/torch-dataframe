@@ -186,6 +186,7 @@ _Return value_: self
 			table.insert(col_ordr, self.column_order[i])
 		end
 	end
+
 	self.column_order = col_ordr
 
 	if (not empty) then
