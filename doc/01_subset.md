@@ -108,6 +108,7 @@ restart the sampler you will then have to call the reset function. The samplers
 with reset functions are:
 
 _ linear
+
 _ permutation
 
 ```

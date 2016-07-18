@@ -134,8 +134,11 @@ data tensor and one label tensor. The funtion is intended for use together
 with the `get_batch()`. The function allows for:
 
 _ Both data and labels reside within the dataframe
+
 _ The data is located outside and will be loaded using a helper function
+
 _ The labels are located outside and will be loaded using a helper function
+
 _ Both data and labels are located outside and will be loaded using helper functions
 
 _Return value_: data (tensor), label (tensor), column names (lua table)

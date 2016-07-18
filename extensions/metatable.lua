@@ -54,9 +54,13 @@ doc =  [[
 The `__index__` function is a powerful tool that allows quick access to regular functions
 
 _ _Single integer_: it returns the raw row table (see `get_row()`)
+
 _ _Df_Array()_: select rows of interest (see `_create_subset()`)
+
 _ _"start:stop"_: get a row span using start/stop index, e.g. `"2:5"` (see `sub()`)
+
 _ _"$column_name"_: get a column by prepending the name with `$`, e.g. `"$a column name"` (see `get_column`)
+
 _ _"/subset_name"_: get a subset by prepending the name with `/`, e.g. `"/a subset name"` (see `get_subset`)
 
 _Return value_: Table or Dataframe
