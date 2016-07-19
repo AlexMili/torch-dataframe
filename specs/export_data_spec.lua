@@ -17,9 +17,9 @@ describe("Exporting data process", function()
 		it("Exports the Dataframe to a CSV file",function()
 			local a = Dataframe("./data/full.csv")
 
-			a:to_csv("./data/copy_of_full.csv")
-			local b = Dataframe()
-			b:load_csv("./data/copy_of_full.csv")
+			local file_name = "./data/copy_of_full.csv"
+			a:to_csv(file_name)
+			local b = Dataframe(file_name)
 
 			for k,v in pairs(a.dataset) do
 				-- Avoid errors on NaN values
@@ -29,7 +29,18 @@ describe("Exporting data process", function()
 				assert.are.same(a:get_column(k), b:get_column(k))
 			end
 
-			os.remove("./data/copy_of_full.csv")
+			a:as_categorical("Col D")
+			a:to_csv(file_name)
+			b:load_csv(file_name)
+			b:as_categorical("Col D")
+
+			a:fill_na("Col D",8)
+			b:fill_na("Col D",8)
+
+			assert.are.same(a:get_column("Col D"), b:get_column("Col D"),
+			               "Failed to respect the categorical columns")
+
+			os.remove(file_name)
 		end)
 
 		describe("Column order functionality",function()
