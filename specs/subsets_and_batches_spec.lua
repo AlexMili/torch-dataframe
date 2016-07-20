@@ -104,7 +104,7 @@ describe("Loading dataframe and creaing adequate subsets", function()
 		local a = Dataframe("./data/realistic_29_row_data.csv")
 		a:create_subsets()
 
-		assert.are.equal(a["/test"]:size(1), #a["/test"])
+		assert.are.equal(a["/test"]:size(1), a["/test"]:size())
 
 		assert.are.equal(a["/test"]:size(1) +
 		                 a["/train"]:size(1) +

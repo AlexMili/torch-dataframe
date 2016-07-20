@@ -53,7 +53,7 @@ describe("Dataframe class", function()
 
 		assert.are.same(torch.type(ret), "Dataframe")
 
-		assert.are.same(#ret, 3, "3 columns should render 3 rows")
+		assert.are.same(ret:size(), 3, "3 columns should render 3 rows")
 	end)
 
 end)
