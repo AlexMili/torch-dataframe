@@ -497,31 +497,43 @@ _Return value_: Dataframe
 	ret:add_column(id_name)
 	ret:add_column(value_name)
 
+	all_columns_na = function(row, columns)
+		for _,column_name in ipairs(columns) do
+			if (not isnan(row[column_name])) then
+				return false
+			end
+		end
+		return true
+	end
+
 	local i = 1
 	while i <= ret.n_rows do
 		local row = ret:get_row(i)
 		local first = true
-		for _,column_name in ipairs(columns) do
-			if (first) then
-				local values = {}
-				values[id_name] = column_name
-				values[value_name] = row[column_name]
-				if (isnan(values[value_name])) then
-					values[id_name] = 0/0
-				end
-				first = false
-				-- Just update the current row
-				ret:set(i, Df_Dict(values))
-			elseif (row[column_name] ~= nil and
-			        row[column_name] ~= '' and
-			        not isnan(row[column_name])) then
-				row[id_name] = column_name
-				row[value_name] = row[column_name]
-				i = i + 1
-				if (i > ret:size(1)) then
-					ret:append(Df_Dict(row))
-				else
-					ret:insert(i, Df_Dict(row))
+		for column_no,column_name in ipairs(columns) do
+			if ((isnan(row[column_name]) and all_columns_na(row, columns) and column_no == 1) or
+					not (isnan(row[column_name]))) then
+				if (first) then
+					local values = {}
+					values[id_name] = column_name
+					values[value_name] = row[column_name]
+					if (isnan(values[value_name])) then
+						values[id_name] = 0/0
+					end
+					first = false
+					-- Just update the current row
+					ret:set(i, Df_Dict(values))
+				elseif (row[column_name] ~= nil and
+				        row[column_name] ~= '' and
+				        not isnan(row[column_name])) then
+					row[id_name] = column_name
+					row[value_name] = row[column_name]
+					i = i + 1
+					if (i > ret:size(1)) then
+						ret:append(Df_Dict(row))
+					else
+						ret:insert(i, Df_Dict(row))
+					end
 				end
 			end
 		end

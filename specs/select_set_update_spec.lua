@@ -90,7 +90,8 @@ describe("Data manipulationf incl. where, update etc.", function()
 
 	describe("Check #wide2long", function()
 		local df = Dataframe(Df_Dict({a = {1,2,3}, b={4,nil,5}, c={[3] = 6}}))
-		a = df:wide2long(Df_Array("b", "c"), "id", "value")
+		a = df:wide2long(Df_Array("c", "b"), "id", "value")
+
 		it("Check that the number of rows are correct", function()
 			assert.are.same(a:where('a', 1):size(1), 1)
 			assert.are.same(a:where('a', 2):size(1), 1)
@@ -111,11 +112,15 @@ describe("Data manipulationf incl. where, update etc.", function()
 		end)
 
 		it("Check that the order is correct when having multiple values", function()
-			local row = a:where('a', 3):get_row(1)
+			local row = a:where('a', 3):
+				where('id', 'b'):
+				get_row(1)
 			assert.are.same(row['id'], 'b')
 			assert.are.same(row['value'], 5)
 
-			local row = a:where('a', 3):get_row(2)
+			local row = a:where('a', 3):
+				where('id', 'c'):
+				get_row(1)
 			assert.are.same(row['id'], 'c')
 			assert.are.same(row['value'], 6)
 		end)
@@ -123,7 +128,21 @@ describe("Data manipulationf incl. where, update etc.", function()
 		local df = Dataframe(Df_Dict({a = {1,2,3}, b={4,nil,5}, c={[3] = 6}}))
 		b = df:wide2long("[bc]", "id", "value")
 		it("Check that this works the same with regulare expressions", function()
-			assert.is_true(a == b)
+			assert.are.same(b:where('a', 1):size(1), 1)
+			assert.are.same(b:where('a', 2):size(1), 1)
+			assert.are.same(b:where('a', 3):size(1), 2)
+
+			local row = b:where('a', 3):
+				where('id', 'b'):
+				get_row(1)
+			assert.are.same(row['id'], 'b')
+			assert.are.same(row['value'], 5)
+
+			local row = b:where('a', 3):
+				where('id', 'c'):
+				get_row(1)
+			assert.are.same(row['id'], 'c')
+			assert.are.same(row['value'], 6)
 		end)
 
 		c = df:wide2long("c", "id", "value")
