@@ -135,7 +135,7 @@ on which `Df_ParallelIterator` relies.
 					--  this should though be the computationally expensive operation
 					threads:addjob(
 						function(argList)
-							local origIdx, serialized_batch, samplePlaceholder = unpack(argList)
+							local origIdx, serialized_batch, samplePlaceholder = table.unpack(argList)
 
 							local batch = torch.deserialize(serialized_batch)
 							batch:set_data_retriever(gdata_retr)
@@ -160,7 +160,7 @@ on which `Df_ParallelIterator` relies.
 							}
 						end,
 						function(argList)
-							sample, sampleOrigIdx = unpack(argList)
+							sample, sampleOrigIdx = table.unpack(argList)
 						end,
 						{idx, serialized_batch, samplePlaceholder}
 					)

@@ -226,6 +226,10 @@ end}
 -- maxn is deprecated for lua version >=5.3
 table.maxn = table.maxn or function(t) local maxn=0 for i in pairs(t) do maxn=type(i)=='number'and i>maxn and i or maxn end return maxn end
 
+-- unpack is deprecated for lua version >= 5.2 and has moved to table.unpack
+if (not table.unpack) then
+	table.unpack = unpack
+end
 
 -- Util for debugging purpose
 table._dump = function(tbl)

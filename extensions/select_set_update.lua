@@ -158,7 +158,7 @@ _Return value_: Dataframe or Batchframe
 		if (class_args) then
 			if (class_args[1]) then
 				-- unnamed parameters
-				ret = Dataframe.new(unpack(class_args))
+				ret = Dataframe.new(table.unpack(class_args))
 			else
 				ret = Dataframe.new(class_args)
 			end
@@ -169,7 +169,7 @@ _Return value_: Dataframe or Batchframe
 		if (class_args) then
 			if (class_args[1]) then
 				-- unnamed parameters
-				ret = Batchframe(unpack(class_args))
+				ret = Batchframe(table.unpack(class_args))
 			else
 				ret = Batchframe(class_args)
 			end
@@ -180,7 +180,7 @@ _Return value_: Dataframe or Batchframe
 		if (class_args) then
 			if (class_args[1]) then
 				-- unnamed parameters
-				ret = Df_Subset(unpack(class_args))
+				ret = Df_Subset(table.unpack(class_args))
 			else
 				ret = Df_Subset(class_args)
 			end
