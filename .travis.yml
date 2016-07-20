@@ -30,6 +30,7 @@ before_install:
 
 install:
   - source ./torch_$LUA/install/bin/torch-activate
+  - luarocks --from=$TORCH_SERVER install sundown
   - luarocks --from=$TORCH_SERVER install dok
   - luarocks --from=$TORCH_SERVER install argcheck
   - luarocks --from=$TORCH_SERVER install csvigo
