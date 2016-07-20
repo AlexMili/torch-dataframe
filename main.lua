@@ -268,7 +268,7 @@ _Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	call=function(self)
-	self.__version = "1.2.dev"
+	self.__version = "1.5.dev"
 	return self
 end}
 
