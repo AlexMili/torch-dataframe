@@ -15,28 +15,16 @@ Dataframe.size = argcheck{
 <a name="Dataframe.size">
 ### Dataframe.size(@ARGP)
 
-Returns the number of rows in order to comply with the torchnet dataset standard
-
-@ARGT
-
-_Return value_: rows
-]],
-	{name="self", type="Dataframe"},
-	call=function(self)
-	return self.n_rows
-end}
-
-Dataframe.size = argcheck{
-	doc =  [[
-By providing dimension you can get only that dimension, row == 1, col == 2
+By providing dimension you can get only that dimension, row == 1, col == 2. If
+value omitted it will  return the number of rows in order to comply with torchnet
+standard.
 
 @ARGT
 
 _Return value_: integer
 ]],
-	overload=Dataframe.size,
 	{name="self", type="Dataframe"},
-	{name="dim", type="number", doc="The dimension of interest"},
+	{name="dim", type="number", doc="The dimension of interest", default = 1},
 	call=function(self, dim)
 	assert(isint(dim), "The dimension isn't an integer: " .. tostring(dim))
 	assert(dim == 1 or dim == 2, "The dimension can only be between 1 and 2 - you've provided: " .. dim)
