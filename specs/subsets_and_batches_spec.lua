@@ -63,6 +63,8 @@ describe("Loading dataframe and creaing adequate subsets", function()
 		a:create_subsets(Df_Dict({core = 1}))
 
 		assert.are.equal(a["/core"]:size(1), a:size(1), "Number of cases don't match")
+		assert.are.equal(a["/core"]:size(2), a:size(2), "Number of columns don't match")
+		assert.are.same(a["/core"]:shape(), a:shape(), "Shapes don't match")
 		assert.are.equal(a.subsets.samplers["core"], 'permutation')
 	end)
 
@@ -131,49 +133,51 @@ describe("Loading dataframe and creaing adequate subsets", function()
 end)
 
 describe("Test if we can get a batch with data and labels",function()
-	local fake_loader = function(row) return torch.Tensor({1, 2}) end
-	local a = Dataframe("./data/realistic_29_row_data.csv")
-	a:create_subsets()
+	describe("Basic batch retrieving and resetting", function()
+		local fake_loader = function(row) return torch.Tensor({1, 2}) end
+		local a = Dataframe("./data/realistic_29_row_data.csv")
+		a:create_subsets()
 
-	it("Checkk that we get reasonable formatted data back",function()
-		local data, label =
+		it("Check that we get reasonable formatted data back",function()
+			local data, label =
 			a["/train"]:
 			get_batch{no_lines = 5}:
 			to_tensor{
 				retriever = fake_loader
 			}
 
-		assert.is.equal(data:size(1), 5)-- "The data has invalid rows"
-		assert.is.equal(data:size(2), 2)-- "The data has invalid columns"
-		assert.is.equal(label:size(1), 5)--"The labels have invalid size"
-	end)
+			assert.is.equal(data:size(1), 5)-- "The data has invalid rows"
+			assert.is.equal(data:size(2), 2)-- "The data has invalid columns"
+			assert.is.equal(label:size(1), 5)--"The labels have invalid size"
+		end)
 
-	it("Check that we get all cases when running with the a sampler that requires resetting",
-	function()
-		a["/train"]:reset_sampler()
+		it("Check that we get all cases when running with the a sampler that requires resetting",
+		function()
+			a["/train"]:reset_sampler()
 
-		local batch_size = 6
-		local count = 0
-		local batch, reset
-		-- Run for over an epoch
-		for i=1,(math.ceil(a["/train"]:size(1)/batch_size) + 1) do
-			batch, reset =
+			local batch_size = 6
+			local count = 0
+			local batch, reset
+			-- Run for over an epoch
+			for i=1,(math.ceil(a["/train"]:size(1)/batch_size) + 1) do
+				batch, reset =
 				a["/train"]:get_batch{no_lines = batch_size}
-			if (batch == nil) then
-				break
+				if (batch == nil) then
+					break
+				end
+				count = count + batch:size(1)
 			end
-			count = count + batch:size(1)
-		end
 
-		assert.are.equal(count, a["/train"]:size(1))
-		assert.is_true(reset, "The reset should be set to true after 1 epoch")
+			assert.are.equal(count, a["/train"]:size(1))
+			assert.is_true(reset, "The reset should be set to true after 1 epoch")
 
-		a["/train"]:reset_sampler()
-		batch, reset =
+			a["/train"]:reset_sampler()
+			batch, reset =
 			a["/train"]:get_batch{no_lines = -1}
 
-		assert.are.equal(batch:size(1), a["/train"]:size(1))
-		assert.is_true(reset)
+			assert.are.equal(batch:size(1), a["/train"]:size(1))
+			assert.is_true(reset)
+		end)
 	end)
 
 	describe("Test the alternative get_subset formats",function()
@@ -189,6 +193,33 @@ describe("Test if we can get a batch with data and labels",function()
 			local subset = a:get_subset("train", "Batchframe")
 			assert.are.equal(torch.type(subset), "Batchframe")
 		end)
+	end)
+
+
+	describe("Investigate #labels",function()
+		local a = Dataframe("./data/realistic_29_row_data.csv")
+		a:create_subsets{
+			subsets = Df_Dict{a = .5, b = .5},
+			samplers = Df_Dict{
+				["linear"] = "a",
+				["label permutation"] = "b"
+			},
+			label_column = "Gender"
+		}
+
+		it("Check that the labels in the subset match the original",
+			function()
+				for i=1,a["/a"]:size() do
+					local subset_row = a["/a"]:get_row(i)
+					local org_row = a:get_row(subset_row.indexes)
+					assert.are.same(
+					subset_row.labels,
+					org_row.Gender,
+					"Failed matching row:\n " .. tostring(subset_row.labels) ..
+					"\n to the original:\n " .. tostring(org_row.Gender)
+					)
+				end
+			end)
 	end)
 
 	describe("The get_subset should forward the information in #class_args",function()
@@ -235,3 +266,5 @@ describe("Test if we can get a batch with data and labels",function()
 	end)
 	-- TODO: Add tests for custom subset splits and samplers
 end)
+
+describe()
