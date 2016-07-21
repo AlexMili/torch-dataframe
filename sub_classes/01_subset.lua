@@ -37,15 +37,15 @@ Creates and initializes a Df_Subset class.
 	{name="indexes", type="Df_Array", doc="The indexes in the original dataset to use for sampling"},
 	{name="sampler", type="string", opt=true,
 	 doc="The sampler to use with this data"},
-	{name="labels", type="Df_Array", opt=true,
-	 doc="The column with all the labels (note this is passed by reference)"},
+	{name="label_column", type="string", opt=true,
+	 doc="The column with all the labels (a local copy will be generated)"},
 	{name="sampler_args", type="Df_Dict", opt=true,
 	 doc=[[Optional arguments for the sampler function, currently only used for
 		the label-distribution sampler.]]},
 	{name='batch_args', type='Df_Tbl', opt=true,
 	 doc="Arguments to be passed to the Batchframe class initializer"},
 	call=function(self, parent,
-		indexes, sampler, labels,
+		indexes, sampler, label_column,
 		sampler_args, batch_args)
 	parent_class.__init(self)
 	self:
@@ -54,8 +54,8 @@ Creates and initializes a Df_Subset class.
 
 	self.parent = parent
 
-	if (labels) then
-		self:set_labels(labels)
+	if (label_column) then
+		self:set_labels(label_column)
 	end
 
 	if (sampler) then
@@ -89,7 +89,7 @@ call=function(self)
 	self.indexes = {}
 	self.sampler = nil
 	self.reset = nil
-	self.labels = nil
+	self.label_column = nil
 
 	return self
 end}
@@ -159,18 +159,27 @@ Set the labels needed for certain samplers
 _Return value_: self
 ]],
 	{name="self", type="Df_Subset"},
-	{name="labels", type="Df_Array",
-	 doc="The column with all the labels (note this is passed by reference)"},
-	call=function(self, labels)
+	{name="label_column", type="string",
+	 doc="The column with all the labels"},
+	call=function(self, label_column)
 
 	-- Remove previous column if it exists
 	if (self:has_column('labels')) then
-		assert(#labels.data == self:size(1),
-		       ("The rows of the new (%d) and old data (%d) don't match"):
-		       format(#labels.data, self:size(1)))
 		self:drop('labels')
 	end
 
+	self.parent:assert_has_column(label_column)
+	local label_column = self.parent:get_column(label_column)
+
+	-- A little hacky but it should speed up and re-checking makes no sense
+	local labels = Df_Array()
+	local indexes = self:get_column("indexes")
+	for i=1,self:size() do
+		labels.data[#labels.data + 1] = label_column[indexes[i]]
+	end
+
+	-- TODO: an appealing alternative would be to store the label by ref. but this requires quite a few changes...
+	-- Column does not have to be numerical for this to work
 	self:add_column('labels', labels)
 
 	return self
@@ -369,6 +378,67 @@ _Return value_: `Df_ParallelIterator`
 		target_transform = target_transform,
 		ordered = ordered
 	}
+end}
+
+
+subset.size = argcheck{
+	doc =  [[
+<a name="Df_Subset.size">
+### Df_Subset.size(@ARGP)
+
+By providing dimension you can get only that dimension, row == 1, col == 2. If
+value omitted it will  return the number of rows in order to comply with torchnet
+standard.
+
+@ARGT
+
+_Return value_: integer
+]],
+	{name="self", type="Df_Subset"},
+	{name="dim", type="number", doc="The dimension of interest", default = 1},
+	call=function(self, dim)
+	assert(isint(dim), "The dimension isn't an integer: " .. tostring(dim))
+	assert(dim == 1 or dim == 2, "The dimension can only be between 1 and 2 - you've provided: " .. dim)
+	if (dim == 1) then
+		return self.n_rows
+	end
+
+	return #self.parent.columns
+end}
+
+subset.shape = argcheck{
+	doc =  [[
+<a name="Df_Subset.shape">
+### Df_Subset.shape(@ARGP)
+
+Returns the number of rows and columns in a table
+
+@ARGT
+
+_Return value_: table
+]],
+	{name="self", type="Df_Subset"},
+	call=function(self)
+	return {rows=self.n_rows,cols=#self.parent.columns}
+end}
+
+
+subset.__tostring__ = argcheck{
+	doc=[[
+	<a name="Df_Subset.__tostring__">
+### Df_Subset.__tostring__(@ARGP)
+
+@ARGT
+
+_Return value_: string
+]],
+	{name="self", type="Dataframe"},
+	call=function (self)
+	return ("\nThis is a subset with %d rows and %d columns."):
+		format(self:size(1), self:size(2)) ..
+		"\n ------ \n" ..
+		" the subset core data consists of: \n" ..
+		parent_class.__tostring__(self)
 end}
 
 return subset
