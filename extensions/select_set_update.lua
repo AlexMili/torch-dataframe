@@ -431,7 +431,6 @@ _Return value_: Dataframe
 					self.dataset[k][i] = new_value[k]
 				end
 			end
-			break
 		end
 	end
 

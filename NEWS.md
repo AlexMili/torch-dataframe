@@ -30,6 +30,7 @@ Version: development
   Dataframe.tostring_defaults
 * The helper classes Df_Array, Df_Dict and Df_Tbl now have a metatable `__len__` option
 * The as_batchframe has been renamed to frame_type that defaults to current frame type
+* The set now changes all matching values instead of only the first occurrence
 * Fixed bug with outputting categorical columns
 * Fixed bug related to boolean columns. *Note*: columns that are created using the
   csv-option are currently not being converted to boolean columns but will remain

@@ -62,11 +62,18 @@ describe("Data manipulationf incl. where, update etc.", function()
 		assert.are.same(b:get_column('Col A'), start_val)
 	end)
 
-	it("Updates a single cell given a column name and an value",function()
+	it("Updates a single cell given a column name and an value #set",function()
 		local a = Dataframe("./data/simple_short.csv")
 
 		a:set(1000, 'Col C', Df_Dict({['Col A']=99}))
 		assert.is.equal(a:get_column('Col A')[1], 99)
+	end)
+
+	it("Updates all matching cells when using #set",function()
+		local a = Dataframe(Df_Dict{a = {1,2,3}, b = {1,1,2}})
+
+		a:set(1, 'b', Df_Dict({['a']=4}))
+		assert.are.same(a:get_column('a'), {4,4,3})
 	end)
 
 	it("Updates a single cell given a an index",function()
