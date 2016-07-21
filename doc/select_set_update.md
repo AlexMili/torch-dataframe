@@ -145,7 +145,7 @@ _Return value_: table
 })
 ```
 
-_Return value_: void
+_Return value_: Dataframe
 <a name="Dataframe.set">
 ### Dataframe.set(self, item_to_find, column_name, new_value)
 
@@ -160,7 +160,7 @@ _Return value_: void
 
 Change value for a line where a column has a certain value
 
-_Return value_: void
+_Return value_: Dataframe
 You can also provide the index that you want to set
 
 ```
@@ -171,7 +171,7 @@ You can also provide the index that you want to set
 })
 ```
 
-_Return value_: void
+_Return value_: Dataframe
 <a name="Dataframe.wide2long">
 ### Dataframe.wide2long(self, columns, id_name, value_name)
 
