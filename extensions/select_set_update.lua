@@ -357,7 +357,7 @@ Dataframe.update = argcheck{
 
 @ARGT
 
-_Return value_: void
+_Return value_: Dataframe
 ]],
 	{name="self", type="Dataframe"},
 	{name='condition_function', type='function',
@@ -371,6 +371,8 @@ _Return value_: void
 		new_row = update_function(clone(row))
 		self:_update_single_row(i, Df_Tbl(new_row), Df_Tbl(row))
 	end
+
+	return self
 end}
 
 -- Internal function to update a single row from data and index
@@ -402,7 +404,7 @@ Dataframe.set = argcheck{
 
 Change value for a line where a column has a certain value
 
-_Return value_: void
+_Return value_: Dataframe
 ]],
 	{name="self", type="Dataframe"},
 	{name='item_to_find', type='number|string|boolean',
@@ -432,6 +434,8 @@ _Return value_: void
 			break
 		end
 	end
+
+	return self
 end}
 
 Dataframe.set = argcheck{
@@ -440,7 +444,7 @@ You can also provide the index that you want to set
 
 @ARGT
 
-_Return value_: void
+_Return value_: Dataframe
 ]],
 	overload=Dataframe.set,
 	{name="self", type="Dataframe"},
@@ -462,6 +466,8 @@ _Return value_: void
 			self.dataset[key][index] = new_values[key]
 		end
 	end
+
+	return self
 end}
 
 Dataframe.wide2long = argcheck{
@@ -569,6 +575,9 @@ You can also provide a regular expression for column names
 			table.insert(columns_2_merge, column_name)
 		end
 	end
-	assert(#columns_2_merge > 0, "Could not find columns that matched the regular expression: " .. column_regex)
+
+	assert(#columns_2_merge > 0,
+	       "Could not find columns that matched the regular expression: " .. column_regex)
+
 	return self:wide2long(Df_Array(columns_2_merge), id_name, value_name)
 end}

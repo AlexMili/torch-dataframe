@@ -286,7 +286,7 @@ _ permutation if shuffle = true and none of above names
 
 @ARGT
 
-_Return value_: void
+_Return value_: Dataframe
 ]],
 	{name = "self", type = "Dataframe"},
 	call = function(self)
@@ -331,6 +331,8 @@ _Return value_: void
 		self.tostring_defaults = self.print
 		self.tostring_defaults.max_col_width = nil
 	end
+
+	return self
 end}
 
 Dataframe.assert_is_index = argcheck{doc =  [[
@@ -341,7 +343,7 @@ Asserts that the number is a valid index.
 
 @ARGT
 
-_Return value_: void
+_Return value_: Dataframe
 ]],
 	{name = "self", type = "Dataframe"},
 	{name = "index", type = "number", doc="The index to investigate"},
@@ -363,6 +365,8 @@ _Return value_: void
 					format(self:size(1), index))
 		end
 	end
+
+	return self
 end}
 
 return Dataframe

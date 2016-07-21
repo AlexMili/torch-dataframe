@@ -84,7 +84,7 @@ _ permutation if shuffle = true and none of above names
 })
 ```
 
-_Return value_: void
+_Return value_: Dataframe
 <a name="Dataframe.assert_is_index">
 ### Dataframe.assert_is_index(self, index[, plus_one])
 
@@ -98,4 +98,4 @@ Asserts that the number is a valid index.
 })
 ```
 
-_Return value_: void
+_Return value_: Dataframe
