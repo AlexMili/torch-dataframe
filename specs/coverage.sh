@@ -1,4 +1,25 @@
 #!/bin/bash
+
+RUN_TESTS=false
+while [[ $# -gt 0 ]]
+	do
+	key="$1"
+
+	case $key in
+		-v|--version)
+			VERSION="$2"
+			shift # past argument
+			;;
+		-g|--generate)
+		RUN_TESTS
+			;;
+		*)
+			# unknown option
+			;;
+	esac
+	shift # past argument or value
+done
+
 echo -e "=================";
 echo -e "= Code coverage =";
 echo -e "=================";
