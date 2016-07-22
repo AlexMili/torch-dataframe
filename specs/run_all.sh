@@ -30,7 +30,7 @@ done
 var=0
 count=0
 failed_scripts=()
-exclude_tags="skip_version_$VERSION $COVERAGE"
+exclude_tags="skip_version_$VERSION"
 echo $exclude_tags
 for f in *_spec.lua; do
     echo "";
@@ -63,6 +63,7 @@ then
 else
 	echo "Number of scripts failed: $var (total scripts: $count)"
 fi
+echo " - exclude-tags used: $exclude_tags"
 echo -e "\e[93m==============================================\e[0m"
 
 exit $var
