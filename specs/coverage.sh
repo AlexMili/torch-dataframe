@@ -1,17 +1,17 @@
 #!/bin/bash
 
-RUN_TESTS=false
+RUN_TESTS=true
+VERBOSE=false
 while [[ $# -gt 0 ]]
 	do
 	key="$1"
 
 	case $key in
-		-v|--version)
-			VERSION="$2"
-			shift # past argument
+		-v|--verbose)
+			VERBOSE=true
 			;;
 		-g|--generate)
-		RUN_TESTS
+			RUN_TESTS=false
 			;;
 		*)
 			# unknown option
@@ -25,7 +25,7 @@ echo -e "= Code coverage =";
 echo -e "=================";
 echo "";
 
-if [ "$1" != "--generate" ]; then
+if [ "$RUN_TESTS" = true ]; then
 	./run_all.sh --coverage
 fi
 
@@ -35,15 +35,14 @@ cd ..
 
 luacov -c .luacov
 
-if [ "$1" != "--generate" ]; then
-
+if [ "$RUN_TESTS" = true ]; then
 
 	mv -f luacov.stats.out specs/luacov.stats.out
 	mv -f luacov.report.out specs/luacov.report.out
 
 	cd specs
 
-	if [ "$1" == "--verbose" ]; then
+	if [ "$VERBOSE" = true ]; then
 		cat luacov.report.out
 	fi
 fi
