@@ -63,7 +63,10 @@ _Return value_: self
 	call=function(self, data)
 
 	self.batchframe_defaults.data = data
-
+	if (not self:get_label_retriever()) then
+		self.batchframe_defaults.label = Df_Array(self:get_numerical_colnames())
+	end
+	
 	return self
 end}
 
