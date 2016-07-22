@@ -38,10 +38,7 @@ Creates and initializes a Dataframe class. Envoked through `local my_dataframe =
 	parent_class.__init(self)
 
 	self:_clean()
-	self.tostring_defaults =
-		{no_rows = 10,
-		min_col_width = 7,
-		max_table_width = 80}
+	self.tostring_defaults = self:_get_init_tostring_dflts()
 end}
 
 Dataframe.__init = argcheck{
@@ -330,9 +327,26 @@ _Return value_: Dataframe
 		-- Do silently as this is rather unimportant
 		self.tostring_defaults = self.print
 		self.tostring_defaults.max_col_width = nil
+
+		local str_defaults = self:_get_init_tostring_dflts()
+		for key, value in pairs(str_defaults) do
+			if (not self.tostring_defaults[key]) then
+				self.tostring_defaults[key] = value
+			end
+		end
 	end
 
 	return self
+end}
+
+Dataframe._get_init_tostring_dflts = argcheck{
+	{name = "self", type = "Dataframe"},
+	call = function(self)
+	return {
+		no_rows = 10,
+		min_col_width = 7,
+		max_table_width = 80
+	}
 end}
 
 Dataframe.assert_is_index = argcheck{doc =  [[
