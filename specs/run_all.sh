@@ -9,7 +9,6 @@ COVERAGE=false
 while [[ $# -gt 0 ]]
     do
     key="$1"
-    echo $key
 
     case $key in
         -v|--version)
@@ -30,7 +29,6 @@ var=0
 count=0
 failed_scripts=()
 exclude_tags="skip_version_$VERSION"
-echo $exclude_tags
 for f in *_spec.lua; do
     echo "";
     echo "********************************************";
