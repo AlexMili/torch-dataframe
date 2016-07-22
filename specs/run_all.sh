@@ -4,20 +4,45 @@ echo -e "\e[32m+\e[0m Start torch-dataframe specs \e[32m+\e[0m";
 echo -e "\e[32m+++++++++++++++++++++++++++++++\e[0m";
 echo "";
 
+VERSION="any"
+COVERAGE=false
+while [[ $# -gt 0 ]]
+    do
+    key="$1"
+    echo $key
+
+    case $key in
+        -v|--version)
+        VERSION="$2"
+        shift # past argument
+        ;;
+        -c|--coverage)
+        COVERAGE=true
+        shift # past argument
+        ;;
+        *)
+                # unknown option
+        ;;
+    esac
+    shift # past argument or value
+done
+
 var=0
 count=0
 failed_scripts=()
+exclude_tags="skip_version_$VERSION $COVERAGE"
+echo $exclude_tags
 for f in *_spec.lua; do
     echo "";
     echo "********************************************";
     echo "Running specs in $f";
 
-    if [ "$1" == "--coverage" ]; then
-        busted -v --coverage $f;
+    if [ "$COVERAGE" = true ]; then
+        busted -v --coverage --exclude-tags=$exclude_tags $f;
     else
-        busted -v $f;
+        busted -v --exclude-tags=$exclude_tags $f;
     fi
-    
+
     fail=$?
     var=$(($var+$fail))
     count=$(($count+1))
