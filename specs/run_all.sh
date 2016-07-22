@@ -18,7 +18,6 @@ while [[ $# -gt 0 ]]
         ;;
         -c|--coverage)
         COVERAGE=true
-        shift # past argument
         ;;
         *)
                 # unknown option
