@@ -44,7 +44,7 @@ install:
 
 script:
   - cd specs
-  - ./run_all.sh --coverage
+  - ./run_all.sh --coverage --version $LUA
   - ./coverage.sh --generate
   - cd ..
 

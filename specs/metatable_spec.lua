@@ -90,7 +90,7 @@ describe("Indexing the dataframe", function()
 			assert.are.same(df:__len__(), df.n_rows)
 		end)
 
-		it("# should return the n_rows",function()
+		it("# should return the n_rows #skip_version_LUA51",function()
 			assert.are.same(#df, df.n_rows)
 		end)
 	end)
