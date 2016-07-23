@@ -2,23 +2,16 @@
 ## Metatable functions
 
 <a name="Dataframe.size">
-### Dataframe.size(self)
+### Dataframe.size(self[, dim])
 
-Returns the number of rows in order to comply with the torchnet dataset standard
-
-```
-({
-   self = Dataframe  -- 
-})
-```
-
-_Return value_: rows
-By providing dimension you can get only that dimension, row == 1, col == 2
+By providing dimension you can get only that dimension, row == 1, col == 2. If
+value omitted it will  return the number of rows in order to comply with torchnet
+standard.
 
 ```
 ({
    self = Dataframe  -- 
-   dim  = number     -- The dimension of interest
+  [dim  = number]    -- The dimension of interest [default=1]
 })
 ```
 

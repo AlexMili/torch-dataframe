@@ -7,7 +7,7 @@ values/functions associated with subsetting, e.g. samplers, which indexes are
 in a particular subset.
 
 <a name="Df_Subset.__init">
-### Df_Subset.__init(self, parent, indexes[, sampler][, labels][, sampler_args][, batch_args])
+### Df_Subset.__init(self, parent, indexes[, sampler][, label_column][, sampler_args][, batch_args])
 
 Creates and initializes a Df_Subset class.
 
@@ -17,7 +17,7 @@ Creates and initializes a Df_Subset class.
    parent       = Dataframe  -- The parent Dataframe that will be stored by reference
    indexes      = Df_Array   -- The indexes in the original dataset to use for sampling
   [sampler      = string]    -- The sampler to use with this data
-  [labels       = Df_Array]  -- The column with all the labels (note this is passed by reference)
+  [label_column = string]    -- The column with all the labels (a local copy will be generated)
   [sampler_args = Df_Dict]   -- Optional arguments for the sampler function, currently only used for
 		the label-distribution sampler.
   [batch_args   = Df_Tbl]    -- Arguments to be passed to the Batchframe class initializer
@@ -63,14 +63,14 @@ Get the index fromm the parent Dataframe that a local index corresponds to
 
 _Return value_: integer
 <a name="Df_Subset.set_labels">
-### Df_Subset.set_labels(self, labels)
+### Df_Subset.set_labels(self, label_column)
 
 Set the labels needed for certain samplers
 
 ```
 ({
-   self   = Df_Subset  -- 
-   labels = Df_Array   -- The column with all the labels (note this is passed by reference)
+   self         = Df_Subset  -- 
+   label_column = string     -- The column with all the labels
 })
 ```
 
@@ -125,6 +125,22 @@ _Return value_: (1) a sampler function (2) a reset sampler function
 
 A linear sampler, i.e. walk the records from start to end, after the end the
 function returns nil until the reset is called that loops back to the start.
+*Note*: Due to the permutation in `create_subsets` the samples will appear permuted
+when walking through them unless you've only created a single subset with all the
+data (a special case that does not permute the order).
+
+```
+({
+   self = Df_Subset  -- 
+})
+```
+
+_Return value_: (1) a sampler function (2) a reset sampler function
+<a name="Df_Subset.get_sampler_ordered">
+### Sampler: ordered - Df_Subset.get_sampler_ordered(self)
+
+A sampler that orders all the samples before walking the records from start to end.
+After the end the function returns nil until the reset is called that loops back to the start.
 
 ```
 ({
@@ -273,4 +289,40 @@ _Return value_: `Df_Iterator`
 ```
 
 _Return value_: `Df_ParallelIterator`
-	
+	<a name="Df_Subset.size">
+### Df_Subset.size(self[, dim])
+
+By providing dimension you can get only that dimension, row == 1, col == 2. If
+value omitted it will  return the number of rows in order to comply with torchnet
+standard.
+
+```
+({
+   self = Df_Subset  -- 
+  [dim  = number]    -- The dimension of interest [default=1]
+})
+```
+
+_Return value_: integer
+<a name="Df_Subset.shape">
+### Df_Subset.shape(self)
+
+Returns the number of rows and columns in a table
+
+```
+({
+   self = Df_Subset  -- 
+})
+```
+
+_Return value_: table
+	<a name="Df_Subset.__tostring__">
+### Df_Subset.__tostring__(self)
+
+```
+({
+   self = Dataframe  -- 
+})
+```
+
+_Return value_: string

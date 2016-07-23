@@ -63,7 +63,72 @@ describe([[The #linear sampler should call each element in a linear fashion and
 			resetSampler()
 		end
 	end)
+end)
 
+
+describe([[The #ordered sampler should call each element in a linear fashion and
+	after finishing the epoch it requires a reset in order to allow new sampling]],
+	function()
+	local df = dataLoader():
+	where{column_name = 'label',
+	      item_to_find = 'B'}
+	df:create_subsets(Df_Dict{train = .5, test = .5},
+	                  Df_Dict{train = 'linear', test = "ordered"})
+	local testSampler = df["/test"].sampler
+	local testResetSampler = df["/test"].reset
+	local trainSampler = df["/train"].sampler
+	local trainResetSampler = df["/train"].reset
+
+	-- The train linear sampler shouldn't have any order as the indexes have been
+	--  created from a parmuted subset
+	it("Check permuted linear", function()
+		local prev_idx = trainSampler()
+		local s = trainSampler()
+		local diff = 0
+		while s do
+			diff = diff + (s - prev_idx - 1)
+			prev_idx = s
+			s = trainSampler()
+		end
+		assert.is_not(diff, 0, "The subsetting should create a set of random indexes not a predictable 1,2,3,4...")
+	end)
+
+
+	-- The ordered sampler should always return indexes that are increasing
+	it("Check permuted order", function()
+		local prev_idx = -1
+		local diff = 0
+		local prev_idx = testSampler()
+		local s = testSampler()
+		local diff = 0
+		while s do
+			assert.is_true(s > prev_idx, 'must sample in index order')
+			diff = diff + (s - prev_idx - 1)
+			prev_idx = s
+			s = testSampler()
+		end
+
+		assert.is_true(diff > 0,
+			("The permuted indexes should increase - %d"):format(diff))
+	end)
+
+	it("Check linear reset", function()
+		local idx = trainSampler()
+		assert.is_true(idx == nil, 'going past the end must return nil, you got ' .. tostring(idx))
+
+		trainResetSampler()
+		local idx = trainSampler()
+		assert.is_true(idx ~= nil, 'resetting the sampler should result in new cases')
+	end)
+
+	it("Check ordered reset", function()
+		local idx = testSampler()
+		assert.is_true(idx == nil, 'going past the end must return nil, you got ' .. tostring(idx))
+
+		testResetSampler()
+		local idx = testSampler()
+		assert.is_true(idx ~= nil, 'resetting the sampler should result in new cases')
+	end)
 end)
 
 describe([[The permutation sampler should permute the results but otherwise works
