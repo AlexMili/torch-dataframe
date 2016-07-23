@@ -39,6 +39,10 @@ The default data subsets and propotions are:
  ['test'] = 0.1}
 ```
 
+If you provide a single subset then the entire dataset will be used and there
+will be no internal permutation of the indexes. For all other cases the data will
+be shuffled according to `torch.randperm`.
+
 The samplers defaults to permutation for the train set while the validate and
 test have a linear. If you provide a string identifying the sampler it will be
 used by all the subsets.

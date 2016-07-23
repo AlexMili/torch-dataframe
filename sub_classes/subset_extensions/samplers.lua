@@ -45,7 +45,7 @@ _Return value_: (1) a sampler function (2) a reset sampler function
 	-- Fix the name
 	local sampler_cleaned = sampler:lower()
 	if (not sampler_cleaned:match("^get_sampler_")) then
-		sampler_cleaned = ("get_sampler_%s"):format(sampler:gsub("-", "_"))
+		sampler_cleaned = ("get_sampler_%s"):format(sampler:gsub("[- ]", "_"))
 	end
 
 	assert(type(self[sampler_cleaned]) == "function",
@@ -68,6 +68,9 @@ Df_Subset.get_sampler_linear = argcheck{
 
 A linear sampler, i.e. walk the records from start to end, after the end the
 function returns nil until the reset is called that loops back to the start.
+*Note*: Due to the permutation in `create_subsets` the samples will appear permuted
+when walking through them unless you've only created a single subset with all the
+data (a special case that does not permute the order).
 
 @ARGT
 
@@ -83,6 +86,36 @@ _Return value_: (1) a sampler function (2) a reset sampler function
 		idx = idx + 1
 		if idx <= n then
 			return self:get_column('indexes')[idx]
+		end
+	end, function()
+		idx = 0
+	end
+end}
+
+Df_Subset.get_sampler_ordered = argcheck{
+	doc =  [[
+<a name="Df_Subset.get_sampler_ordered">
+### Sampler: ordered - Df_Subset.get_sampler_ordered(@ARGP)
+
+A sampler that orders all the samples before walking the records from start to end.
+After the end the function returns nil until the reset is called that loops back to the start.
+
+@ARGT
+
+_Return value_: (1) a sampler function (2) a reset sampler function
+]],
+	{name="self", type="Df_Subset"},
+	call=function(self)
+
+	local idx = 0
+	local indexes,_ = torch.sort(self:get_column{column_name="indexes", as_tensor = true})
+	_ = nil
+	local n = self:size(1)
+
+	return function()
+		idx = idx + 1
+		if idx <= n then
+			return indexes[idx]
 		end
 	end, function()
 		idx = 0

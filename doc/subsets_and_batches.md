@@ -28,6 +28,10 @@ The default data subsets and propotions are:
  ['test'] = 0.1}
 ```
 
+If you provide a single subset then the entire dataset will be used and there
+will be no internal permutation of the indexes. For all other cases the data will
+be shuffled according to `torch.randperm`.
+
 The samplers defaults to permutation for the train set while the validate and
 test have a linear. If you provide a string identifying the sampler it will be
 used by all the subsets.
@@ -78,11 +82,11 @@ _Return value_: self
    self         = Dataframe  -- 
    subsets      = Df_Dict    -- The default data subsets
    sampler      = string     -- The sampler to use together with all subsets.
-  [label_column = string]    -- The label based samplers need a column with labels [default=false]
+  [label_column = string]    -- The label based samplers need a column with labels
   [sampler_args = Df_Tbl]    -- Arguments needed for some of the samplers - currently only used by
 	 the label-distribution sampler that needs the distribution. Note that
 	 you need to have a somewhat complex table:
-	 `Df_Tbl({train = Df_Dict({distribution = Df_Dict({A = 2, B=10})})})`. [default=false]
+	 `Df_Tbl({train = Df_Dict({distribution = Df_Dict({A = 2, B=10})})})`.
   [class_args   = Df_Tbl]    -- Arguments to be passed to the class initializer
 })
 ```
