@@ -13,7 +13,7 @@ for the sampler is hidden inside the samplers local environement and the main th
 has no way of knowing that you've sampled the next 30 cases in the data in a subthread.
 
 <a name="Dataframe.create_subsets">
-### Dataframe.create_subsets(self[, class_args])
+### Dataframe.create_subsets(self[, data_retriever][, label_retriever][, class_args])
 
 Initializes the metadata needed for batch loading:
 
@@ -62,47 +62,55 @@ _Return value_: self
 
 ```
 ({
-   self       = Dataframe  -- 
-  [class_args = Df_Tbl]    -- Arguments to be passed to the class initializer
+   self            = Dataframe           -- 
+  [data_retriever  = function|Df_Array]  -- The default data_retriever loading procedure/columns for the `Batchframe`
+  [label_retriever = function|Df_Array]  -- The default label_retriever loading procedure/columns for the `Batchframe`
+  [class_args      = Df_Tbl]             -- Arguments to be passed to the class initializer
 })
 ```
 
 
 ```
 ({
-   self       = Dataframe  -- 
-   subsets    = Df_Dict    -- The default data subsets
-  [class_args = Df_Tbl]    -- Arguments to be passed to the class initializer
+   self            = Dataframe           -- 
+   subsets         = Df_Dict             -- The default data subsets
+  [data_retriever  = function|Df_Array]  -- The default data_retriever loading procedure/columns for the `Batchframe`
+  [label_retriever = function|Df_Array]  -- The default label_retriever loading procedure/columns for the `Batchframe`
+  [class_args      = Df_Tbl]             -- Arguments to be passed to the class initializer
 })
 ```
 
 
 ```
 ({
-   self         = Dataframe  -- 
-   subsets      = Df_Dict    -- The default data subsets
-   sampler      = string     -- The sampler to use together with all subsets.
-  [label_column = string]    -- The label based samplers need a column with labels
-  [sampler_args = Df_Tbl]    -- Arguments needed for some of the samplers - currently only used by
+   self            = Dataframe           -- 
+   subsets         = Df_Dict             -- The default data subsets
+   sampler         = string              -- The sampler to use together with all subsets.
+  [label_column    = string]             -- The label based samplers need a column with labels
+  [sampler_args    = Df_Tbl]             -- Arguments needed for some of the samplers - currently only used by
 	 the label-distribution sampler that needs the distribution. Note that
 	 you need to have a somewhat complex table:
 	 `Df_Tbl({train = Df_Dict({distribution = Df_Dict({A = 2, B=10})})})`.
-  [class_args   = Df_Tbl]    -- Arguments to be passed to the class initializer
+  [data_retriever  = function|Df_Array]  -- The default data_retriever loading procedure/columns for the `Batchframe`
+  [label_retriever = function|Df_Array]  -- The default label_retriever loading procedure/columns for the `Batchframe`
+  [class_args      = Df_Tbl]             -- Arguments to be passed to the class initializer
 })
 ```
 
 
 ```
 ({
-   self         = Dataframe  -- 
-   subsets      = Df_Dict    -- The default data subsets
-   samplers     = Df_Dict    -- The samplers to use together with the subsets.
-  [label_column = string]    -- The label based samplers need a column with labels
-  [sampler_args = Df_Tbl]    -- Arguments needed for some of the samplers - currently only used by
+   self            = Dataframe           -- 
+   subsets         = Df_Dict             -- The default data subsets
+   samplers        = Df_Dict             -- The samplers to use together with the subsets.
+  [label_column    = string]             -- The label based samplers need a column with labels
+  [sampler_args    = Df_Tbl]             -- Arguments needed for some of the samplers - currently only used by
 	 the label-distribution sampler that needs the distribution. Note that
 	 you need to have a somewhat complex table:
 	 `Df_Tbl({train = Df_Dict({distribution = Df_Dict({A = 2, B=10})})})`.
-  [class_args   = Df_Tbl]    -- Arguments to be passed to the class initializer
+  [data_retriever  = function|Df_Array]  -- The default data_retriever loading procedure/columns for the `Batchframe`
+  [label_retriever = function|Df_Array]  -- The default label_retriever loading procedure/columns for the `Batchframe`
+  [class_args      = Df_Tbl]             -- Arguments to be passed to the class initializer
 })
 ```
 
