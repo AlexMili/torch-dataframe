@@ -38,14 +38,10 @@ local function getIterator(mode)
 	--  splitting we create a single subsetter
 	df:create_subsets{
 		subsets = Df_Dict{core = 1},
-		class_args = Df_Tbl({
-			batch_args = Df_Tbl({
-				label = Df_Array("label"),
-				data = function(row)
-					return ext_resource[row.row_id]
-				end
-			})
-		})
+		data_retriever = function(row)
+			return ext_resource[row.row_id]
+		end,
+		label_retriever = Df_Array("label")
 	}
 
 	local subset = df["/core"]
