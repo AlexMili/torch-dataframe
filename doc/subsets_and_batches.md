@@ -37,19 +37,12 @@ test have a linear. If you provide a string identifying the sampler it will be
 used by all the subsets.
 
 You can specify the data and label loaders used in the `Batchframe` by passing
-the class argument. This is passed to the `Df_Subset` that then in turn passes
-the information forward to the batches themself. As this is cascading through
-the objects you must wrap the argument in multiple `Df_Tbl` for it to work, here
-is a basic example:
+the class argument or by using the `data_retriever` and `label_retriever` arguments:
 
 ```lua
 my_data:create_subsets{
-	class_args = Df_Tbl({
-		batch_args = Df_Tbl({
-			data = function(row) image_loader(row.filename) end,
-			label = Df_Array("Gender")
-		})
-	})
+	data_retriever = function(row) image_loader(row.filename) end,
+	label_retriever = Df_Array("Gender")
 }
 ```
 
