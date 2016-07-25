@@ -81,7 +81,7 @@ _Return value_: boolean
 	{name="self", type="Dataframe"},
 	{name="column_name", type="string", doc="The column to check"},
 	call=function(self, column_name)
-	for _,v in pairs(self.columns) do
+	for _,v in pairs(self.column_order) do
 		if (v == column_name) then
 			return true
 		end

@@ -132,7 +132,8 @@ _Return value_: Dataframe or Batchframe
 	 - Df_Subset
 	 If left empty it will default to the given torch.type(self)
 	 ]], opt = true},
-	{name='class_args', type='Df_Tbl', doc='Arguments to be passed to the class initializer', opt=true},
+	{name='class_args', type='Df_Tbl', opt=true,
+	 doc='Arguments to be passed to the class initializer'},
 	call = function(self, index_items, frame_type, class_args)
 	index_items = index_items.data
 
@@ -142,6 +143,9 @@ _Return value_: Dataframe or Batchframe
 
 	if (class_args) then
 		class_args = class_args.data
+		if (table.exact_length(class_args) == 0) then
+			class_args = nil
+		end
 	end
 
 	for i=1,#index_items do

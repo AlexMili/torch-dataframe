@@ -262,8 +262,37 @@ describe("Test if we can get a batch with data and labels",function()
 				passed_args.label.data
 			)
 		end)
+	end)
+
+	describe("The create_subsets should work wit #data_retriever and #label_retriever just as for class_args",function()
+		local a = Dataframe("./data/realistic_29_row_data.csv")
+		a:create_subsets{
+			data_retriever = Df_Array("Weight"),
+			label_retriever = Df_Array("Gender")
+		}
+		local subset = a:get_subset('train')
+		local batch = subset:get_batch(5)
+
+		it("The class arguments should be stored within the subset property", function()
+			assert.are.same(
+				a.subsets.class_args.batch_args.data.data.data,
+				{"Weight"}
+			)
+		end)
+
+		it("The batch arguments should be present in the subset object", function()
+			assert.are.same(
+				subset.batch_args.label.data,
+				{"Gender"}
+			)
+			assert.are.same(
+				subset.batch_args.data.data,
+				{"Weight"}
+			)
+		end)
 
 	end)
+
 	-- TODO: Add tests for custom subset splits and samplers
 end)
 

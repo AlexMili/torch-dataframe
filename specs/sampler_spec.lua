@@ -108,8 +108,8 @@ describe([[The #ordered sampler should call each element in a linear fashion and
 			s = testSampler()
 		end
 
-		assert.is_true(diff > 0,
-			("The permuted indexes should increase - %d"):format(diff))
+		assert.is_true(diff >= 0,
+			("The permuted indexes should increase (can be 0 if permutations happened to be in order) - %d"):format(diff))
 	end)
 
 	it("Check linear reset", function()
