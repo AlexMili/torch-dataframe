@@ -63,10 +63,7 @@ _Return value_: self
 	call=function(self, data)
 
 	self.batchframe_defaults.data = data
-	if (not self:get_label_retriever()) then
-		self.batchframe_defaults.label = Df_Array(self:get_numerical_colnames())
-	end
-	
+
 	return self
 end}
 
@@ -303,7 +300,9 @@ columns while the retriever is for the data.
 
 	if (not retriever) then
 		assert(self:get_data_retriever(), "You must call the set_data_retriever function before omitting the arguments")
-		assert(self:get_label_retriever(), "You must call the set_label_retriever function before omitting the arguments")
+		if (not self:get_label_retriever()) then
+			self:set_label_retriever(Df_Array(self:get_numerical_colnames()))
+		end
 
 		return self:to_tensor(self:get_data_retriever(),
 		                      self:get_label_retriever())
