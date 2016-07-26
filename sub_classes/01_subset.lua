@@ -441,4 +441,56 @@ _Return value_: string
 		parent_class.__tostring__(self)
 end}
 
+
+subset.set_data_retriever = argcheck{
+	doc =  [[
+<a name="Df_Subset.set_data_retriever">
+### Df_Subset.set_data_retriever(@ARGP)
+
+Sets the self.batch_args.data to either a function for loading data or
+a set of columns that should be used in the to_tensor functions.
+
+@ARGT
+
+_Return value_: self
+]],
+	{name="self", type="Df_Subset"},
+	{name="data", type="function|Df_Array", opt=true,
+	 doc="The data loading procedure/columns. If omitted the retriever will be erased"},
+	call=function(self, data)
+
+
+	if (not self.batch_args) then
+		self.batch_args = {}
+	end
+	self.batch_args.data = data
+
+	return self
+end}
+
+subset.set_label_retriever = argcheck{
+	doc =  [[
+<a name="Df_Subset.set_label_retriever">
+### Df_Subset.set_label_retriever(@ARGP)
+
+Sets the self.batch_args.data to either a function for loading data or
+a set of columns that should be used in the to_tensor functions.
+
+@ARGT
+
+_Return value_: self
+]],
+	{name="self", type="Df_Subset"},
+	{name="label", type="function|Df_Array", opt=true,
+	 doc="The label loading procedure/columns. If omitted the retriever will be erased"},
+	call=function(self, label)
+
+	if (not self.batch_args) then
+		self.batch_args = {}
+	end
+	self.batch_args.label = label
+
+	return self
+end}
+
 return subset
