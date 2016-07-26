@@ -338,7 +338,6 @@ subset.get_parallel_iterator = argcheck{
 _Return value_: `Df_ParallelIterator`
 	]],
 	{name="self", type="Df_Subset"},
-	{name='dataset', type='Df_Subset', doc='The Dataframe subset to use for the iterator'},
 	{name="batch_size", type="number", doc="The size of the batches"},
 	{name='init', type='function', default=function(idx)
 		-- Load the libraries needed
@@ -365,7 +364,7 @@ _Return value_: `Df_ParallelIterator`
 	 By default `ordered` is false, which means that order is not guaranteed by
 	 `run()` (though often the ordering is similar in practice).]]},
 	call =
-	function(self, dataset, batch_size, init, nthread,
+	function(self, batch_size, init, nthread,
 		       filter, transform, input_transform, target_transform, ordered)
 	return Df_ParallelIterator{
 		dataset = self,
