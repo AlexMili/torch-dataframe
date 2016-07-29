@@ -99,7 +99,6 @@ describe([[
 			batch:to_tensor()
 
 		require 'nn'
-		require 'criterion_ignore'
 		local net = nn.Sequential()
 		net:add(nn.Linear(10,50))
 
@@ -165,7 +164,6 @@ describe([[
 			batch:to_tensor()
 
 		require 'nn'
-		require 'criterion_ignore'
 		local net = nn.Sequential()
 		net:add(nn.Linear(10,50))
 
