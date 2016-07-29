@@ -17,9 +17,8 @@ has no way of knowing that you've sampled the next 30 cases in the data in a sub
 
 Initializes the metadata needed for batch loading:
 
-_ Subsets e.g. for training, validating, and testing
-
-_ Samplers associated with the above
+- Subsets e.g. for training, validating, and testing
+- Samplers associated with the above
 
 The default data subsets and propotions are:
 ```

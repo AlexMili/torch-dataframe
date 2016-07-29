@@ -28,9 +28,8 @@ Dataframe.create_subsets = argcheck{
 
 Initializes the metadata needed for batch loading:
 
-_ Subsets e.g. for training, validating, and testing
-
-_ Samplers associated with the above
+- Subsets e.g. for training, validating, and testing
+- Samplers associated with the above
 
 The default data subsets and propotions are:
 ```

@@ -165,13 +165,10 @@ Converts the data into tensors that can easily be used for input. Prepares one
 data tensor and one label tensor. The funtion is intended for use together
 with the `get_batch()`. The function allows for:
 
-_ Both data and labels reside within the dataframe
-
-_ The data is located outside and will be loaded using a helper function
-
-_ The labels are located outside and will be loaded using a helper function
-
-_ Both data and labels are located outside and will be loaded using helper functions
+- Both data and labels reside within the dataframe
+- The data is located outside and will be loaded using a helper function
+- The labels are located outside and will be loaded using a helper function
+- Both data and labels are located outside and will be loaded using helper functions
 
 Note that the `label_shape` may be of interest if you are using multiple labels.
 The `nn.ParallelCriterion` expects a table but a tensor that has the columns as

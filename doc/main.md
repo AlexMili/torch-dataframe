@@ -74,9 +74,8 @@ Upgrades a dataframe using the old batch loading framework to the new framework
 by instantiating the subsets argument, copying the indexes and setting the
 samplers to either:
 
-_ linear for test/validate or shuffle = false
-
-_ permutation if shuffle = true and none of above names
+- linear for test/validate or shuffle = false
+- permutation if shuffle = true and none of above names
 
 ```
 ({
