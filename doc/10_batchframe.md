@@ -9,16 +9,19 @@ a completely separate entity you can easily serialize it and send it to a separa
 process that then will
 
 <a name="Batchframe.__init">
-### Batchframe.__init(self[, data][, label])
+### Batchframe.__init(self[, data][, label][, label_shape])
 
 Calls the parent init and then adds `batchframe_defaults` table. Se the
 set_load and set_data methods
 
 ```
 ({
-   self  = Batchframe          -- 
-  [data  = function|Df_Array]  -- The data loading procedure/columns
-  [label = function|Df_Array]  -- The label loading procedure/columns
+   self        = Batchframe          -- 
+  [data        = function|Df_Array]  -- The data loading procedure/columns
+  [label       = function|Df_Array]  -- The label loading procedure/columns
+  [label_shape = string]             -- The shape in witch the labels should be provided. Some criterion require
+	 to subset the labels on the column and not the row, e.g. `nn.ParallelCriterion`,
+	 and thus the shape must be `NxM` or `NxMx1` for it to work as expected. [default=MxN]
 })
 ```
 
@@ -77,7 +80,7 @@ a set of columns that should be used in the to_tensor functions.
 
 _Return value_: function
 <a name="Batchframe.to_tensor">
-### Batchframe.to_tensor(self, data_columns, label_columns)
+### Batchframe.to_tensor(self, data_columns, label_columns[, label_shape])
 
 Converts the data into tensors that can easily be used for input. Prepares one
 data tensor and one label tensor. The funtion is intended for use together
@@ -91,6 +94,19 @@ _ The labels are located outside and will be loaded using a helper function
 
 _ Both data and labels are located outside and will be loaded using helper functions
 
+Note that the `label_shape` may be of interest if you are using multiple labels.
+The `nn.ParallelCriterion` expects a table but a tensor that has the columns as
+at the first position works just as well. There is some difference in how the
+individual criterions wants their data, some want a Mx1 matrix, for instance
+`nn.MSECriterion`, while other require a 1D input, `nn.ClassNLLCriterion`. In order
+allow for this flexibility you can specify a combinaiton of `MxN` with and without
+a trailing `x1`:
+
+1. `MxN`: First dimension is the row and the second dimension the column
+2. `NxM`: First dimension is the column and the second dimension the row
+3. `MxNx1`: Same as 1. but with the addition of a trailin dimension
+3. `NxMx1`: Same as 2. but with the addition of a trailin dimension
+
 _Return value_: data (tensor), label (tensor), column names (lua table)
 
 ```
@@ -98,6 +114,9 @@ _Return value_: data (tensor), label (tensor), column names (lua table)
    self          = Dataframe  -- 
    data_columns  = Df_Array   -- The columns that are to be the data
    label_columns = Df_Array   -- The columns that are to be the label
+  [label_shape   = string]    -- The shape in witch the labels should be provided. Some criterion require
+	 to subset the labels on the column and not the row, e.g. `nn.ParallelCriterion`,
+	 and thus the shape must be `NxM` or `NxMx1` for it to work as expected.
 })
 ```
 
@@ -107,6 +126,9 @@ _Return value_: data (tensor), label (tensor), column names (lua table)
    self          = Dataframe  -- 
    load_data_fn  = function   -- Receives a row and returns a tensor assumed to be the data
    label_columns = Df_Array   -- The columns that are to be the label. If omitted defaults to all numerical.
+  [label_shape   = string]    -- The shape in witch the labels should be provided. Some criterion require
+	 to subset the labels on the column and not the row, e.g. `nn.ParallelCriterion`,
+	 and thus the shape must be `NxM` or `NxMx1` for it to work as expected.
 })
 ```
 
@@ -117,6 +139,9 @@ _Return value_: data (tensor), label (tensor), column names (lua table)
    self          = Dataframe  -- 
    data_columns  = Df_Array   -- Receives a row and returns a tensor assumed to be the data
    load_label_fn = function   -- The columns that are to be the label.
+  [label_shape   = string]    -- The shape in witch the labels should be provided. Some criterion require
+	 to subset the labels on the column and not the row, e.g. `nn.ParallelCriterion`,
+	 and thus the shape must be `NxM` or `NxMx1` for it to work as expected.
 })
 ```
 
@@ -127,6 +152,9 @@ _Return value_: data (tensor), label (tensor), column names (lua table)
    self          = Dataframe  -- 
    load_data_fn  = function   -- Receives a row and returns a tensor assumed to be the data
    load_label_fn = function   -- Receives a row and returns a tensor assumed to be the labels
+  [label_shape   = string]    -- The shape in witch the labels should be provided. Some criterion require
+	 to subset the labels on the column and not the row, e.g. `nn.ParallelCriterion`,
+	 and thus the shape must be `NxM` or `NxMx1` for it to work as expected.
 })
 ```
 
@@ -137,8 +165,11 @@ columns while the retriever is for the data.
 
 ```
 ({
-   self      = Dataframe           -- 
-  [retriever = function|Df_Array]  -- If you have only provided one of the defaults you can add the other retriever here
+   self        = Dataframe           -- 
+  [retriever   = function|Df_Array]  -- If you have only provided one of the defaults you can add the other retriever here
+  [label_shape = string]             -- The shape in witch the labels should be provided. Some criterion require
+	 to subset the labels on the column and not the row, e.g. `nn.ParallelCriterion`,
+	 and thus the shape must be `NxM` or `NxMx1` for it to work as expected.
 })
 ```
 
