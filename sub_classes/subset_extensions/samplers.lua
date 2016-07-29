@@ -30,9 +30,8 @@ some will return `nil` as you have reached the end, usually 1 epoch. In order to
 restart the sampler you will then have to call the reset function. The samplers
 with reset functions are:
 
-_ linear
-
-_ permutation
+- linear
+- permutation
 
 @ARGT
 
