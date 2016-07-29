@@ -42,7 +42,7 @@ describe([[
 		end
 		seq_err = torch.Tensor(seq_err):mean()
 
-		assert.are.equal(seq_err, total_err)
+		assert.is_true(math.abs(seq_err - total_err) < 10^-6)
 	end)
 
 	it("A a tensor input and a #linear_regression", function()
@@ -76,7 +76,7 @@ describe([[
 		end
 		seq_err = torch.Tensor(seq_err):mean()
 
-		assert.are.equal(seq_err, total_err)
+		assert.is_true(math.abs(seq_err - total_err) < 10^-6)
 	end)
 
 	it("Multiple input and #multiple regression targets", function()
@@ -130,7 +130,7 @@ describe([[
 		end
 		seq_err = torch.Tensor(seq_err):mean()
 
-		assert.are.equal(seq_err, total_err)
+		assert.is_true(math.abs(seq_err - total_err) < 10^-6)
 	end)
 
 	it("Multiple input and #multiple classification targets #mclss", function()
@@ -196,7 +196,7 @@ describe([[
 		end
 		seq_err = torch.Tensor(seq_err):mean()
 
-		assert.are.equal(seq_err, total_err)
+		assert.is_true(math.abs(seq_err - total_err) < 10^-6)
 	end)
 
 end)
