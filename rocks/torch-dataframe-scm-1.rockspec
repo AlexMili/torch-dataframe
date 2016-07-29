@@ -22,7 +22,8 @@ dependencies = {
 		"luafilesystem >= 1.6.3",
 		"paths",
 		"torchnet >= 1.0",
-		"threads >= 1.0"
+		"threads >= 1.0",
+		"nn"
 }
 build = {
 	type = 'builtin',
