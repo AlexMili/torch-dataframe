@@ -263,14 +263,13 @@ _Return value_: self
 
 _Return value_: `Df_Iterator`
 	<a name="Df_Subset.get_parallel_iterator">
-### Df_Subset.get_parallel_iterator(self, dataset, batch_size[, init], nthread[, filter][, transform][, input_transform][, target_transform][, ordered])
+### Df_Subset.get_parallel_iterator(self, batch_size[, init], nthread[, filter][, transform][, input_transform][, target_transform][, ordered])
 
 **Important**: See the docs for Df_Iterator and Df_ParallelIterator
 
 ```
 ({
    self             = Df_Subset  -- 
-   dataset          = Df_Subset  -- The Dataframe subset to use for the iterator
    batch_size       = number     -- The size of the batches
   [init             = function]  -- `init(threadid)` (where threadid=1..nthread) is a closure which may
 	 initialize the specified thread as needed, if needed. It is loading
@@ -326,3 +325,31 @@ _Return value_: table
 ```
 
 _Return value_: string
+<a name="Df_Subset.set_data_retriever">
+### Df_Subset.set_data_retriever(self[, data])
+
+Sets the self.batch_args.data to either a function for loading data or
+a set of columns that should be used in the to_tensor functions.
+
+```
+({
+   self = Df_Subset           -- 
+  [data = function|Df_Array]  -- The data loading procedure/columns. If omitted the retriever will be erased
+})
+```
+
+_Return value_: self
+<a name="Df_Subset.set_label_retriever">
+### Df_Subset.set_label_retriever(self[, label])
+
+Sets the self.batch_args.data to either a function for loading data or
+a set of columns that should be used in the to_tensor functions.
+
+```
+({
+   self  = Df_Subset           -- 
+  [label = function|Df_Array]  -- The label loading procedure/columns. If omitted the retriever will be erased
+})
+```
+
+_Return value_: self
