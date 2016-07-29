@@ -99,7 +99,7 @@ You can also provide a function for more advanced matching
 ```
 
 <a name="Dataframe.which">
-### Dataframe.whic(self, condition_function)
+### Dataframe.which(self, condition_function)
 
 ```
 ({
