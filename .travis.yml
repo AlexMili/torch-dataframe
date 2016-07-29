@@ -40,6 +40,7 @@ install:
   - luarocks install torchnet
   - luarocks install busted
   - luarocks install luacov
+  - luarocks install nn
   - luarocks make rocks/torch-dataframe-scm-1.rockspec CFLAGS="-O2 -fPIC -fprofile-arcs -ftest-coverage" LIBFLAG="-shared --coverage"
 
 script:
