@@ -239,7 +239,8 @@ _Return value_: string
 		local ret_row = {}
 		for key,value in pairs(row) do
 			if (not table.has_element(columns2skip, key)) then
-				if (self:is_numerical(key)) then
+				if (self:is_numerical(key) and
+				    type(value) ~= "boolean") then
 					if (digits and i > 0) then
 						value = _numeric2string(value, digits)
 					end
