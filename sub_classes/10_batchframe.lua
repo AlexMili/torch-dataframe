@@ -36,12 +36,17 @@ set_load and set_data methods
 	 doc="The data loading procedure/columns"},
 	{name="label", type="function|Df_Array", opt=true,
 	 doc="The label loading procedure/columns"},
-	call=function(self, data, label)
+	{name="label_shape", type="string", default="MxN",
+	 doc=[[The shape in witch the labels should be provided. Some criterion require
+	 to subset the labels on the column and not the row, e.g. `nn.ParallelCriterion`,
+	 and thus the shape must be `NxM` or `NxMx1` for it to work as expected.]]},
+	call=function(self, data, label, label_shape)
 	parent_class.__init(self)
 
 	self.batchframe_defaults = {
 		data = data,
-		label = label
+		label = label,
+		label_shape = label_shape
 	}
 end}
 
@@ -124,6 +129,33 @@ _Return value_: function
 	return self.batchframe_defaults.label
 end}
 
+Batchframe._reshape_label = argcheck{
+	{name="self", type="Dataframe"},
+	{name="label", type="torch.*Tensor"},
+	{name="label_shape", type="string", opt=true,
+	 doc=[[The shape in witch the labels should be provided. Some criterion require
+	 to subset the labels on the column and not the row, e.g. `nn.ParallelCriterion`,
+	 and thus the shape must be `NxM` or `NxMx1` for it to work as expected.]]},
+	call = function(self, label, label_shape)
+	label_shape = label_shape or self.batchframe_defaults.label_shape
+	label_shape = label_shape:lower():gsub(" ", "")
+	if (label_shape == "mxn") then
+		return label
+	end
+
+	if (label_shape:match("^nxm")) then
+		label = label:transpose(2,1)
+	end
+
+	if (label_shape:match("x1$")) then
+		local new_shape = label:size():totable()
+		new_shape[#new_shape +  1] = 1
+		label = label:reshape(table.unpack(new_shape))
+	end
+
+	return label
+end}
+
 Batchframe.to_tensor  = argcheck{
 	doc =  [[
 <a name="Batchframe.to_tensor">
@@ -141,6 +173,19 @@ _ The labels are located outside and will be loaded using a helper function
 
 _ Both data and labels are located outside and will be loaded using helper functions
 
+Note that the `label_shape` may be of interest if you are using multiple labels.
+The `nn.ParallelCriterion` expects a table but a tensor that has the columns as
+at the first position works just as well. There is some difference in how the
+individual criterions wants their data, some want a Mx1 matrix, for instance
+`nn.MSECriterion`, while other require a 1D input, `nn.ClassNLLCriterion`. In order
+allow for this flexibility you can specify a combinaiton of `MxN` with and without
+a trailing `x1`:
+
+1. `MxN`: First dimension is the row and the second dimension the column
+2. `NxM`: First dimension is the column and the second dimension the row
+3. `MxNx1`: Same as 1. but with the addition of a trailin dimension
+3. `NxMx1`: Same as 2. but with the addition of a trailin dimension
+
 _Return value_: data (tensor), label (tensor), column names (lua table)
 
 @ARGT
@@ -151,7 +196,11 @@ _Return value_: data (tensor), label (tensor), column names (lua table)
 	 doc='The columns that are to be the data'},
 	{name='label_columns', type='Df_Array',
 	 doc='The columns that are to be the label'},
-	call = function(self, data_columns, label_columns)
+	{name="label_shape", type="string", opt=true,
+	 doc=[[The shape in witch the labels should be provided. Some criterion require
+	 to subset the labels on the column and not the row, e.g. `nn.ParallelCriterion`,
+	 and thus the shape must be `NxM` or `NxMx1` for it to work as expected.]]},
+	call = function(self, data_columns, label_columns, label_shape)
 
 	data_columns = data_columns.data
 	for _,column_name in ipairs(data_columns) do
@@ -163,8 +212,9 @@ _Return value_: data (tensor), label (tensor), column names (lua table)
 		self:assert_has_column(column_name)
 	end
 
-	tensor_label, tensor_col_names = Dataframe.to_tensor(self, Df_Array(label_columns))
-	tensor_data = Dataframe.to_tensor(self, Df_Array(data_columns))
+	local tensor_data = Dataframe.to_tensor(self, Df_Array(data_columns))
+	local tensor_label, tensor_col_names = Dataframe.to_tensor(self, Df_Array(label_columns))
+	tensor_label = self:_reshape_label(tensor_label, label_shape)
 
 	return tensor_data, tensor_label, tensor_col_names
 end}
@@ -181,17 +231,23 @@ Batchframe.to_tensor  = argcheck{
 	 doc='Receives a row and returns a tensor assumed to be the data'},
 	{name='label_columns', type='Df_Array',
 	 doc='The columns that are to be the label. If omitted defaults to all numerical.'},
-	call = function(self, load_data_fn, label_columns)
+	{name="label_shape", type="string", opt=true,
+	 doc=[[The shape in witch the labels should be provided. Some criterion require
+	 to subset the labels on the column and not the row, e.g. `nn.ParallelCriterion`,
+	 and thus the shape must be `NxM` or `NxMx1` for it to work as expected.]]},
+	call = function(self, load_data_fn, label_columns, label_shape)
 
 	label_columns = label_columns.data
 	for _,column_name in ipairs(label_columns) do
 		self:assert_has_column(column_name)
 	end
 
-	tensor_label, tensor_col_names = Dataframe.to_tensor(self, Df_Array(label_columns))
-	single_data = load_data_fn(self:get_row(1))
+	local tensor_label, tensor_col_names = Dataframe.to_tensor(self, Df_Array(label_columns))
+	tensor_label = self:_reshape_label(tensor_label, label_shape)
+
+	local single_data = load_data_fn(self:get_row(1))
 	single_data = _add_single_first_dim(single_data)
-	tensor_data = single_data
+	local tensor_data = single_data
 
 	if (self:size(1) > 1) then
 		for i = 2,self:size(1) do
@@ -217,7 +273,11 @@ Batchframe.to_tensor  = argcheck{
 	 doc='Receives a row and returns a tensor assumed to be the data'},
 	{name='load_label_fn', type='function',
 	 doc='The columns that are to be the label.'},
-	call = function(self, data_columns, load_label_fn)
+	{name="label_shape", type="string", opt=true,
+	 doc=[[The shape in witch the labels should be provided. Some criterion require
+	 to subset the labels on the column and not the row, e.g. `nn.ParallelCriterion`,
+	 and thus the shape must be `NxM` or `NxMx1` for it to work as expected.]]},
+	call = function(self, data_columns, load_label_fn, label_shape)
 	data_columns = data_columns.data
 	for _,column_name in ipairs(data_columns) do
 		self:assert_has_column(column_name)
@@ -235,6 +295,8 @@ Batchframe.to_tensor  = argcheck{
 			tensor_label = torch.cat(tensor_label, single_label, 1)
 		end
 	end
+	tensor_label = self:_reshape_label(tensor_label, label_shape)
+
 
 	return tensor_data, tensor_label
 end}
@@ -252,7 +314,11 @@ Batchframe.to_tensor  = argcheck{
 	 doc='Receives a row and returns a tensor assumed to be the data'},
 	{name='load_label_fn', type='function',
 	 doc='Receives a row and returns a tensor assumed to be the labels'},
-	call = function(self, load_data_fn, load_label_fn)
+	{name="label_shape", type="string", opt=true,
+	 doc=[[The shape in witch the labels should be provided. Some criterion require
+	 to subset the labels on the column and not the row, e.g. `nn.ParallelCriterion`,
+	 and thus the shape must be `NxM` or `NxMx1` for it to work as expected.]]},
+	call = function(self, load_data_fn, load_label_fn, label_shape)
 
 	local single_data = load_data_fn(self:get_row(1))
 	single_data = _add_single_first_dim(single_data)
@@ -277,6 +343,7 @@ Batchframe.to_tensor  = argcheck{
 			tensor_label = torch.cat(tensor_label, single_label, 1)
 		end
 	end
+	tensor_label = self:_reshape_label(tensor_label, label_shape)
 
 	return tensor_data, tensor_label
 end}
@@ -296,7 +363,11 @@ columns while the retriever is for the data.
 	{name="self", type="Dataframe"},
 	{name="retriever", type="function|Df_Array", opt=true,
 		doc="If you have only provided one of the defaults you can add the other retriever here"},
-	call = function(self, retriever)
+	{name="label_shape", type="string", opt=true,
+	 doc=[[The shape in witch the labels should be provided. Some criterion require
+	 to subset the labels on the column and not the row, e.g. `nn.ParallelCriterion`,
+	 and thus the shape must be `NxM` or `NxMx1` for it to work as expected.]]},
+	call = function(self, retriever, label_shape)
 
 	if (not retriever) then
 		assert(self:get_data_retriever(), "You must call the set_data_retriever function before omitting the arguments")
@@ -305,22 +376,26 @@ columns while the retriever is for the data.
 		end
 
 		return self:to_tensor(self:get_data_retriever(),
-		                      self:get_label_retriever())
+		                      self:get_label_retriever(),
+		                      label_shape)
 	end
 
 	-- Assume that the retriever is for the data column
 	if (not self:get_data_retriever() and
 	    not self:get_label_retriever()) then
 		return self:to_tensor(retriever,
-		                      Df_Array(self:get_numerical_colnames()))
+		                      Df_Array(self:get_numerical_colnames()),
+		                      label_shape)
 	end
 
 	if (self:get_data_retriever()) then
 		return self:to_tensor(self:get_data_retriever(),
-		                      retriever)
+		                      retriever,
+		                      label_shape)
 	elseif(self:get_label_retriever()) then
 		return self:to_tensor(retriever,
-		                      self:get_label_retriever())
+		                      self:get_label_retriever(),
+		                      label_shape)
 	end
 
 	error("Invalid parameter specified - could not find a useful combination (should be impossible to end up here)")
