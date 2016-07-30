@@ -10,6 +10,8 @@ As of release 1.5 it fully supports the [torchnet](https://github.com/torchnet/t
 data structure. It also has custom iterators to convenient integration with
 torchnet's engines, see the [mnist example](https://github.com/AlexMili/torch-dataframe/blob/master/examples/mnist_example.lua).
 
+For a more detailed look at the changes between the versions have a look at the  [NEWS](https://github.com/AlexMili/torch-dataframe/blob/master/NEWS.md) file.
+
 <!-- TOC depthFrom:2 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
 
 - [Requirements](#requirements)
