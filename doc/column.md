@@ -246,3 +246,31 @@ Gets the column order index
 ```
 
 _Return value_: integer
+<a name="Dataframe.swap_column_order">
+### Dataframe.swap_column_order(self, first, second)
+
+Swaps the column order for two columns
+
+```
+({
+   self   = Dataframe  -- 
+   first  = string     -- The name of the first column
+   second = string     -- The name of the second column
+})
+```
+
+_Return value_: self
+<a name="Dataframe.pos_column_order">
+### Dataframe.pos_column_order(self, column_name, position)
+
+Set a position in the column order
+
+```
+({
+   self        = Dataframe  -- 
+   column_name = string     -- The name of the column
+   position    = number     -- An integer that indicates the position to insert at
+})
+```
+
+_Return value_: self
