@@ -212,6 +212,10 @@ describe([[
 	describe([[
 		Multiple targets with a the parallel_iterator for generating tensors
 		#parallel_iterator
+		Unfortunately these tests has issues when running via ./run_all:
+		FATAL THREAD PANIC: (addjob) torch.ByteStorage has been already assigned a destructor
+		We therefore need to run these tests separately
+		#skip_all
 	]], function()
 		it("Regression targets #multreg", function()
 			a = Dataframe("./data/realistic_29_row_data.csv")
