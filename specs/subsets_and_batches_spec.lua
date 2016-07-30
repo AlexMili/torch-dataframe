@@ -40,21 +40,17 @@ describe("Loading dataframe and creaing adequate subsets", function()
 		-- as the full dataset must be used per definition one of the elements may not
 		-- exactly be of expected length. We therefore have to look for sizes that
 		-- are within no_of_subset - 1 from eachother
-		assert.is_true(
-			math.abs(a["/train"]:size(1) -
-		          math.floor(a:size(1) * .7)) <= 2,
-		          ("Train size fail - %d is not within 2 from expected %d"):
-		          format(a["/train"]:size(1), math.floor(a:size(1) * .7)))
-		assert.is_true(
-			math.abs(a["/validate"]:size(1) -
-		          math.floor(a:size(1) * .2)) <= 2,
-		          ("Validate size fail - %d is not within 2 from expected %d"):
-		          format(a["/validate"]:size(1), math.floor(a:size(1) * .2)))
-		assert.is_true(
-			math.abs(a["/test"]:size(1) -
-		          math.floor(a:size(1) * .1)) <= 2,
-		          ("Test size fail - %d is not within 2 from expected %d"):
-		          format(a["/test"]:size(1), math.floor(a:size(1) * .1)))
+		assert.near(a["/train"]:size(1),
+		            math.floor(a:size(1) * .7),
+                2)
+
+		assert.near(a["/validate"]:size(1),
+		            math.floor(a:size(1) * .2),
+                2)
+
+		assert.near(a["/test"]:size(1),
+		            math.floor(a:size(1) * .1),
+                2)
 	end)
 
 	it("Check that the initialized subset is correct for a #single_subset",

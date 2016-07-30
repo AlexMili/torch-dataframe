@@ -109,7 +109,7 @@ describe("Exporting data process", function()
 				sum = math.abs(tnsr[i][col_no] - a:get_column('Col A')[i])
 			end
 
-			assert.is_true(sum < 10^-5)
+			assert.near(0, sum, 10^-5)
 			os.remove("./data/tensor_test.th7")
 		end)
 
@@ -140,7 +140,7 @@ describe("Exporting data process", function()
 				sum = math.abs(tnsr[i][col_no] - a:get_column('1st')[i])
 			end
 
-			assert.is_true(sum < 10^-5)
+			assert.near(0, sum, 10^-5)
 
 			sum = 0
 			col_no = a:get_column_order{column_name='3rd', as_tensor = true}
@@ -148,7 +148,7 @@ describe("Exporting data process", function()
 				sum = math.abs(tnsr[i][col_no] - a:get_column('3rd')[i])
 			end
 
-			assert.is_true(sum < 10^-5)
+			assert.near(0, sum, 10^-5)
 		end)
 	end)
 
