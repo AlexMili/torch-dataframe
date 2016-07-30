@@ -55,7 +55,7 @@ _Return value_: function
 <a name="Batchframe.set_label_retriever">
 ### Batchframe.set_label_retriever(self[, label])
 
-Sets the self.batchframe_defaults.data to either a function for loading data or
+Sets the self.batchframe_defaults.label to either a function for loading labels or
 a set of columns that should be used in the to_tensor functions.
 
 ```
@@ -79,6 +79,22 @@ a set of columns that should be used in the to_tensor functions.
 ```
 
 _Return value_: function
+<a name="Batchframe.set_label_shape">
+### Batchframe.set_label_shape(self[, label_shape])
+
+Sets the self.batchframe_defaults.label_shape for transforming the data into
+requested format
+
+```
+({
+   self        = Batchframe  -- 
+  [label_shape = string]     -- The shape in witch the labels should be provided. Some criterion require
+	 to subset the labels on the column and not the row, e.g. `nn.ParallelCriterion`,
+	 and thus the shape must be `NxM` or `NxMx1` for it to work as expected.
+})
+```
+
+_Return value_: self
 <a name="Batchframe.to_tensor">
 ### Batchframe.to_tensor(self, data_columns, label_columns[, label_shape])
 
