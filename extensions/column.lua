@@ -554,3 +554,89 @@ _Return value_: integer
 
 	return nil
 end}
+
+Dataframe.swap_column_order = argcheck{
+	doc = [[
+<a name="Dataframe.swap_column_order">
+### Dataframe.swap_column_order(@ARGP)
+
+Swaps the column order for two columns
+
+@ARGT
+
+_Return value_: self
+]],
+	{name="self", type="Dataframe"},
+	{name="first", type="string", doc="The name of the first column"},
+	{name="second", type="string", doc="The name of the second column"},
+	call=function(self, first, second)
+
+	self:assert_has_column(first)
+	self:assert_has_column(second)
+
+	local pos_first, pos_second
+	for i,column_name in ipairs(self.column_order) do
+		if (column_name == first) then
+			pos_first = i
+			if (pos_second) then
+				break
+			end
+		end
+
+		if (column_name == second) then
+			pos_second = i
+			if (pos_first) then
+				break
+			end
+		end
+	end
+
+	self.column_order[pos_first] = second
+	self.column_order[pos_second] =  first
+
+	return self
+end}
+
+Dataframe.pos_column_order = argcheck{
+	doc = [[
+<a name="Dataframe.pos_column_order">
+### Dataframe.pos_column_order(@ARGP)
+
+Set a position in the column order
+
+@ARGT
+
+_Return value_: self
+]],
+	{name="self", type="Dataframe"},
+	{name="column_name", type="string", doc="The name of the column"},
+	{name="position", type="number", doc="An integer that indicates the position to insert at"},
+	call=function(self, column_name, position)
+
+	self:assert_has_column(column_name)
+	assert(isint(position), "Position has to be an integer")
+	-- Avoid indexing outside of range
+	position = math.max(1, math.min(position, #self.column_order))
+
+	local current_pos
+	for i,cn in ipairs(self.column_order) do
+		if (cn == column_name) then
+			current_pos = i
+			break
+		end
+	end
+
+	if (current_pos ~= position) then
+		-- We must delete and reset numbering before we can insert the column at the intended position
+		self.column_order[current_pos] = nil
+		local tmp = {}
+		for _,cn in pairs(self.column_order) do
+			tmp[#tmp + 1] = cn
+		end
+		table.insert(tmp, position, column_name)
+
+		self.column_order = tmp
+	end
+
+	return self
+end}

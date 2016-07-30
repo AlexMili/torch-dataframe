@@ -26,6 +26,8 @@ Version: development
 * The statistics can now return dataframe that is also the default (allows nicer printing)
 * The add_column can now take a position argument and updates the schema + columns
 * The init-constructor for with a table argument now also accepts column_order argument
+* The column order can now be specified using the `pos_column_order` and manipulated
+  using `swap_column_order`.
 * The tostring now has a more advanced printing that aims at total table width
   instead of just making sure that certain columns didn't end up too wide.
   The previous Dataframe.print default arguments for printing have been moved to
