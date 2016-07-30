@@ -95,7 +95,7 @@ Batchframe.set_label_retriever = argcheck{
 <a name="Batchframe.set_label_retriever">
 ### Batchframe.set_label_retriever(@ARGP)
 
-Sets the self.batchframe_defaults.data to either a function for loading data or
+Sets the self.batchframe_defaults.label to either a function for loading labels or
 a set of columns that should be used in the to_tensor functions.
 
 @ARGT
@@ -154,6 +154,31 @@ Batchframe._reshape_label = argcheck{
 	end
 
 	return label
+end}
+
+
+Batchframe.set_label_shape = argcheck{
+	doc =  [[
+<a name="Batchframe.set_label_shape">
+### Batchframe.set_label_shape(@ARGP)
+
+Sets the self.batchframe_defaults.label_shape for transforming the data into
+requested format
+
+@ARGT
+
+_Return value_: self
+]],
+	{name="self", type="Batchframe"},
+	{name="label_shape", type="string", opt=true,
+	 doc=[[The shape in witch the labels should be provided. Some criterion require
+	 to subset the labels on the column and not the row, e.g. `nn.ParallelCriterion`,
+	 and thus the shape must be `NxM` or `NxMx1` for it to work as expected.]]},
+	call=function(self, label_shape)
+
+	self.batchframe_defaults.label_shape = label_shape
+
+	return self
 end}
 
 Batchframe.to_tensor  = argcheck{
