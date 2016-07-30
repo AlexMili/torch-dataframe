@@ -35,9 +35,9 @@ for f in *_spec.lua; do
 	echo "Running specs in $f";
 
 	if [ "$COVERAGE" = true ]; then
-		busted -v --coverage --exclude-tags=$exclude_tags $f;
+		busted -v --coverage --exclude-tags=$exclude_tags,skip_all $f;
 	else
-		busted -v --exclude-tags=$exclude_tags $f;
+		busted -v --exclude-tags=$exclude_tags,skip_all $f;
 	fi
 
 	fail=$?
