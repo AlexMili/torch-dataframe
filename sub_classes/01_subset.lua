@@ -240,19 +240,19 @@ _Return value_: Batchframe, boolean (if reset_sampler() should be called)
 
 	assert(isint(no_lines) and
 	       (no_lines > 0 or
-	      	no_lines == -1) and
-	      	no_lines <= self:size(1),
+	      	no_lines == -1),
 	       "The number of files to load has to be either -1 for all files or " ..
-	       " a positive integer less or equeal to the number of observations in that category " ..
-	       self:size(1) .. "." ..
+	       " a positive integer." ..
 	       " You provided " .. tostring(no_lines))
+
 
 	if (not class_args) then
 		class_args = Df_Tbl(self.batch_args)
 	end
 
 	local reset = false
-	if (no_lines == -1) then
+	if (no_lines == -1 or
+	    no_lines > self:size(1)) then
 		no_lines = self:size(1)
 		reset = true -- The sampler only triggers the reset after passing > 1 epoch
 	end
