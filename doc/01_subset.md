@@ -220,7 +220,10 @@ _Return value_: (1) a sampler function (2) a reset sampler function (inactive)
 ### Df_Subset.get_batch(self, no_lines[, class_args])
 
 Retrieves a batch of given size using the set sampler. If sampler needs resetting
-then the batch will be either smaller than the requested number or nil.
+then the second return statement will be `true`. Note that the last batch may be
+smaller than the requested number when using samplers that require resetting. Once
+you ave retrieved all available examples using one of the resetting samplers the
+returned batch will be `nil`.
 
 ```
 ({

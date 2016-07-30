@@ -83,8 +83,10 @@ _Return value_: (1) a sampler function (2) a reset sampler function
 
 	return function()
 		idx = idx + 1
-		if idx <= n then
+		if idx < n then
 			return self:get_column('indexes')[idx]
+		elseif (idx == n) then
+			return self:get_column('indexes')[idx], true
 		end
 	end, function()
 		idx = 0
@@ -113,8 +115,10 @@ _Return value_: (1) a sampler function (2) a reset sampler function
 
 	return function()
 		idx = idx + 1
-		if idx <= n then
+		if idx < n then
 			return indexes[idx]
+		elseif (idx == n) then
+			return indexes[idx], true
 		end
 	end, function()
 		idx = 0
@@ -189,15 +193,17 @@ _Return value_: (1) a sampler function (2) a reset sampler function
 
 	local n = self:size(1)
 	local p = self._get_new_permutation(n, p)
-	local i = 0
+	local idx = 0
 	return function()
-		i = i + 1
-		if i <= n then
-			return self:get_column('indexes')[p[i]]
+		idx = idx + 1
+		if idx < n then
+			return self:get_column('indexes')[p[idx]]
+		elseif (idx == n) then
+			return self:get_column('indexes')[p[idx]], true
 		end
 	end, function()
 		p = self._get_new_permutation(n, p)
-		i = 0
+		idx = 0
 	end
 end}
 
