@@ -89,12 +89,14 @@ on which `Df_ParallelIterator` relies.
 	local retrievers = self.dataset.batch_args
 	local upvalue_data_retr = retrievers.data
 	local upvalue_label_retr = retrievers.label
+	local upvalue_label_shape = retrievers.label_shape
 	local msd = "test"
 	self.dataset.batch_args = nil
 
 	local function data_copy()
 		gdata_retr = upvalue_data_retr
 		glabel_retr = upvalue_label_retr
+		glabel_shape = upvalue_label_shape
 	end
 
 	-- The sharing allows shared access to tds/tensors
@@ -140,6 +142,7 @@ on which `Df_ParallelIterator` relies.
 							local batch = torch.deserialize(serialized_batch)
 							batch:set_data_retriever(gdata_retr)
 								:set_label_retriever(glabel_retr)
+								:set_label_shape(glabel_shape)
 
 							batch = transform(batch)
 
