@@ -46,7 +46,7 @@ describe([[
 			end
 			seq_err = torch.Tensor(seq_err):mean()
 
-			assert.is_true(math.abs(seq_err - total_err) < 10^-6)
+			assert.near(seq_err, total_err, 10^-6, "Errors are not identical when running alone or in batch")
 		end)
 
 		it("A a tensor input and a #linear_regression", function()
@@ -80,7 +80,7 @@ describe([[
 			end
 			seq_err = torch.Tensor(seq_err):mean()
 
-			assert.is_true(math.abs(seq_err - total_err) < 10^-6)
+			assert.near(seq_err, total_err, 10^-6, "Errors are not identical when running alone or in batch")
 		end)
 	end)
 
@@ -140,7 +140,7 @@ describe([[
 			end
 			seq_err = torch.Tensor(seq_err):mean()
 
-			assert.is_true(math.abs(seq_err - total_err) < 10^-6)
+			assert.near(seq_err, total_err, 10^-6, "Errors are not identical when running alone or in batch")
 		end)
 
 		it("Classification targets #multclss", function()
@@ -206,7 +206,7 @@ describe([[
 			end
 			seq_err = torch.Tensor(seq_err):mean()
 
-			assert.is_true(math.abs(seq_err - total_err) < 10^-6)
+			assert.near(seq_err, total_err, 10^-6, "Errors are not identical when running alone or in batch")
 		end)
 	end)
 end)
