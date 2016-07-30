@@ -132,13 +132,15 @@ describe([[The #ordered sampler should call each element in a linear fashion and
 end)
 
 describe([[The permutation sampler should permute the results but otherwise works
-  similar to the linear with a requirement of calling the reset at the end of an
-	epoch]],
+similar to the linear with a requirement of calling the reset at the end of an
+epoch.
+]],
 	function()
 	local df = dataLoader(	)
 	it([[Permutation sampler with permutation using single label should
-	return a different permutation every time but the content should be the
-	same after sorting.]],
+return a different permutation every time but the content should be the
+same after sorting.
+]],
 	function()
 		df:create_subsets(Df_Dict({core = 1}),
 		                  Df_Dict({core = 'permutation'}))

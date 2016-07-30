@@ -128,7 +128,7 @@ describe("Loading dataframe and creaing adequate subsets", function()
 	end)
 end)
 
-describe("Test if we can get a batch with data and labels",function()
+describe("Test if we can get a batch with data and labels.",function()
 	describe("Basic batch retrieving and resetting", function()
 		local fake_loader = function(row) return torch.Tensor({1, 2}) end
 		local a = Dataframe("./data/realistic_29_row_data.csv")
@@ -173,6 +173,157 @@ describe("Test if we can get a batch with data and labels",function()
 
 			assert.are.equal(batch:size(1), a["/train"]:size(1))
 			assert.is_true(reset)
+		end)
+	end)
+
+	describe("Some of the samplers should give a reset indicator even if we haven't drawn n+1 examples.",
+	function()
+		a = Dataframe(Df_Dict{idx = {1,2,3,4}})
+		it("linear", function()
+			a:create_subsets{
+				subsets = Df_Dict{core=1},
+				sampler = "linear"
+			}
+			local batch, reset  = a["/core"]:get_batch(2)
+			assert.is_falsy(reset)
+			assert.same(batch:size(1), 2)
+
+			batch, reset = a["/core"]:get_batch(2)
+			assert.is_true(reset)
+			assert.same(batch:size(1), 2)
+
+			batch, reset = a["/core"]:get_batch(2)
+			assert.same(batch, nil)
+			assert.is_true(reset)
+		end)
+
+		it("permutation", function()
+			a:create_subsets{
+				subsets = Df_Dict{core=1},
+				sampler = "permutation"
+			}
+			local batch, reset  = a["/core"]:get_batch(2)
+			assert.is_falsy(reset)
+			assert.same(batch:size(1), 2)
+
+			batch, reset = a["/core"]:get_batch(2)
+			assert.is_true(reset)
+			assert.same(batch:size(1), 2)
+
+			batch, reset = a["/core"]:get_batch(2)
+			assert.same(batch, nil)
+			assert.is_true(reset)
+		end)
+
+		it("ordered", function()
+			a:create_subsets{
+				subsets = Df_Dict{core=1},
+				sampler = "ordered"
+			}
+			local batch, reset  = a["/core"]:get_batch(2)
+			assert.is_falsy(reset)
+			assert.same(batch:size(1), 2)
+
+			batch, reset = a["/core"]:get_batch(2)
+			assert.is_true(reset)
+			assert.same(batch:size(1), 2)
+
+			batch, reset = a["/core"]:get_batch(2)
+			assert.same(batch, nil)
+			assert.is_true(reset)
+		end)
+	end)
+
+	describe("Some of the samplers should never indicate that a reset is needed",
+	function()
+		a = Dataframe(Df_Dict{
+				idx = {1, 2, 3, 4},
+				label = {"A", "A", "B", "B"}
+		})
+
+		it("uniform", function()
+			a:create_subsets{
+				subsets = Df_Dict{core=1},
+				sampler = "uniform"
+			}
+			local batch, reset  = a["/core"]:get_batch(2)
+			assert.is_falsy(reset)
+			assert.same(batch:size(1), 2)
+
+			batch, reset = a["/core"]:get_batch(2)
+			assert.is_falsy(reset)
+			assert.same(batch:size(1), 2)
+
+			batch, reset = a["/core"]:get_batch(2)
+			assert.is_falsy(reset)
+			assert.same(batch:size(1), 2)
+		end)
+
+		it("label-uniform", function()
+			a:create_subsets{
+				subsets = Df_Dict{core=1},
+				sampler = "label-uniform",
+				label_column = "label"
+			}
+			local batch, reset  = a["/core"]:get_batch(2)
+			assert.is_falsy(reset)
+			assert.same(batch:size(1), 2)
+
+			batch, reset = a["/core"]:get_batch(2)
+			assert.is_falsy(reset)
+			assert.same(batch:size(1), 2)
+
+			batch, reset = a["/core"]:get_batch(2)
+			assert.is_falsy(reset)
+			assert.same(batch:size(1), 2)
+		end)
+
+		it("label-distribution", function()
+			a:create_subsets{
+				subsets = Df_Dict{core=1},
+				sampler = "label-distribution",
+				label_column = "label",
+				sampler_args = Df_Tbl{
+					core =
+					Df_Dict{
+						distribution = Df_Dict{
+							A=.5,
+							B=.5
+						}
+					}
+				}
+			}
+			local batch, reset  = a["/core"]:get_batch(2)
+			assert.is_falsy(reset)
+			assert.same(batch:size(1), 2)
+
+			batch, reset = a["/core"]:get_batch(2)
+			assert.is_falsy(reset)
+			assert.same(batch:size(1), 2)
+
+			batch, reset = a["/core"]:get_batch(2)
+			assert.is_falsy(reset)
+			assert.same(batch:size(1), 2)
+		end)
+
+		it("label-permutation", function()
+			a:create_subsets{
+				subsets = Df_Dict{core=1},
+				sampler = "label-permutation",
+				label_column = "label"
+			}
+
+			local batch, reset  = a["/core"]:get_batch(2)
+			assert.is_falsy(reset)
+			assert.same(batch:size(1), 2)
+
+			batch, reset = a["/core"]:get_batch(2)
+			assert.is_falsy(reset)
+			assert.same(batch:size(1), 2)
+
+			batch, reset = a["/core"]:get_batch(2)
+			assert.is_falsy(reset)
+			assert.same(batch:size(1), 2)
 		end)
 	end)
 

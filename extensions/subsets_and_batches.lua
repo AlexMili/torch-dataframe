@@ -129,7 +129,14 @@ Dataframe.create_subsets = argcheck{
 	 doc=[[Arguments needed for some of the samplers - currently only used by
 	 the label-distribution sampler that needs the distribution. Note that
 	 you need to have a somewhat complex table:
-	 `Df_Tbl({train = Df_Dict({distribution = Df_Dict({A = 2, B=10})})})`.]],
+	 `Df_Tbl{
+		 	train = Df_Dict{
+				distribution = Df_Dict{
+					A = 2,
+					B=10
+				}
+			}
+		}`.]],
 	 opt=true},
 	{name="data_retriever", type="function|Df_Array", opt=true,
 	 doc="The default data_retriever loading procedure/columns for the `Batchframe`"},

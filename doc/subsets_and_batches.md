@@ -72,7 +72,14 @@ _Return value_: self
   [sampler_args    = Df_Tbl]             -- Arguments needed for some of the samplers - currently only used by
 	 the label-distribution sampler that needs the distribution. Note that
 	 you need to have a somewhat complex table:
-	 `Df_Tbl({train = Df_Dict({distribution = Df_Dict({A = 2, B=10})})})`.
+	 `Df_Tbl{
+		 	train = Df_Dict{
+				distribution = Df_Dict{
+					A = 2,
+					B=10
+				}
+			}
+		}`.
   [data_retriever  = function|Df_Array]  -- The default data_retriever loading procedure/columns for the `Batchframe`
   [label_retriever = function|Df_Array]  -- The default label_retriever loading procedure/columns for the `Batchframe`
   [class_args      = Df_Tbl]             -- Arguments to be passed to the class initializer

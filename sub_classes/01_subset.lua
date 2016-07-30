@@ -226,7 +226,10 @@ subset.get_batch = argcheck{
 ### Df_Subset.get_batch(@ARGP)
 
 Retrieves a batch of given size using the set sampler. If sampler needs resetting
-then the batch will be either smaller than the requested number or nil.
+then the second return statement will be `true`. Note that the last batch may be
+smaller than the requested number when using samplers that require resetting. Once
+you ave retrieved all available examples using one of the resetting samplers the
+returned batch will be `nil`.
 
 @ARGT
 
@@ -259,15 +262,21 @@ _Return value_: Batchframe, boolean (if reset_sampler() should be called)
 
 	local indexes = {}
 	for i=1,no_lines do
-		local idx = self.sampler()
+		local idx
+		idx, reset = self.sampler()
+
 		if (idx == nil) then
 			reset = true
 			break
 		end
 		table.insert(indexes, idx)
+
+		if (reset) then
+			break;
+		end
 	end
 
-	if (#indexes == nil) then
+	if (#indexes == 0) then
 		return nil, reset
 	end
 
