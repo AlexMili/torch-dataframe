@@ -205,8 +205,8 @@ a trailing `x1`:
 
 1. `MxN`: First dimension is the row and the second dimension the column
 2. `NxM`: First dimension is the column and the second dimension the row
-3. `MxNx1`: Same as 1. but with the addition of a trailin dimension
-3. `NxMx1`: Same as 2. but with the addition of a trailin dimension
+3. `MxNx1`: Same as 1. but with the addition of a trailing dimension
+3. `NxMx1`: Same as 2. but with the addition of a trailing dimension
 
 _Return value_: data (tensor), label (tensor), column names (lua table)
 
