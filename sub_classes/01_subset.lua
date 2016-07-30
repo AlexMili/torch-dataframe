@@ -501,4 +501,30 @@ _Return value_: self
 	return self
 end}
 
+subset.set_label_shape = argcheck{
+	doc =  [[
+<a name="Df_Subset.set_label_shape">
+### Df_Subset.set_label_shape(@ARGP)
+
+Sets the self.batch_args.label_shape for transforming the data into
+requested format
+
+@ARGT
+
+_Return value_: self
+]],
+	{name="self", type="Df_Subset"},
+	{name="label_shape", type="string", opt=true,
+	 doc=[[The shape in witch the labels should be provided. Some criterion require
+	 to subset the labels on the column and not the row, e.g. `nn.ParallelCriterion`,
+	 and thus the shape must be `NxM` or `NxMx1` for it to work as expected.]]},
+	call=function(self, label_shape)
+
+	if (not self.batch_args) then
+		self.batch_args = {}
+	end
+	self.batch_args.label_shape = label_shape
+
+	return self
+end}
 return subset

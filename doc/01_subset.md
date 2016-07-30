@@ -355,3 +355,19 @@ a set of columns that should be used in the to_tensor functions.
 ```
 
 _Return value_: self
+<a name="Df_Subset.set_label_shape">
+### Df_Subset.set_label_shape(self[, label_shape])
+
+Sets the self.batch_args.label_shape for transforming the data into
+requested format
+
+```
+({
+   self        = Df_Subset  -- 
+  [label_shape = string]    -- The shape in witch the labels should be provided. Some criterion require
+	 to subset the labels on the column and not the row, e.g. `nn.ParallelCriterion`,
+	 and thus the shape must be `NxM` or `NxMx1` for it to work as expected.
+})
+```
+
+_Return value_: self
