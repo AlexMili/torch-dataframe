@@ -67,32 +67,7 @@ _Return value_: self
 
 ]],
   {name='self', type='Dataframe'},
-	{name="data_retriever", type="function|Df_Array", opt=true,
-	 doc="The default data_retriever loading procedure/columns for the `Batchframe`"},
-	{name="label_retriever", type="function|Df_Array", opt=true,
-	 doc="The default label_retriever loading procedure/columns for the `Batchframe`"},
-	{name='class_args', type='Df_Tbl', opt=true,
-	 doc='Arguments to be passed to the class initializer'},
-	call=function(self, data_retriever, label_retriever, class_args	)
-	-- Add default subsets
-	local subsets = Df_Dict({['train'] = 0.7, ['validate'] = 0.2, ['test'] = 0.1})
-
-	return self:create_subsets{
-		subsets = subsets,
-		data_retriever = data_retriever,
-		label_retriever = label_retriever,
-		class_args = class_args}
-end}
-
-Dataframe.create_subsets = argcheck{
-	doc = [[
-
-@ARGT
-
-]],
-	overload=Dataframe.create_subsets,
-  {name='self', type='Dataframe'},
-	{name='subsets', type='Df_Dict',
+	{name='subsets', type='Df_Dict', opt=true,
 	 doc="The default data subsets"},
 	{name="data_retriever", type="function|Df_Array", opt=true,
 	 doc="The default data_retriever loading procedure/columns for the `Batchframe`"},
@@ -101,7 +76,13 @@ Dataframe.create_subsets = argcheck{
 	{name='class_args', type='Df_Tbl', opt=true,
 	 doc='Arguments to be passed to the class initializer'},
 	call=function(self, subsets, data_retriever, label_retriever, class_args)
-	subsets = subsets.data
+	if (subsets) then
+		subsets = subsets.data
+	else
+		-- Add default subsets
+		subsets = {['train'] = 0.7, ['validate'] = 0.2, ['test'] = 0.1}
+	end
+
 
 	-- Add default samplers
 	local samplers = {}

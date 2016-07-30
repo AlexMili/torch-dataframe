@@ -13,7 +13,7 @@ for the sampler is hidden inside the samplers local environement and the main th
 has no way of knowing that you've sampled the next 30 cases in the data in a subthread.
 
 <a name="Dataframe.create_subsets">
-### Dataframe.create_subsets(self[, data_retriever][, label_retriever][, class_args])
+### Dataframe.create_subsets(self[, subsets][, data_retriever][, label_retriever][, class_args])
 
 Initializes the metadata needed for batch loading:
 
@@ -55,17 +55,7 @@ _Return value_: self
 ```
 ({
    self            = Dataframe           -- 
-  [data_retriever  = function|Df_Array]  -- The default data_retriever loading procedure/columns for the `Batchframe`
-  [label_retriever = function|Df_Array]  -- The default label_retriever loading procedure/columns for the `Batchframe`
-  [class_args      = Df_Tbl]             -- Arguments to be passed to the class initializer
-})
-```
-
-
-```
-({
-   self            = Dataframe           -- 
-   subsets         = Df_Dict             -- The default data subsets
+  [subsets         = Df_Dict]            -- The default data subsets
   [data_retriever  = function|Df_Array]  -- The default data_retriever loading procedure/columns for the `Batchframe`
   [label_retriever = function|Df_Array]  -- The default label_retriever loading procedure/columns for the `Batchframe`
   [class_args      = Df_Tbl]             -- Arguments to be passed to the class initializer
