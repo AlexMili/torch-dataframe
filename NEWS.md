@@ -12,6 +12,8 @@ Version: development
 * Added compatibility with the *torchnet* infrastructure via inheritance and a custom
   iterator that allows utilizing the internal permutation logistic (issue #24)
 * The Batchframe can now have default data/load options allowing a simpler `to_tensor` call
+* The Batchframe now supports common transformations that may be required for the label
+  via the `label_shape`. See the ntwrk_implementation_spec file that contains basic examples.
 * Added so that `__init` parameters can be passed along the subset line primary for
   allowing default Batchframe load/data arguments
 * Insert now takes an index argument allowing insertion of rows. Backward compatibility retained.
