@@ -305,8 +305,8 @@ end
 
 paths.get_sorted_files  = argcheck{
 	doc=[[
-<a name="table.get_sorted_lua_files">
-### table.get_sorted_lua_files(@ARGP)
+<a name="paths.get_sorted_lua_files">
+### paths.get_sorted_lua_files(@ARGP)
 
 Calls the `paths.files()` with the directory and sorts the files according to
 name.
