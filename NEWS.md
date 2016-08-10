@@ -1,7 +1,7 @@
 News file for torch-dataframe
 =============================
 
-Version: development
+Version: 1.5
 --------------------
 * Added new subset and batch loading functionality (issue #22)
 * Added metatable functionality (issue #18)
