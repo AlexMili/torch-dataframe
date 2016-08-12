@@ -1,8 +1,8 @@
 package = "torch-dataframe"
 version = "scm-1"
 source = {
-		url = "https://github.com/alexmili/torch-dataframe/archive/master.tar.gz",
-		dir = "torch-dataframe-master"
+		url = "https://github.com/alexmili/torch-dataframe/archive/develop.tar.gz",
+		dir = "torch-dataframe-develop"
 }
 description = {
 		summary = "A Dataframe class for Torch",
