@@ -33,13 +33,35 @@ _Return value_: self
 	-- Remove previous data
 	self:_clean()
 
-	self.column_order,self.dataset =
-		csvigo.load{path = path,
+	local data_iterator = csvigo.load{path = path,
 		            header = header,
 		            separator = separator,
 		            skip = skip,
 		            verbose = verbose,
-		            column_order = true}
+		            column_order = true,
+		            mode = "large"}
+
+	local first_data_row = 2
+	if (header) then
+		self.column_order = data_iterator[1]
+	else
+		first_data_row = 1
+		self.column_order = {}
+		for i in 1,len(data_iterator[1]) do
+			self.column_order[i] = "Column no. " .. i
+		end
+	end
+
+	local column_types = {}
+	local rows_2_check = math.min(1000, #data_iterator)
+	for i in 1,rows_2_check do
+		local row = data_iterator[i]
+		for col_no in 1,len(row) do
+			if (column_types[col_no] ~= "string") then
+				if (column_types[col_no] ~= "boolean") then
+					if (tonumber())
+		end
+	end
 	self:_clean_columns()
 	self.column_order = trim_table_strings(self.column_order)
 	self:_refresh_metadata()
