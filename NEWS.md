@@ -1,6 +1,10 @@
 News file for torch-dataframe
 =============================
 
+Version: development
+--------------------
+* Generalized the argcheck by adding string.split for `|` separated arguments
+
 Version: 1.5
 --------------------
 * Added new subset and batch loading functionality (issue #22)
