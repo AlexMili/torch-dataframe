@@ -23,6 +23,7 @@ dependencies = {
 		"paths",
 		"torchnet >= 1.0",
 		"threads >= 1.0",
+		"tds",
 		"nn"
 }
 build = {

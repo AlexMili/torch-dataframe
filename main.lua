@@ -140,59 +140,101 @@ end}
 -- Internal function to detect columns types
 Dataframe._infer_schema = argcheck{
 	{name="self", type="Dataframe"},
-	{name="max_rows", type="number", doc="The maximum number of rows to traverse", default=1e3},
-	call=function(self, max_rows)
-	local rows_to_explore = math.min(max_rows, self.n_rows)
+	{name="iterator", type="csvigo|table",
+	 doc="Data iterator where [i] returns the i:th row. If omitted it defaults to the self.dataset", 
+	 opt=true},
+	{name="rows2explore", type="number",
+	 doc="The maximum number of rows to traverse", default=1e3},
+	{name="first_data_row", type="number",
+	 doc="The first number in the iterator to use (i.e. skip header == 2)",
+	 default=1},
+	call=function(self, iterator, rows2explore, first_data_row)
+	if (iterator == nil) then
+		rows2explore = math.min(rows2explore, self.n_rows)
 
-	local is_empty = function(val)
-		return val == nil or
-			val == '' or
-			isnan(val)
+		assert(self.dataset, "No dataset available")
+		iterator = self.dataset
+		setmetatable(iterator, {__index = function(tbl, idx)
+			local ret = {}
+			for key,val in pairs(tbl) do
+				ret[key] = val[idx]
+			end
+			return ret
+		end})
+	elseif(torch.type(iterator) == "csvigo") then
+		rows2explore = math.min(rows2explore, #iterator)
+	else
+		local collength = nil
+		for key,column in pairs(iterator) do
+			if (collength ~= nil) then
+				assert(collength == #column,
+				("Column %s doesn't match the length of the other columns"):
+				format(key))
+			end
+			collength = #column
+		end
+		rows2explore = math.min(rows2explore, collength)
 	end
 
-	for _,key in pairs(self.columns) do
-		local is_a_numeric_column = true
-		self.schema[key] = 'string'
-		if (self:is_categorical(key)) then
-			self.schema[key] = 'number'
-		else
-			for i = 1, rows_to_explore do
-				-- If the current cell is not a number and not nil (in case of empty cell, type inference is not compromised)
-				local val = self.dataset[key][i]
-				if (tonumber(val) == nil and
-				    not is_empty(val)) then
-					is_a_numeric_column = false
-					break
-				end
-			end
-
-			if is_a_numeric_column then
-				self.schema[key] = 'number'
-				for i = 1, self.n_rows do
-					self.dataset[key][i] = tonumber(self.dataset[key][i])
-				end
-			else
-				local is_a_boolean_column = true
-				-- Check if we have a boolean column
-				for i = 1, rows_to_explore do
-					local val = self.dataset[key][i]
-					if (torch.type(val) ~= "boolean" and
-					    not is_empty(val)) then
-						is_a_boolean_column = false
-						break
-					end
-				end
-
-				if (is_a_boolean_column) then
-					self.schema[key] = 'boolean'
-					-- TODO: Should string boolean columns be converted to boolean values?
-				end
-
-			end
+	self.schema = {}
+	for i = first_data_row,rows2explore do
+		local row = iterator[i]
+		for cn,val in pairs(row) do
+			self.schema[cn] =
+				self._get_column_type{value = val,
+											 prev_value = self.schema[cn]}
 		end
 	end
 
 	return self
+end}
+
+Dataframe._get_column_type = argcheck{
+	{name="value", type="!table", doc="The value to type-check"},
+	{name="prev_value", type="string", doc="The previous value", opt=true},
+	call=function(value, prev_value)
+	if (value == "" or isnan(value) or value == nil) then
+		return prev_value
+	end
+
+	if (prev_value == "string") then
+		return "string"
+	elseif(type(value) == "string") then
+		if (prev_value == "boolean") then
+			if (type(value) == "string") then
+				value = value:lower()
+			end
+
+			if (value == "true" or
+			    value == "false" or
+			    type(value) == "boolean") then
+				return "boolean"
+			else
+				return "string"
+			end
+		else
+			nmbr = tonumber(value)
+			if (nmbr) then
+				if (prev_value ~= "double" and
+					nmbr == math.floor(nmbr)) then
+					return "integer"
+				else
+					return "double"
+				end
+			elseif (prev_value == "double" or prev_value == "integer") then
+				return "string"
+			else
+				value = value:lower()
+				if (value == "true" or
+				    value == "false") then
+					return "boolean"
+				else
+					return "string"
+				end
+			end
+		end
+	end
+	assert("You should never end up here in this function")
 end}
 
 --

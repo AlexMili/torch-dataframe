@@ -1,4 +1,6 @@
 require 'csvigo'
+tds = require 'tds'
+
 local params = {...}
 local Dataframe = params[1]
 
@@ -25,11 +27,12 @@ _Return value_: self
 	{name="self", type="Dataframe"},
 	{name="path", type="string", doc="path to file"},
 	{name="header", type="boolean", doc="if has header on first line", default=true},
-	{name="infer_schema", type="boolean", help="automatically detect column's type", default=true},
+	{name="schema", type="Df_Array", help="The column types if known",
+		default=Df_Array()},
 	{name="separator", type="string", help="separator (one character)", default=","},
 	{name="skip", type="number", help="skip this many lines at start of file", default=0},
 	{name="verbose", type="boolean", help="verbose load", default=false},
-	call=function(self, path, header, infer_schema, separator, skip, verbose)
+	call=function(self, path, header, schema, separator, skip, verbose)
 	-- Remove previous data
 	self:_clean()
 
@@ -52,16 +55,21 @@ _Return value_: self
 		end
 	end
 
-	local column_types = {}
-	local rows_2_check = math.min(1000, #data_iterator)
-	for i in 1,rows_2_check do
-		local row = data_iterator[i]
-		for col_no in 1,len(row) do
-			if (column_types[col_no] ~= "string") then
-				if (column_types[col_no] ~= "boolean") then
-					if (tonumber())
-		end
+	self.schema = schema.data
+	if (table.exact_length(self.schema) > 0) then
+		assert(table.exact_length(self.schema) ==
+		       table.exact_length(self.column_order),
+		       "The column types must be of the same length as the columns")
+	else
+		self._infer_schema{
+			iterator = data_iterator,
+			first_data_row = first_data_row
+		}
 	end
+
+	self.n_rows = #data_iterator - first_data_row + 1
+	self:_init_dataset(data_iterator, first_data_row)
+
 	self:_clean_columns()
 	self.column_order = trim_table_strings(self.column_order)
 	self:_refresh_metadata()
@@ -77,6 +85,47 @@ _Return value_: self
 
 	-- Change all missing values to nan
 	self:_fill_missing()
+
+	return self
+end}
+
+Dataframe._init_dataset = argcheck{
+	{name="self", type="Dataframe"},
+	{name="iterator", type="csvigo", doc="The csvigo iterator initiated with mode='large'"},
+	{name="first_data_row", type="number", doc="Which iterator row should we start at"},
+	call=function(self, iterator, first_data_row)
+	assert(self.n_rows ~= nil and self.n_rows > 0,
+	       "The self.n_rows hasn't been initialized")
+	assert(#self.schema > 0, "The schema hasn't been deduced yet")
+	assert(#self.column_order == #self.schema,
+	       ("The schema (%d entries) doesn't match the number of columns (%d)"):
+	       format(#self.column_order, #self.schema))
+
+	self.dataset = tds.Hash()
+	for i=1,#self.column_order do
+		local cn = self.column_order[i]
+		self.dataset[cn] = tds.Vec():resize(self.n_rows)
+	end
+
+	for row_no=first_data_row,#iterator do
+		local row = iterator[i]
+		for i=1,#self.column_order do
+			local cn = self.column_order[i]
+			local val = row[i]
+			if (val == "") then
+				val = 0/0
+			elseif(self.schema[i] == "boolean") then
+				if (val:lower() == "false") then
+					val = false
+				else
+					val = true
+				end
+			elseif(self.schema[i] ~= "string") then
+				val = tonumber(val)
+			end
+			self.dataset[cn][i] = val
+		end
+	end
 
 	return self
 end}
@@ -119,7 +168,7 @@ _Return value_: self
 			else
 				length = math.max(length, table.maxn(v))
 			end
-		else
+			else
 			length = math.max(1, length)
 		end
 	end
