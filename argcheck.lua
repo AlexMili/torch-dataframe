@@ -1,64 +1,26 @@
 local env = require 'argcheck.env' -- retrieve argcheck environement
 
 env.istype = function(obj, typename)
+	if (typename == "*") then
+		return true
+	end
+
 	local thtype = torch.type(obj)
 	-- Either a number or string
-	if (typename == "number|string") then
-		return thtype == "number" or
-			thtype == "string"
+	if (typename:match("|")) then
+		for _,subtype in ipairs(typename:split("|")) do
+			if ((thtype == subtype) or
+			    (thtype == "nan" and isnan(obj)) or
+			    (subtype:match("^Df_") and torch.isTypeOf(obj, subtype)))
+			then
+				return true
+			end
+		end
+		return false
 	end
 
-	-- Either a number or boolean
-	if (typename == "number|boolean") then
-		return thtype == "number" or
-			thtype == "boolean"
-	end
-
-	-- Either a boolean or string
-	if (typename == "string|boolean") then
-		return thtype == "boolean" or
-			thtype == "string"
-	end
-
-	if (typename == "number|string|boolean") then
-		return thtype == "boolean" or
-			thtype == "string" or
-			thtype == "number"
-	end
-
-	if (typename == "number|string|boolean|nan") then
-		return thtype == "boolean" or
-			thtype == "string" or
-			thtype == "number" or
-			isnan(obj)
-	end
-
-	if (typename == "number|boolean|nan") then
-		return thtype == "boolean" or
-			thtype == "number" or
-			isnan(obj)
-	end
-
-	if (typename == "Df_Array|boolean") then
-		return thtype == "boolean" or
-			thtype == "Df_Array"
-	end
-
-	if (typename == "function|Df_Array") then
-		return thtype == "function" or
-			thtype == "Df_Array"
-	end
-
-	-- Either a Df_Dict or boolean
-	if (typename == "Df_Dict|boolean") then
-		return thtype == "boolean" or
-			torch.isTypeOf(obj, "Df_Dict")
-	end
-
-	-- Either a Df_Dict or string
-	if (typename == "Df_Dict|string") then
-		return thtype == "string" or
-			torch.isTypeOf(obj, "Df_Dict")
+	if (typename == "!table" and thtype ~= "table") then
+		return true
 	end
 
 	-- From the original argcheck env

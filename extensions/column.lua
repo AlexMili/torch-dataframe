@@ -233,51 +233,28 @@ _Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	{name="column_name", type="string", doc="The column to add"},
-	call=function(self, column_name, default_value)
-	return self:add_column(column_name, -1, 0/0)
-end}
-
-Dataframe.add_column = argcheck{
-	doc = [[
-The default_value argument will fill the new column. If omitted will be 0/0
-
-@ARGT
-]],
-	{name="self", type="Dataframe"},
-	{name="column_name", type="string", doc="The column to add"},
-	{name="default_value", type="number|string|boolean", doc="The default_value"},
-	overload=Dataframe.add_column,
-	call=function(self, column_name, default_value)
-	return self:add_column(column_name, -1, default_value)
-end}
-
-Dataframe.add_column = argcheck{
-	doc = [[
-You can also specify the position of the new column by using the pos argument. When
-specifying the position you also must provide the default_value.
-
-@ARGT
-]],
-	{name="self", type="Dataframe"},
-	{name="column_name", type="string", doc="The column to add"},
-	{name="pos", type="number", doc="The position to input the column at, 1 == furthest to the left"},
-	{name="default_value", type="number|string|boolean", doc="The default_value"},
-	overload=Dataframe.add_column,
-	call=function(self, column_name, pos, default_value)
-	assert(isint(pos), "The pos should be an integer, you provided: " .. tostring(pos))
-
-	local default_values = {}
+	{name="pos", type="number",
+	 doc="The position to input the column at, 1 == furthest to the left",
+	 default=-1},
+	{name="default_value", type="number|string|boolean",
+	 doc="The initial value for the elements",
+	 default=0/0},
+	{name="type", type="string",
+	 doc="The type of column to add: integer, double, boolean or string",
+	 default="string"},
+	call=function(self, column_name, pos, default_value, type)
+	-- Using tds.Vec since torch.IntTensor and torch.ByteTensor don't allow for nan/nil values
+	local column = tds.Vec():resize(self.n_rows)
 	for i=1,self.n_rows do
-		table.insert(default_values, default_value)
+		default_values[i] = default_value
 	end
 
-	return self:add_column(column_name, pos, Df_Array(default_values))
+	return self:add_column(column_name, pos, default_values)
 end}
 
 Dataframe.add_column = argcheck{
 	doc = [[
-If you have a column with values to add then use the Df_Array together with
-default_value
+If you have a column with values to add then directly input a tds.Vec
 
 @ARGT
 
@@ -285,24 +262,28 @@ default_value
 	overload=Dataframe.add_column,
 	{name="self", type="Dataframe"},
 	{name="column_name", type="string", doc="The column to add"},
-	{name="pos", type="number", doc="The position to input the column at, 1 == furthest to the left", default=-1},
-	{name="default_values", type="Df_Array", doc="The default values"},
-	call=function(self, column_name, pos, default_values)
+	{name="pos", type="number",
+	 doc="The position to input the column at, 1 == furthest to the left",
+	 default=-1},
+	{name="column_data", type="tds.Vec", doc="The data to be stored in the column"},
+	call=function(self, column_name, pos, column_data)
 	assert(isint(pos), "The pos should be an integer, you provided: " .. tostring(pos))
+
 	self:assert_has_not_column(column_name)
-	default_values = default_values.data
 
 	if (self.n_rows == 0) then
-		return self:load_table(Df_Dict({[column_name] = default_values}))
+		return self:load_table(Df_Dict({[column_name] = column_data}))
 	end
 
-	assert(table.maxn(default_values) == self.n_rows,
+	assert(#column_data == self.n_rows,
 	       ('The number of default values (%s) don\'t match the number of rows in dataset %d'):
-				 format(table.maxn(default_values), self.n_rows))
+	        format(#column_data, self.n_rows))
 
-	self.dataset[column_name] = {}
-	for i = 1, self.n_rows do
-		val = default_values[i]
+	-- We copy the entire tds as there is otherwise a risk of accidental overwrite
+	--  by reference
+	self.dataset[column_name] = tds.Vec():resize(self.n_rows)
+	for i = 1,self.n_rows do
+		val = column_data[i]
 		if (val == nil) then
 			val = 0/0
 		end
