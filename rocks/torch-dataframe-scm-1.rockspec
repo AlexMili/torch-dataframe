@@ -49,10 +49,11 @@ build = {
 			["Dataframe.sub_classes.10_batchframe"] = 'sub_classes/10_batchframe.lua',
 			["Dataframe.sub_classes.subset_extensions.samplers"] = 'sub_classes/subset_extensions/samplers.lua',
 
-			["Dataframe.helper_classes.01_iterator"] = 'helper_classes/01_iterator.lua',
-			["Dataframe.helper_classes.02_paralleliterator"] = 'helper_classes/02_paralleliterator.lua',
-			["Dataframe.helper_classes.10_array"] = 'helper_classes/10_array.lua',
-			["Dataframe.helper_classes.11_dict"] = 'helper_classes/11_dict.lua',
-			["Dataframe.helper_classes.12_tbl"] = 'helper_classes/12_tbl.lua'
+			["Dataframe.helper_classes.01_dataseries"] = 'helper_classes/01_dataseries.lua',
+			["Dataframe.helper_classes.11_iterator"] = 'helper_classes/11_iterator.lua',
+			["Dataframe.helper_classes.12_paralleliterator"] = 'helper_classes/12_paralleliterator.lua',
+			["Dataframe.helper_classes.20_tbl"] = 'helper_classes/20_tbl.lua'
+			["Dataframe.helper_classes.21_dict"] = 'helper_classes/21_dict.lua',
+			["Dataframe.helper_classes.22_array"] = 'helper_classes/22_array.lua',
 	}
 }
