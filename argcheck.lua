@@ -5,26 +5,39 @@ env.istype = function(obj, typename)
 		return true
 	end
 
+	-- From the original argcheck env
+	local thname = torch.typename(obj) -- empty if non-torch class
 	local thtype = torch.type(obj)
-	-- Either a number or string
+
 	if (typename:match("|")) then
-		for _,subtype in ipairs(typename:split("|")) do
-			if ((thtype == subtype) or
-			    (thtype == "nan" and isnan(obj)) or
-			    (subtype:match("^Df_") and torch.isTypeOf(obj, subtype)))
-			then
-				return true
+		if (thname) then
+			-- Do a recursive search thrhough all the patterns for torch class objects
+			for _,subtype in ipairs(typename:split("|")) do
+				local ret = env.istype(obj, subtype)
+				if (ret) then
+					return true
+				end
 			end
+
+			return false
+		else
+			-- We only need to find basic variable match + nan values
+			for _,subtype in ipairs(typename:split("|")) do
+				if ((thtype == subtype) or
+					 (thtype == "nan" and isnan(obj)))
+				then
+					return true
+				end
+			end
+
+			return false
 		end
-		return false
 	end
 
 	if (typename == "!table" and thtype ~= "table") then
 		return true
 	end
 
-	-- From the original argcheck env
-	local thname = torch.typename(obj)
 	if thname then
 		-- __typename (see below) might be absent
 		local match = thname:match(typename)
