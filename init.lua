@@ -1,13 +1,13 @@
 local paths = require 'paths'
 local dataframe_path = paths.thisfile():gsub("init.lua$", "?.lua")
 
--- Make utils available to all
-local utils_file = string.gsub(dataframe_path,"?", "utils")
-assert(loadfile(utils_file))()
-
 -- Custom argument checks
 local argcheck_file = string.gsub(dataframe_path,"?", "argcheck")
 assert(loadfile(argcheck_file))()
+
+-- Make utils available to all
+local utils_file = string.gsub(dataframe_path,"?", "utils")
+assert(loadfile(utils_file))()
 
 -- Load all helper classes
 hlpr_clss_path = string.gsub(dataframe_path, "[^/]+$", "") .. "helper_classes/"
