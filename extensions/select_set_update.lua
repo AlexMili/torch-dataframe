@@ -387,8 +387,8 @@ Dataframe._update_single_row = argcheck{
 	{name="new_row", type="Df_Tbl"},
 	{name="old_row", type="Df_Tbl"},
 	call=function(self, index_row, new_row, old_row)
-	for i=1,#self.columns do
-		local key = self.columns[i]
+	for i=1,#self.column_order do
+		local key = self.column_order[i]
 		if (new_row.data[key] ~= old_row.data[key] or
 		    (isnan(new_row.data[key]) or
 		     isnan(old_row.data[key]))) then
@@ -426,7 +426,7 @@ _Return value_: Dataframe
 	column_data = self:get_column(column_name)
 	for i = 1, self.n_rows do
 		if column_data[i] == item_to_find then
-			for _,k in pairs(self.columns) do
+			for _,k in pairs(self.column_order) do
 				-- If the column shoul be updated then the user should have set the key
 				-- in the new_key table
 				if new_value[k] ~= nil then
@@ -463,8 +463,8 @@ _Return value_: Dataframe
 
 	new_values = new_values.data
 
-	for i=1,#self.columns do
-		local key = self.columns[i]
+	for i=1,#self.column_order do
+		local key = self.column_order[i]
 		if (new_values[key] ~= nil) then
 			if (self:is_categorical(key)) then
 				new_values[key] = self:_get_raw_cat_key(key, new_values[key])

@@ -72,7 +72,6 @@ _Return value_: self
 
 	self:_clean_columns()
 	self.column_order = trim_table_strings(self.column_order)
-	self:_refresh_metadata()
 
 	if infer_schema then
 		self:_infer_schema()
@@ -219,8 +218,6 @@ _Return value_: self
 		self.column_order = column_order
 	end
 
-	self:_refresh_metadata()
-
 	if infer_schema then
 		if (torch.type(infer_schema) == "Df_Dict") then
 			infer_schema = infer_schema.data
@@ -291,7 +288,7 @@ _Return value_: number of missing values (integer)
 	{name="self", type="Dataframe"},
 	call = function(self)
 	counter = 0
-	for index,col in pairs(self.columns) do
+	for index,col in pairs(self.column_order) do
 		for i = 1,self.n_rows do
 			if (self.dataset[col][i] == nil) then
 				counter = counter + 1
@@ -316,7 +313,7 @@ _Return value_: self
 	]],
 	{name="self", type="Dataframe"},
 	call = function(self)
-	for index,col in pairs(self.columns) do
+	for index,col in pairs(self.column_order) do
 		for i = 1,self.n_rows do
 			-- In CSV mode - only needed by number columns because the nil value
 			--  is due to tonumber() from _infer_schema()

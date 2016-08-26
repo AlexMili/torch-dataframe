@@ -193,7 +193,6 @@ _Return value_: self
 		self.dataset = temp_dataset
 		self.categorical[column_name] = nil
 		self.schema[column_name] = nil
-		self:_refresh_metadata() -- TODO: Merge column_order with columns
 	else
 		self:__init()
 	end
@@ -290,8 +289,6 @@ If you have a column with values to add then directly input a tds.Vec
 		self.dataset[column_name][i] = val
 	end
 
-	table.insert(self.columns, column_name)
-
 	-- Append column order
 	if (pos > 0 and pos <= self.n_rows) then
 		table.insert(self.column_order, pos, column_name)
@@ -300,7 +297,6 @@ If you have a column with values to add then directly input a tds.Vec
 	end
 
 	self:_infer_schema()
-	self:_refresh_metadata()
 
 	return self
 end}
@@ -463,7 +459,6 @@ _Return value_: self
 		end
 	end
 
-	self:_refresh_metadata()
 	self:_infer_schema()
 
 	return self

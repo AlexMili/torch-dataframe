@@ -27,7 +27,7 @@ _Return value_: A table with the row content
 	self:assert_is_index(index)
 
 	local row = {}
-	for _,key in pairs(self.columns) do
+	for _,key in pairs(self.column_order) do
 		if (self:is_categorical(key)) then
 			row[key] = self:to_categorical(self.dataset[key][index],
 			                               key)
@@ -68,7 +68,7 @@ _Return value_: self
 		                                add_new_columns = true,
 		                                add_old_columns = true}
 
-	for _, column_name in pairs(self.columns) do
+	for _, column_name in pairs(self.column_order) do
 		for j = index,(index + no_rows_2_insert - 1) do
 			value = rows[column_name][j-index + 1]
 			if (self:is_categorical(column_name) and
@@ -78,7 +78,6 @@ _Return value_: self
 			table.insert(self.dataset[column_name], j, value)
 		end
 	end
-	self:_refresh_metadata()
 	self:_infer_schema()
 
 	return self
@@ -150,14 +149,14 @@ Dataframe._check_and_prep_row_argmnt  = argcheck{
 						 " while previous columns had " .. no_rows_2_insert .. " rows")
 		end
 
-		if (not table.has_element(self.columns, k) and add_new_columns) then
+		if (not table.has_element(self.column_order, k) and add_new_columns) then
 			self:add_column(k)
 		end
 	end
 
 	if (add_old_columns) then
-		for i=1,#self.columns do
-			local k = self.columns[i]
+		for i=1,#self.column_order do
+			local k = self.column_order[i]
 			if (rows[k] == nil) then
 				local tmp = {}
 				for i=1,no_rows_2_insert do
@@ -200,7 +199,7 @@ _Return value_: self
 		                                add_new_columns = true,
 		                                add_old_columns = true}
 
-	for _, column_name in pairs(self.columns) do
+	for _, column_name in pairs(self.column_order) do
 		for j = 1,no_rows_2_insert do
 			value = rows[column_name][j]
 			if (self:is_categorical(column_name) and
@@ -211,7 +210,6 @@ _Return value_: self
 		end
 	end
 
-	self:_refresh_metadata()
 	self:_infer_schema()
 
 	return self
@@ -233,7 +231,6 @@ be the ones that are kept
 		self.dataset = clone(rows.dataset)
 		self.n_rows = rows.n_rows
 		self:_infer_schema()
-		self:_refresh_metadata()
 		rows:_copy_meta(self)
 		return self
 	end
@@ -290,12 +287,10 @@ _Return value_: self
 	call=function(self, index)
 	self:assert_is_index(index)
 
-	for i = 1,#self.columns do
-		table.remove(self.dataset[self.columns[i]],index)
+	for i = 1,#self.column_order do
+		table.remove(self.dataset[self.column_order[i]],index)
 	end
 	self.n_rows = self.n_rows - 1
-
-	self:_refresh_metadata()
 
 	return self
 end}
