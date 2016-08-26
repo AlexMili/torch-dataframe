@@ -77,6 +77,7 @@ The type can be:
 		assert(false, ("The type '%s' has not yet been implemented"):format(type))
 	end
 	self.missing = tds.Hash()
+	self._variable_type = type
 end}
 
 Dataseries.__init = argcheck{
@@ -130,6 +131,27 @@ Dataseries.__init = argcheck{
 	end
 end}
 
+Dataseries.copy = argcheck{
+	doc=[[
+<a name="Dataseries.copy">
+### Dataseries.copy(@ARGP)
+
+Creates a new Dataseries and with a copy/clone of the current data
+
+@ARGT
+
+_Return value_: Dataseries
+]],
+	{name="self", type="Dataseries"},
+	call=function(self)
+	local ret = Dataseries.new(#self, self:get_variable_type())
+	for i=1,#self do
+		ret:set(i, self:get(i))
+	end
+
+	return ret
+end}
+
 Dataseries.get = argcheck{
 	doc=[[
 <a name="Dataseries.get">
@@ -166,7 +188,7 @@ _Return value_:  Dataseries
 	overload=Dataseries.get,
 	call=function(self, index)
 	index = index.data
-	local ret = Dataseries.new(#index, self:type())
+	local ret = Dataseries.new(#index, self:get_variable_type())
 	for ret_idx,org_idx in ipairs(index) do
 		ret:set(ret_idx, self:get(org_idx))
 	end
@@ -201,7 +223,7 @@ _Return value_:  Dataseries
 
 	assert(start <= stop, "Start should not be larger than the stop")
 
-	local ret = Dataseries.new(stop - start + 1, self:type())
+	local ret = Dataseries.new(stop - start + 1, self:get_variable_type())
 	for idx = start,stop do
 		ret:set(idx + 1 - start, self:get(idx))
 	end
@@ -462,6 +484,12 @@ Dataseries.type = argcheck{
 	{name="self", type="Dataseries"},
 	call=function(self)
 	return torch.typename(self.data)
+end}
+
+Dataseries.get_variable_type = argcheck{
+	{name="self", type="Dataseries"},
+	call=function(self)
+	return self._variable_type
 end}
 
 Dataseries.fill = argcheck{
