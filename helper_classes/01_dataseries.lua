@@ -464,6 +464,29 @@ Dataseries.type = argcheck{
 	return torch.typename(self.data)
 end}
 
+Dataseries.fill = argcheck{
+	doc = [[
+<a name="Dataseries.fill">
+### Dataseries.fill(@ARGP)
+
+Fills all values with a default value
+
+@ARGT
+
+_Return value_: self
+]],
+	{name="self", type="Dataseries"},
+	{name="default_value", type="number|string|boolean",
+	 doc="The default value"},
+	call=function(self, default_value)
+
+	for i=1,self:size() do
+		self:set(i, default_value)
+	end
+
+	return self
+end}
+
 Dataseries.fill_na = argcheck{
 	doc = [[
 <a name="Dataseries.fill_na">
