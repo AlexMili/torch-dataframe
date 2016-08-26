@@ -1,5 +1,13 @@
 local env = require 'argcheck.env' -- retrieve argcheck environement
 
+-- From http://lua-users.org/wiki/SplitJoin
+function string:split(sep)
+	local sep, fields = sep or ":", {}
+	local pattern = string.format("([^%s]+)", sep)
+	self:gsub(pattern, function(c) fields[#fields+1] = c end)
+	return fields
+end
+
 env.istype = function(obj, typename)
 	if (typename == "*") then
 		return true
@@ -8,6 +16,9 @@ env.istype = function(obj, typename)
 	-- From the original argcheck env
 	local thname = torch.typename(obj) -- empty if non-torch class
 	local thtype = torch.type(obj)
+	if (typename == "!table" and thtype ~= "table") then
+		return true
+	end
 
 	if (typename:match("|")) then
 		if (thname) then
@@ -32,10 +43,6 @@ env.istype = function(obj, typename)
 
 			return false
 		end
-	end
-
-	if (typename == "!table" and thtype ~= "table") then
-		return true
 	end
 
 	if thname then

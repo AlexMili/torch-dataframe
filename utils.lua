@@ -44,7 +44,7 @@ _Return value_: string
 	{name="t", type="table", doc="The table with strings to trim"},
 	call = function(t)
 	for index,value in pairs(t) do
-		if(type(value) == 'string') then
+		if(thtype == 'string') then
 			t[index] = trim(value)
 		end
 	end
@@ -332,10 +332,82 @@ _Return value_: table with sorted file names
 	return files
 end}
 
--- From http://lua-users.org/wiki/SplitJoin
-function string:split(sep)
-	local sep, fields = sep or ":", {}
-	local pattern = string.format("([^%s]+)", sep)
-	self:gsub(pattern, function(c) fields[#fields+1] = c end)
-	return fields
-end
+get_variable_type = argcheck{
+	doc=[[
+<a name="get_variable_type">
+### get_variable_type(@ARGP)
+
+Checks the variable type for a string/numeric/boolean variable. Missing values
+`nan` or "" are ignored. If a previous value is provided then the new variable
+type will be in relation to the previous. I.e. if you provide an integer after
+previously seen a double then the type will still be double.
+
+@ARGT
+
+_Return value_: string of type: 'boolean', 'integer', 'double', or 'string'
+]],
+	{name="value", type="!table", doc="The value to type-check"},
+	{name="prev_type", type="string", doc="The previous value type", opt=true},
+	call=function(value, prev_type)
+	if (value == "" or isnan(value) or value == nil) then
+		return prev_type
+	end
+
+	local thtype = torch.type(value)
+
+	if (prev_type == "string") then
+		return "string"
+	elseif(thtype == "string") then
+		if (prev_type == "boolean") then
+			if (thtype == "string") then
+				value = value:lower()
+			end
+
+			if (value == "true" or
+			    value == "false" or
+			    thtype == "boolean") then
+				return "boolean"
+			else
+				return "string"
+			end
+		else
+			nmbr = tonumber(value)
+			if (nmbr) then
+				if (prev_type ~= "double" and
+					nmbr == math.floor(nmbr)) then
+					return "integer"
+				else
+					return "double"
+				end
+			elseif (prev_type == "double" or prev_type == "integer") then
+				return "string"
+			else
+				value = value:lower()
+				if (value == "true" or
+				    value == "false") then
+					return "boolean"
+				else
+					return "string"
+				end
+			end
+		end
+	elseif(thtype == "boolean") then
+		if (prev_type == nil or prev_type == "boolean") then
+			return "boolean"
+		else
+			return "string"
+		end
+	elseif(thtype == "number") then
+		if (prev_type == "double") then
+			return "double"
+		elseif (prev_type == "boolean") then
+			return "string"
+		elseif (isint(value)) then
+			return "integer"
+		else
+			return "double"
+		end
+	end
+
+	assert("You should never end up here...")
+end}
