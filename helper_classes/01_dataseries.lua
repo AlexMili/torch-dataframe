@@ -224,7 +224,7 @@ _Return value_: self
 	{name="index", type="number", doc="The index to set the value to"},
 	{name="value", type="*", doc="The data to set"},
 	call=function(self, index, value)
-	self:assert_is_index{index = index, extend = 1}
+	self:assert_is_index{index = index, plus_one = true}
 
 	if (index == self:size() + 1) then
 		return self:append(value)
@@ -321,7 +321,7 @@ _Return value_: self
 	{name="index", type="number", doc="The index to insert at"},
 	{name="value", type="!table", doc="The value to insert"},
 	call=function(self, index, value)
-	self:assert_is_index{index = index, extend = 1}
+	self:assert_is_index{index = index, plus_one = true}
 	if (index > self:size()) then
 		return self:append(value)
 	end
@@ -426,11 +426,25 @@ _Return value_: self
 ]],
 	{name="self", type="Dataseries"},
 	{name="index", type="number", doc="The index to check"},
-	{name="extend", type="number",
-	 doc="When doing inserts the value may extend +1", default=0},
-	call=function(self, index, extend)
-	assert(isint(index) and index > 0 and index <= self:size() + extend,
-	      "The index has to be a positive integer between o and " .. self:size() + extend)
+	{name = "plus_one", type = "boolean", default = false,
+	 doc= "When adding rows, an index of size(1) + 1 is OK"},
+	 call = function(self, index, plus_one)
+ 	if (plus_one) then
+ 		if (not isint(index) or
+ 				index < 0 or
+ 				index > self:size() + 1) then
+ 				assert(false, ("The index has to be an integer between 1 and %d - you've provided %s"):
+ 					format(self:size() + 1, index))
+ 		end
+ 	else
+ 		if (not isint(index) or
+ 				index < 0 or
+ 				index > self:size()) then
+ 				assert(false, ("The index has to be an integer between 1 and %d - you've provided %s"):
+ 					format(self:size(), index))
+ 		end
+ 	end
+
 	return self
 end}
 
