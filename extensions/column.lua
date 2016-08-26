@@ -3,6 +3,7 @@ local Dataframe = params[1]
 
 local argcheck = require "argcheck"
 local doc = require "argcheck.doc"
+local tds = require "tds"
 
 doc[[
 
@@ -170,16 +171,6 @@ _Return value_: self
 	self:assert_has_column(column_name)
 
 	self.dataset[column_name] = nil
-	temp_dataset = {}
-	-- Slightly crude method but can't get self.dataset == {} to works
-	--   and #self.dataset is always == 0
-	local empty = true
-	for k,v in pairs(self.dataset) do
-		if k ~= column_name then
-			temp_dataset[k] = v
-			empty = false
-		end
-	end
 
 	-- Drop the column from the column_order
 	local col_ordr = {}
@@ -191,8 +182,7 @@ _Return value_: self
 
 	self.column_order = col_ordr
 
-	if (not empty) then
-		self.dataset = temp_dataset
+	if (#self.dataset > 0) then
 		self.categorical[column_name] = nil
 		self.schema[column_name] = nil
 	else
@@ -244,13 +234,9 @@ _Return value_: self
 	 doc="The type of column to add: integer, double, boolean or string",
 	 default="string"},
 	call=function(self, column_name, pos, default_value, type)
-	-- Using tds.Vec since torch.IntTensor and torch.ByteTensor don't allow for nan/nil values
-	local column = tds.Vec():resize(self.n_rows)
-	for i=1,self.n_rows do
-		default_values[i] = default_value
-	end
+	local column_data = Dataseries(self.n_rows, type):fill(default_value)
 
-	return self:add_column(column_name, pos, default_values)
+	return self:add_column(column_name, pos, column_data)
 end}
 
 Dataframe.add_column = argcheck{
@@ -266,39 +252,32 @@ If you have a column with values to add then directly input a tds.Vec
 	{name="pos", type="number",
 	 doc="The position to input the column at, 1 == furthest to the left",
 	 default=-1},
-	{name="column_data", type="tds.Vec", doc="The data to be stored in the column"},
+	{name="column_data", type="Dataseries", doc="The data to be stored in the column"},
 	call=function(self, column_name, pos, column_data)
 	assert(isint(pos), "The pos should be an integer, you provided: " .. tostring(pos))
 
 	self:assert_has_not_column(column_name)
 
 	if (self.n_rows == 0) then
-		return self:load_table(Df_Dict({[column_name] = column_data}))
+		self.n_rows = #column_data
+	else
+		assert(#column_data == self.n_rows,
+		       ('The number of default values (%s) don\'t match the number of rows in dataset %d'):
+		       format(#column_data, self.n_rows))
 	end
-
-	assert(#column_data == self.n_rows,
-	       ('The number of default values (%s) don\'t match the number of rows in dataset %d'):
-	        format(#column_data, self.n_rows))
 
 	-- We copy the entire tds as there is otherwise a risk of accidental overwrite
 	--  by reference
-	self.dataset[column_name] = tds.Vec():resize(self.n_rows)
-	for i = 1,self.n_rows do
-		val = column_data[i]
-		if (val == nil) then
-			val = 0/0
-		end
-		self.dataset[column_name][i] = val
-	end
+	self.dataset[column_name] = column_data:copy()
 
-	-- Append column order
-	if (pos > 0 and pos <= self.n_rows) then
+	-- Insert/append column order
+	if (pos > 0 and pos <= #self.column_order) then
 		table.insert(self.column_order, pos, column_name)
 	else
 		table.insert(self.column_order, column_name)
 	end
 
-	self:_infer_schema()
+	self.schema[column_name] = column_data:get_variable_type()
 
 	return self
 end}
@@ -408,13 +387,12 @@ Dataframe.reset_column = argcheck{
 	overload=Dataframe.reset_column,
 	{name="self", type="Dataframe"},
 	{name='column_name', type='string', doc='The column requested'},
-	{name='new_value', type='number|string|boolean|nan', doc='New value to set', default=0/0},
+	{name='new_value', type='number|string|boolean|nan', doc='New value to set',
+	 default=0/0},
 	call=function(self, column_name, new_value)
 	self:assert_has_column(column_name)
 
-	for i = 1,self.n_rows do
-		self.dataset[column_name][i] = new_value
-	end
+	self.dataset[column_name]:fill(new_value)
 
 end}
 
@@ -439,17 +417,9 @@ _Return value_: self
 	       type(new_column_name) == "number",
 	       "The column name can only be a number or a string value, yours is: " .. type(new_column_name))
 
-	temp_dataset = {}
+	self.dataset[new_column_name] = self.dataset[old_column_name]
+	self.dataser[old_column_name] = nil
 
-	for k,v in pairs(self.dataset) do
-		if k ~= old_column_name then
-			temp_dataset[k] = v
-		else
-			temp_dataset[new_column_name] = v
-		end
-	end
-
-	self.dataset = temp_dataset
 	if (self:is_categorical(old_column_name)) then
 		self.categorical[new_column_name] = self.categorical[old_column_name]
 		self.categorical[old_column_name] = nil
@@ -461,8 +431,9 @@ _Return value_: self
 		end
 	end
 
-	self:_infer_schema()
-
+	self.schema[new_column_name] = self.schema[old_column_name]
+	self.schema[old_column_name] = nil
+	
 	return self
 end}
 
