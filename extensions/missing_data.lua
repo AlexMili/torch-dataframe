@@ -22,27 +22,15 @@ Count missing values in dataset
 _Return value_: Datafrmae or table containing missing values per column
 ]],
 	{name="self", type="Dataframe"},
-	{name='as_dataframe', type='boolean', default=true,
-	 doc="Return a dataframe"},
-	call=function(self, as_dataframe)
-
-	return self:count_na(Df_Array(self.column_order), as_dataframe)
-end}
-
-Dataframe.count_na = argcheck{
-	doc = [[
-You can manually choose the columns by providing a Df_Array
-
-@ARGT
-
-]],
-	overload=Dataframe.count_na,
-	{name="self", type="Dataframe"},
-	{name="columns", type="Df_Array", doc="The columns to count"},
+	{name="columns", type="Df_Array", doc="The columns to count", opt=true},
 	{name='as_dataframe', type='boolean', default=true,
 	 doc="Return a dataframe"},
 	call=function(self, columns, as_dataframe)
-	columns = columns.data
+	if (columns) then
+		columns = columns.data
+	else
+		columns = self.column_order
+	end
 
 	local ret = {}
 	for i=1,#columns do
@@ -73,16 +61,9 @@ _Return value_: single integer
 	{name="self", type="Dataframe"},
 	{name="column", type="string", doc="The column to count"},
 	call=function(self, column)
+	self:assert_has_column(column)
 
-	counter = 0
-	for i = 1, self.n_rows do
-		local val = self.dataset[column][i]
-		if val == nil or val == '' or isnan(val) then
-			counter = counter + 1
-		end
-	end
-
-	return counter
+	return self.dataset[column]:count_na()
 end}
 
 Dataframe.fill_na = argcheck{
@@ -107,12 +88,7 @@ _Return value_: self
 		self.categorical[column_name]["__nan__"] = default_value
 	end
 
-	for i = 1, self.n_rows do
-		local val = self.dataset[column_name][i]
-		if val == nil or isnan(val) then
-			self.dataset[column_name][i] = default_value
-		end
-	end
+	self.dataset[column_name]:fill_na(default_value)
 
 	return self
 end}
