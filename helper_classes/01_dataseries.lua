@@ -146,8 +146,7 @@ _Return value_: number
 	{name="self", type="Dataseries"},
 	{name="index", type="number", doc="The index to set the value to"},
 	call=function(self, index)
-	assert(isint(index) and index > 0 and index <= self:size() + 1,
-	      "The index has to be a positive integer within a valid range")
+	self:assert_is_index(index)
 
 	if (self.missing[index]) then
 		 return 0/0
@@ -191,16 +190,15 @@ _Return value_:  Dataseries
 	if (start == nil) then
 		start = 1
 	end
-	assert(start > 0 and start <= self:size(),
-	       "Start has to be a positive integer less or equal to the lenght of the series")
+	self:assert_is_index(start)
 
 	stop = index:gsub("[^:]*:", "")
 	stop = tonumber(stop)
 	if (stop == nil) then
 		stop = self:size()
 	end
-	assert(stop > 0 and stop <= self:size(),
-	       "Stop has to be a positive integer less or equal to the lenght of the series")
+	self:assert_is_index(stop)
+
 	assert(start <= stop, "Start should not be larger than the stop")
 
 	local ret = Dataseries.new(stop - start + 1, self:type())
@@ -226,8 +224,8 @@ _Return value_: self
 	{name="index", type="number", doc="The index to set the value to"},
 	{name="value", type="*", doc="The data to set"},
 	call=function(self, index, value)
-	assert(isint(index) and index > 0 and index <= self:size() + 1,
-	      "The index has to be a positive integer within a valid range")
+	self:assert_is_index{index = index, extend = 1}
+
 	if (index == self:size() + 1) then
 		return self:append(value)
 	end
@@ -264,6 +262,105 @@ _Return value_: self
 	return self:set(new_size, value)
 end}
 
+Dataseries.remove = argcheck{
+	doc=[[
+<a name="Dataseries.remove">
+### Dataseries.remove(@ARGP)
+
+Removes a single element
+
+@ARGT
+
+_Return value_: self
+]],
+	{name="self", type="Dataseries"},
+	{name="index", type="number", doc="The index to remove"},
+	call=function(self, index)
+	self:assert_is_index(index)
+
+	-- Update missing positions
+	self.missing[index] = nil
+	for i=(index + 1),self:size() do
+		if (self.missing[i]) then
+			self.missing[i - 1] = true
+			self.missing[i] = nil
+		end
+	end
+
+	if (self:type():match("^tds.Vec")) then
+		self.data:remove(index)
+	else
+		if (index == self:size()) then
+			self.data = self.data[{{1,index - 1}}]
+		elseif (index == 1) then
+			self.data = self.data[{{index + 1, self:size()}}]
+		else
+			self.data = torch.cat(
+				self.data[{{1,index - 1}}],
+				self.data[{{index + 1, self:size()}}],
+				1)
+		end
+	end
+
+
+	return self
+end}
+
+Dataseries.insert = argcheck{
+	doc=[[
+<a name="Dataseries.insert">
+### Dataseries.insert(@ARGP)
+
+Inserts a single element
+
+@ARGT
+
+_Return value_: self
+]],
+	{name="self", type="Dataseries"},
+	{name="index", type="number", doc="The index to insert at"},
+	{name="value", type="!table", doc="The value to insert"},
+	call=function(self, index, value)
+	self:assert_is_index{index = index, extend = 1}
+	if (index > self:size()) then
+		return self:append(value)
+	end
+
+	-- Shift the missing one step to the right
+	for i=0,(self:size() - index + 1) do
+		local pos = self:size() - i
+		if (self.missing[pos]) then
+			self.missing[pos + 1] = true
+			self.missing[pos] = nil
+		end
+	end
+
+	-- Insert an element that we later on can set with the value
+	if (self:type():match("^tds.Vec")) then
+		self.data:insert(index, 0)
+	else
+		sngl_elmnt = torch.Tensor(1):type(self:type()):fill(-1)
+
+		if (index == 1) then
+			self.data = torch.cat(sngl_elmnt, self.data, 1)
+		else
+			local tmp = torch.cat(
+				self.data[{{1,index-1}}],
+				sngl_elmnt,
+				1)
+
+			self.data = torch.cat(
+				tmp,
+				self.data[{{index, self:size()}}],
+				1)
+		end
+	end
+
+	self:set(index, value)
+
+	return self
+end}
+
 Dataseries.size = argcheck{
 	doc=[[
 <a name="Dataseries.size">
@@ -277,7 +374,7 @@ _Return value_: number
 ]],
 	{name="self", type="Dataseries"},
 	call=function(self)
-	if (self:isTensor()) then
+	if (self:is_tensor()) then
 		return self.data:size(1)
 	else
 		return #self.data
@@ -316,7 +413,28 @@ _Return value_: self
 	return self
 end}
 
-Dataseries.isTensor = argcheck{
+Dataseries.assert_is_index = argcheck{
+	doc=[[
+<a name="Dataseries.assert_is_index">
+### Dataseries.assert_is_index(@ARGP)
+
+Assertion that checks if index is an integer and within the span of the series
+
+@ARGT
+
+_Return value_: self
+]],
+	{name="self", type="Dataseries"},
+	{name="index", type="number", doc="The index to check"},
+	{name="extend", type="number",
+	 doc="When doing inserts the value may extend +1", default=0},
+	call=function(self, index, extend)
+	assert(isint(index) and index > 0 and index <= self:size() + extend,
+	      "The index has to be a positive integer between o and " .. self:size() + extend)
+	return self
+end}
+
+Dataseries.is_tensor = argcheck{
 	{name="self", type="Dataseries"},
 	call=function(self)
 	if (torch.type(self.data):match(("torch.*Tensor"))) then

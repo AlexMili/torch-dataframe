@@ -74,8 +74,8 @@ _Return value_: self
 			if (self:is_categorical(column_name) and
 			    not isnan(value)) then
 				vale = self:_get_raw_cat_key(column_name, value)
-			end -- TODO: Should we convert string columns with '' to nan?
-			table.insert(self.dataset[column_name], j, value)
+			end
+			self.dataset[column_name]:insert(j, value)
 		end
 	end
 	self:_infer_schema()
@@ -288,7 +288,7 @@ _Return value_: self
 	self:assert_is_index(index)
 
 	for i = 1,#self.column_order do
-		table.remove(self.dataset[self.column_order[i]],index)
+		self.dataset[self.column_order[i]]:remove(index)
 	end
 	self.n_rows = self.n_rows - 1
 

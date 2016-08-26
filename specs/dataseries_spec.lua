@@ -11,7 +11,7 @@ dofile('init.lua')
 -- Go into specs so that the loading of CSV:s is the same as always
 lfs.chdir("specs")
 
-describe("#Core Datseries functions", function()
+describe("#Core Dataseries functions", function()
 	describe("#Init", function()
 		it("create boolean Dataseries", function()
 			local ds = Dataseries{data = Df_Array(true, true, false)}
@@ -104,6 +104,135 @@ describe("#Core Datseries functions", function()
 			ds:set(3, 45)
 			assert.are.same(ds:get(3), 45)
 			assert.are.same(ds:type(), "torch.IntTensor")
+		end)
+	end)
+
+	describe("manipulation of elements", function()
+		it("remove elements for tds.Vec", function()
+			local ds = Dataseries{data = Df_Array(1,0/0,3,4,"5a")}
+			assert.are.same(ds:type(), "tds.Vec")
+			ds:remove(2)
+			assert.are.same(ds:size(), 4)
+			assert.are.same(ds:get(1), 1)
+			assert.are.same(ds:get(2), 3)
+			assert.are.same(ds:get(3), 4)
+			assert.are.same(ds:get(4), "5a")
+
+			ds:remove(1)
+			assert.are.same(ds:size(), 3)
+			assert.are.same(ds:get(1), 3)
+
+			ds:remove(ds:size())
+			assert.are.same(ds:size(), 2)
+			assert.are.same(ds:get(2), 4)
+		end)
+
+		it("remove elements for tds.IntTensor", function()
+			local ds = Dataseries{data = Df_Array(1,2,0/0,4,5)}
+			assert.are.same(ds:type(), "torch.IntTensor")
+			ds:remove(3)
+			assert.are.same(ds:size(), 4)
+			assert.are.same(ds:get(1), 1)
+			assert.are.same(ds:get(2), 2)
+			assert.are.same(ds:get(3), 4)
+			assert.are.same(ds:get(4), 5)
+
+			ds:remove(1)
+			assert.are.same(ds:size(), 3)
+			assert.are.same(ds:get(1), 2)
+
+			ds:remove(ds:size())
+			assert.are.same(ds:size(), 2)
+			assert.are.same(ds:get(2), 4)
+		end)
+
+		it("retain missing positions when removing elements", function()
+			local ds = Dataseries{data = Df_Array(0/0,1,0/0,2,0/0)}
+			assert.are.same(ds:type(), "torch.IntTensor")
+
+			ds:remove(3)
+			assert.are.same(ds:size(), 4)
+			assert.is_true(isnan(ds:get(1)))
+			assert.is_true(isnan(ds:get(ds:size())))
+			assert.are.same(ds:get(2), 1)
+			assert.are.same(ds:get(3), 2)
+
+			ds:remove(1)
+			assert.are.same(ds:size(), 3)
+			assert.is_true(isnan(ds:get(ds:size())))
+			assert.are.same(ds:get(1), 1)
+			assert.are.same(ds:get(2), 2)
+
+			ds:insert(2, 0/0)
+			assert.is_true(isnan(ds:get(2)))
+			assert.are.same(ds:get(3), 2)
+
+			ds:remove(1)
+			assert.are.same(ds:size(), 3)
+			assert.is_true(isnan(ds:get(1)))
+			assert.are.same(ds:get(2), 2)
+			assert.is_true(isnan(ds:get(ds:size())))
+		end)
+
+		it("insert elements for tds.Vec", function()
+			local ds = Dataseries{data = Df_Array(1,2,"3a",4,5)}
+			assert.are.same(ds:type(), "tds.Vec")
+
+			ds:insert(3, "test")
+			assert.are.same(ds:size(), 6)
+			assert.are.same(ds:get(2), 2)
+			assert.are.same(ds:get(3), "test")
+			assert.are.same(ds:get(4), "3a")
+
+			ds:insert(1, 0)
+			assert.are.same(ds:size(), 7)
+			assert.are.same(ds:get(1), 0)
+			assert.are.same(ds:get(2), 1)
+
+			ds:insert(ds:size(), 9999)
+			assert.are.same(ds:size(), 8)
+			assert.are.same(ds:get(ds:size()), 5)
+			assert.are.same(ds:get(ds:size() - 1), 9999)
+		end)
+
+		it("insert elements for tds.DoubleTensor", function()
+			local ds = Dataseries{data = Df_Array(1,2,3.1,4,5)}
+			assert.are.same(ds:type(), "torch.DoubleTensor")
+
+			ds:insert(3, 333)
+			assert.are.same(ds:size(), 6)
+			assert.are.same(ds:get(2), 2)
+			assert.are.same(ds:get(3), 333)
+			assert.are.same(ds:get(4), 3.1)
+
+			ds:insert(1, 0)
+			assert.are.same(ds:size(), 7)
+			assert.are.same(ds:get(1), 0)
+			assert.are.same(ds:get(2), 1)
+
+			ds:insert(ds:size(), 9999)
+			assert.are.same(ds:size(), 8)
+			assert.are.same(ds:get(ds:size()), 5)
+			assert.are.same(ds:get(ds:size() - 1), 9999)
+		end)
+
+		it("insert elements and retain the missing position", function()
+			local ds = Dataseries{data = Df_Array(0/0,1,0/0,2,0/0)}
+
+			ds:insert(3, 333)
+			assert.are.same(ds:get(2), 1)
+			assert.are.same(ds:get(3), 333)
+			assert.is_true(isnan(ds:get(4)))
+
+			ds:insert(1, 0)
+			assert.are.same(ds:size(), 7)
+			assert.is_true(isnan(ds:get(2)))
+			assert.are.same(ds:get(1), 0)
+
+			ds:insert(ds:size(), 9999)
+			assert.are.same(ds:size(), 8)
+			assert.is_true(isnan(ds:get(ds:size())))
+			assert.are.same(ds:get(ds:size() - 1), 9999)
 		end)
 	end)
 end)
