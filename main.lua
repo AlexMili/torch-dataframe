@@ -117,6 +117,8 @@ Dataframe._infer_schema = argcheck{
 
 		assert(self.dataset, "No dataset available")
 		iterator = self.dataset
+
+		-- Add metatable to simulate the bahavior of csvigo
 		setmetatable(iterator, {__index = function(tbl, idx)
 			local ret = {}
 			for key,val in pairs(tbl) do
@@ -124,8 +126,10 @@ Dataframe._infer_schema = argcheck{
 			end
 			return ret
 		end})
+
 	elseif(torch.type(iterator) == "csvigo") then
 		rows2explore = math.min(rows2explore, #iterator)
+
 	else
 		local collength = nil
 		for key,column in pairs(iterator) do
@@ -136,6 +140,7 @@ Dataframe._infer_schema = argcheck{
 			end
 			collength = #column
 		end
+
 		rows2explore = math.min(rows2explore, collength)
 	end
 
@@ -250,46 +255,51 @@ _Return value_: Dataframe
 		return
 	end
 
-	assert(self.subsets == nil, "The dataframe seems to be upgraded as it already has a subset property")
+	if (current_version < 1.5) then
+		assert(self.subsets == nil, "The dataframe seems to be upgraded as it already has a subset property")
 
-	if (self.batch == nil) then
-		print("No need to update batch info")
-	else
+		if (self.batch == nil) then
+			print("No need to update batch info")
+		else
+			-- Initiate the subsets
+			self:create_subsets(Df_Dict(self.batch.data_types))
+			self.batch.data_types = nil
 
-		-- Initiate the subsets
-		self:create_subsets(Df_Dict(self.batch.data_types))
-		self.batch.data_types = nil
+			-- Copy the old indexes into the subsets created
+			for sub_name,sub_keys in pairs(self.batch.datasets) do
+				-- Note, can't use drop/add since this breaks with __init call
+				self.subsets.sub_objs[sub_name].dataset["indexes"] = sub_keys
+				self.subsets.sub_objs[sub_name].nrows = #sub_keys
 
-		-- Copy the old indexes into the subsets created
-		for sub_name,sub_keys in pairs(self.batch.datasets) do
-			-- Note, can't use drop/add since this breaks with __init call
-			self.subsets.sub_objs[sub_name].dataset["indexes"] = sub_keys
-			self.subsets.sub_objs[sub_name].nrows = #sub_keys
+				if (self.batch.shuffle and
+						(sub_name ~= "test" and sub_name ~= "validate")) then
+					self.subsets.sub_objs[sub_name]:set_sampler("permutation")
+				else
+					self.subsets.sub_objs[sub_name]:set_sampler("linear")
+				end
 
-			if (self.batch.shuffle and
-					(sub_name ~= "test" and sub_name ~= "validate")) then
-				self.subsets.sub_objs[sub_name]:set_sampler("permutation")
-			else
-				self.subsets.sub_objs[sub_name]:set_sampler("linear")
 			end
+			self.batch = nil
 
+			print("Updated batch metadata")
 		end
-		self.batch = nil
 
-		print("Updated batch metadata")
+		if (type(self.print) == "table") then
+			-- Do silently as this is rather unimportant
+			self.tostring_defaults = self.print
+			self.tostring_defaults.max_col_width = nil
+
+			local str_defaults = self:_get_init_tostring_dflts()
+			for key, value in pairs(str_defaults) do
+				if (not self.tostring_defaults[key]) then
+					self.tostring_defaults[key] = value
+				end
+			end
+		end
 	end
 
-	if (type(self.print) == "table") then
-		-- Do silently as this is rather unimportant
-		self.tostring_defaults = self.print
-		self.tostring_defaults.max_col_width = nil
-
-		local str_defaults = self:_get_init_tostring_dflts()
-		for key, value in pairs(str_defaults) do
-			if (not self.tostring_defaults[key]) then
-				self.tostring_defaults[key] = value
-			end
-		end
+	if (current_version <= 1.6) then
+		assert(false, "The update to version 1.6 has not yet been implemented")
 	end
 
 	return self
