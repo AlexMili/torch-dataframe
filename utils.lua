@@ -106,6 +106,10 @@ table.exact_length = function(tbl)
 end
 
 function isint(n)
+	if (n == nil) then
+		return false
+	end
+	
 	if (torch.isTensor(n)) then
 		return torch.eq(n, torch.floor(n))
 	else

@@ -229,7 +229,7 @@ _Return value_: string
 	function get_output_row(i, columns2skip, widths)
 		local row = {}
 		if (i == 0) then
-			for _,k in pairs(self.columns) do
+			for _,k in pairs(self.column_order) do
 				row[k] = k
 			end
 		else

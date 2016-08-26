@@ -190,7 +190,6 @@ _Return value_: self
 		end
 		self.dataset[column_name] = data
 	end
-	self:_refresh_metadata()
 	self:_infer_schema()
 
 	return self

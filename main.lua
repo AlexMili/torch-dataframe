@@ -2,6 +2,7 @@
 require 'torch'
 
 local argcheck = require "argcheck"
+local tds = require "tds"
 local doc = require "argcheck.doc"
 
 -- Since torchnet also uses docs we need to escape them when recording the documentation
@@ -43,7 +44,7 @@ end}
 
 Dataframe.__init = argcheck{
 	doc =  [[
-Read in an csv-filef
+Read in an csv-file
 
 @ARGT
 
@@ -66,23 +67,18 @@ Directly input a table
 	overload=Dataframe.__init,
 	{name="self", type="Dataframe"},
 	{name="data", type="Df_Dict", doc="The data to read in"},
-	{name="column_order", type="Df_Array", default=false,
+	{name="column_order", type="Df_Array", opt=true,
 	 doc="The order of the column (has to be array and _not_ a dictionary)"},
 	call=function(self, data, column_order)
 	self:__init()
-	if (column_order) then
-		self:load_table{data=data, column_order=column_order}
-	else
-		self:load_table{data=data}
-	end
+	self:load_table{data=data, column_order=column_order}
 end}
 
 -- Private function for cleaning and reseting all data and meta data
 Dataframe._clean = argcheck{
 	{name="self", type="Dataframe"},
 	call=function(self)
-	self.dataset = {}
-	self.columns = {}
+	self.dataset = tds.Hash()
 	self.column_order = {}
 	self.n_rows = 0
 	self.categorical = {}
@@ -104,44 +100,11 @@ Dataframe._copy_meta = argcheck{
 	return to
 end}
 
--- Internal function to collect columns names
-Dataframe._refresh_metadata = argcheck{
-	{name="self", type="Dataframe"},
-	call=function(self)
-
-	local keyset={}
-	local rows = -1
-	for k,v in pairs(self.dataset) do
-		table.insert(keyset, k)
-
-		-- handle the case when there is only one value for the entire column
-		local no_rows_in_v = 1
-		if (type(v) == 'table') then
-			no_rows_in_v = table.maxn(v)
-		end
-
-		if (rows == -1) then
-			rows = no_rows_in_v
-		else
-		 	assert(rows == no_rows_in_v,
-			       "It seems that the number of elements in row " ..
-			       k .. " (# " .. no_rows_in_v .. ")" ..
-			       " don't match the number of elements in other rows #" .. rows)
-		 end
-	end
-
-
-	self.columns = keyset
-	self.n_rows = rows
-
-	return self
-end}
-
 -- Internal function to detect columns types
 Dataframe._infer_schema = argcheck{
 	{name="self", type="Dataframe"},
 	{name="iterator", type="csvigo|table",
-	 doc="Data iterator where [i] returns the i:th row. If omitted it defaults to the self.dataset", 
+	 doc="Data iterator where [i] returns the i:th row. If omitted it defaults to the self.dataset",
 	 opt=true},
 	{name="rows2explore", type="number",
 	 doc="The maximum number of rows to traverse", default=1e3},
@@ -181,60 +144,12 @@ Dataframe._infer_schema = argcheck{
 		local row = iterator[i]
 		for cn,val in pairs(row) do
 			self.schema[cn] =
-				self._get_column_type{value = val,
-											 prev_value = self.schema[cn]}
+				get_variable_type{value = val,
+				                  prev_value = self.schema[cn]}
 		end
 	end
 
 	return self
-end}
-
-Dataframe._get_column_type = argcheck{
-	{name="value", type="!table", doc="The value to type-check"},
-	{name="prev_value", type="string", doc="The previous value", opt=true},
-	call=function(value, prev_value)
-	if (value == "" or isnan(value) or value == nil) then
-		return prev_value
-	end
-
-	if (prev_value == "string") then
-		return "string"
-	elseif(type(value) == "string") then
-		if (prev_value == "boolean") then
-			if (type(value) == "string") then
-				value = value:lower()
-			end
-
-			if (value == "true" or
-			    value == "false" or
-			    type(value) == "boolean") then
-				return "boolean"
-			else
-				return "string"
-			end
-		else
-			nmbr = tonumber(value)
-			if (nmbr) then
-				if (prev_value ~= "double" and
-					nmbr == math.floor(nmbr)) then
-					return "integer"
-				else
-					return "double"
-				end
-			elseif (prev_value == "double" or prev_value == "integer") then
-				return "string"
-			else
-				value = value:lower()
-				if (value == "true" or
-				    value == "false") then
-					return "boolean"
-				else
-					return "string"
-				end
-			end
-		end
-	end
-	assert("You should never end up here in this function")
 end}
 
 --
@@ -257,7 +172,7 @@ _Return value_: table
 ]],
 	{name="self", type="Dataframe"},
 	call=function(self)
-	return {rows=self.n_rows,cols=#self.columns}
+	return {rows=self.n_rows,cols=#self.column_order}
 end}
 
 -- Internal function for getting raw value for a categorical variable
@@ -307,7 +222,7 @@ _Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	call=function(self)
-	self.__version = "1.5"
+	self.__version = "1.6"
 	return self
 end}
 

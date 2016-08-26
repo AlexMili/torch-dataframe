@@ -32,7 +32,7 @@ _Return value_: integer
 		return self.n_rows
 	end
 
-	return #self.columns
+	return #self.column_order
 end}
 
 doc =  [[
@@ -181,16 +181,16 @@ _Return value_: boolean
 	end
 
 	-- Check that columns match
-	for i=1,#self.columns do
-		if (not other:has_column(self.columns[i])) then
+	for i=1,#self.column_order do
+		if (not other:has_column(self.column_order[i])) then
 			return false
 		end
 	end
 
 	-- Check actual content (expensive why this is left to last)
-	for i=1,#self.columns do
-		local self_col = self:get_column(self.columns[i])
-		local other_col = other:get_column(self.columns[i])
+	for i=1,#self.column_order do
+		local self_col = self:get_column(self.column_order[i])
+		local other_col = other:get_column(self.column_order[i])
 
 		for i=1,self.n_rows do
 			-- one is nan and not the other

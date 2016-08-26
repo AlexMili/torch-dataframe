@@ -30,7 +30,7 @@ _Return value_: self (Dataframe)
 
 	-- Make sure that categorical columns are presented in the correct way
 	save_data = {}
-	for _,k in pairs(self.columns) do
+	for _,k in pairs(self.column_order) do
 		save_data[k] = self:get_column(k)
 	end
 
