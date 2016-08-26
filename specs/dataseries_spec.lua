@@ -153,3 +153,29 @@ describe("Metatable functions", function()
 		end)
 	end)
 end)
+
+
+describe("Missing data functions", function()
+	describe("The fill_na", function()
+		local ds = Dataseries(Df_Array(0/0,0/0,0/0))
+		it("A dataset with all missing should be of type tds.Vec", function()
+			assert.are.same(ds:type(), "tds.Vec")
+		end)
+
+		it("Fill should replace all values with new", function()
+			ds:fill_na(1)
+			for i=1,#ds do
+				assert.are.same(ds[i], 1)
+			end
+		end)
+
+		it("A should only replace missing values", function()
+			local ds = Dataseries(Df_Array(0/0,2,0/0))
+			ds:fill_na(0)
+			assert.are.same(ds:type(), "torch.IntTensor")
+			assert.are.same(ds:get(1), 0)
+			assert.are.same(ds:get(2), 2)
+			assert.are.same(ds:get(3), 0)
+		end)
+	end)
+end)

@@ -57,7 +57,7 @@ The type can be:
 ]],
 	{name="self", type="Dataseries"},
 	{name="size", type="number", doc="The size of the new series"},
-	{name="type", type="string", doc="The type of data storage to init."},
+	{name="type", type="string", doc="The type of data storage to init.", opt=true},
 	call=function(self, size, type)
 	assert(isint(size) and size >= 0, "Size has to be a positive integer")
 	parent_class.__init(self)
@@ -65,7 +65,10 @@ The type can be:
 		self.data = torch.IntTensor(size)
 	elseif (type == "double") then
 		self.data = torch.DoubleTensor(size)
-	elseif (type == "boolean" or type == "string" or type == "tds.Vec") then
+	elseif (type == "boolean" or
+	        type == "string" or
+	        type == "tds.Vec" or
+	        type == nil) then
 		self.data = tds.Vec()
 		self.data:resize(size)
 	elseif (type:match("torch.*Tensor")) then
@@ -327,6 +330,29 @@ Dataseries.type = argcheck{
 	{name="self", type="Dataseries"},
 	call=function(self)
 	return torch.typename(self.data)
+end}
+
+Dataseries.fill_na = argcheck{
+	doc = [[
+<a name="Dataseries.fill_na">
+### Dataseries.fill_na(@ARGP)
+
+Replace missing values with a specific value
+
+@ARGT
+
+_Return value_: self
+]],
+	{name="self", type="Dataseries"},
+	{name="default_value", type="number|string|boolean",
+	 doc="The default missing value", default=0},
+	call=function(self, default_value)
+
+	for pos,_ in pairs(self.missing) do
+		self:set(pos, default_value)
+	end
+
+	return self
 end}
 
 -- Metatable functions
