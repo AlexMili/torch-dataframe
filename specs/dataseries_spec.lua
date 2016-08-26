@@ -308,3 +308,23 @@ describe("Missing data functions", function()
 		end)
 	end)
 end)
+
+describe("Less important functions", function()
+	describe("The fill", function()
+		it("Fill a single element Dataseries", function()
+			local ds = Dataseries(Df_Array(1))
+			ds:fill(2)
+			assert.are.same(ds:get(1), 2)
+			assert.are.same(ds:size(), 1)
+		end)
+
+		it("Fill a multiple element Dataseries", function()
+			local ds = Dataseries(Df_Array(1,2,3,4,5))
+			ds:fill(99)
+			for i=1,ds:size() do
+				assert.are.same(ds:get(i), 99)
+			end
+			assert.are.same(ds:size(), 5)
+		end)
+	end)
+end)
