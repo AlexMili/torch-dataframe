@@ -26,7 +26,9 @@ _Return value_: boolean
 	call=function(self, column_name)
 	self:assert_has_column(column_name)
 
-	return self.schema[column_name] == "number"
+	return self.schema[column_name] == "boolean" or
+		self.schema[column_name] == "integer" or
+		self.schema[column_name] == "double"
 end}
 
 Dataframe.is_string = argcheck{
