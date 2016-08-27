@@ -109,8 +109,8 @@ _Return value_: self
 	{name="self", type="Dataframe"},
 	{name="default_value", type="number|string|boolean", doc="The default missing value", default=0},
 	call=function(self, default_value)
-	for i=1,#self.columns do
-		self:fill_na(self.columns[i], default_value)
+	for i=1,#self.column_order do
+		self:fill_na(self.column_order[i], default_value)
 	end
 
 	return self
