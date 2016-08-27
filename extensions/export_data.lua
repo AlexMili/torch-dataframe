@@ -31,9 +31,10 @@ _Return value_: self (Dataframe)
 	-- Make sure that categorical columns are presented in the correct way
 	save_data = {}
 	for _,k in pairs(self.column_order) do
-		save_data[k] = self:get_column(k)
+		save_data[k] = self:get_column(k):to_table()
 	end
 
+	-- TODO: The csvigo will have memory issues when used with regular tables
 	csvigo.save{path = path,
 	            data = save_data,
 	            separator = separator,
@@ -76,18 +77,44 @@ You can export selected columns using the columns argument:
 	columns = columns.data
 
 	-- Check data integrity
-	numeric_dataset = {}
+	local numeric_dataset = {}
+	local type = -1
+	local tensor_types = {
+		"ByteTensor" -- contains unsigned chars
+		,"CharTensor" -- contains signed chars
+		,"ShortTensor" -- contains shorts
+		,"IntTensor" -- contains ints
+		,"LongTensor" -- contains longs
+		,"FloatTensor" -- contains floats
+		,"DoubleTensor"
+	}
 	for _,k in pairs(columns) do
 		self:assert_has_column(k)
 		assert(self:is_numerical(k), "Column " .. tostring(k) .. " is not numerical")
-		numeric_dataset[k] =  self:get_column{column_name = k,
-		                                      as_tensor = true}
+		numeric_dataset[k] =  self:get_column(k):to_tensor()
+		local current_type = self:get_column(k):type()
+
+		for idx,tnsr_type in ipairs(tensor_types) do
+			if (current_type:match(tnsr_type)) then
+				current_type = idx
+				break
+			end
+		end
+		if (current_type > type) then
+			type = current_type
+		end
+	end
+
+	-- Convert all tensors to the same format before concat
+	type = ("torch.%s"):format(tensor_types[type])
+	for cn,col in pairs(numeric_dataset) do
+		numeric_dataset[cn] = numeric_dataset[cn]:type(type)
 	end
 
 	tensor_data = nil
-	count = 1
 	tensor_col_names = {}
 	for col_no = 1,#self.column_order do
+		-- Find the next column that is present in the numerics
 		found = false
 		column_name = self.column_order[col_no]
 		for k,v in pairs(numeric_dataset) do
@@ -97,6 +124,7 @@ You can export selected columns using the columns argument:
 			end
 		end
 
+		-- If column found we then concatenate that with our tensor_data
 		if (found) then
 			next_col =  numeric_dataset[column_name]
 			if (torch.isTensor(tensor_data)) then
@@ -104,7 +132,6 @@ You can export selected columns using the columns argument:
 			else
 				tensor_data = next_col
 			end
-			count = count + 1
 			table.insert(tensor_col_names, column_name)
 		end
 	end
