@@ -13,7 +13,7 @@ lfs.chdir("specs")
 
 describe("Loading data process", function()
 
-	describe("for CSV files",function()
+	describe("for #CSV files",function()
 		local df = Dataframe("./data/full.csv")
 
 		it("Loads the shape of the file",function()
@@ -21,15 +21,26 @@ describe("Loading data process", function()
 		end)
 
 		it("Loads integer-only columns in integer column",function()
-			assert.are.same(df:get_column('Col A'), {1, 2, 3, 4})
+			for idx, val in ipairs({1, 2, 3, 4}) do
+				assert.are.same(df:get_column('Col A'):get(idx), val)
+			end
 		end)
 
 		it("Loads float-only columns in float column",function()
-			assert.are.same(df:get_column('Col B'), {.2,.3,.4,.5})
+			for idx, val in ipairs({.2,.3,.4,.5}) do
+				assert.are.same(df:get_column('Col B'):get(idx), val)
+			end
 		end)
 
 		it("Loads string-only columns in string column",function()
-			assert.are.same(df:get_column('Col D'), {'A','B','','D'})
+			for idx, val in ipairs({'A','B',0/0,'D'}) do
+				local test_val = df:get_column('Col D'):get(idx)
+				if (isnan(val)) then
+					assert.is_true(isnan(test_val))
+				else
+					assert.are.same(test_val, val)
+				end
+			end
 		end)
 
 		it("Loads mixed numerical columns in mixed column",function()
@@ -52,11 +63,16 @@ describe("Loading data process", function()
 		end)
 
 		it("Fills numerical missing values with NaN values",function()
-			assert.is.equal(df:_count_missing(),0)
+			local _,tot_na = df:count_na()
+			assert.is.equal(tot_na,0)
 		end)
 
 		it("Infers data schema",function()
-			assert.are.same(df.schema, {['Col A']='number',['Col B']='number',['Col C']='number',['Col D']='string'})
+			assert.are.same(df.schema,
+				{['Col A']='integer',
+				['Col B']='double',
+				['Col C']='double',
+				['Col D']='string'})
 		end)
 
 		it("Keeps the original column order",function()
@@ -77,8 +93,12 @@ describe("Loading data process", function()
 				['second_column']={10,11,12}
 			})}
 
-			assert.are.same(df:get_column("first_column"), {3,4,5})
-			assert.are.same(df:get_column("second_column"), {10,11,12})
+			for idx,val in ipairs({3,4,5}) do
+				assert.are.same(df:get_column("first_column")[idx], val)
+			end
+			for idx,val in ipairs({10,11,12}) do
+				assert.are.same(df:get_column("second_column")[idx], val)
+			end
 		end)
 
 		it("Generate an error if the column inserted are not the same size",function()
@@ -96,8 +116,8 @@ describe("Loading data process", function()
 				['second_column']={10,11,12}
 			})}
 
-			assert.are.same(df:get_column("first_column"), {3,3,3})
-			assert.are.same(df:get_column("second_column"), {10,11,12})
+			assert.are.same(df:get_column("first_column"):to_table(), {3,3,3})
+			assert.are.same(df:get_column("second_column"):to_table(), {10,11,12})
 		end)
 
 		it("Updates the columns names and escapes blank spaces",function()
@@ -126,7 +146,8 @@ describe("Loading data process", function()
 				['second_column']={10,11,12}
 			})}
 
-			assert.is.equal(df:_count_missing(),0)
+			local _, tot_na = df:count_na()
+			assert.is.equal(tot_na,0)
 		end)
 
 		it("Infers data schema",function()
@@ -135,7 +156,10 @@ describe("Loading data process", function()
 				['second_column']={10,11,12},
 				['third_column']={'first','second','third'}
 			})}
-			assert.are.same(df.schema, {['first_column']='number',['second_column']='number',['third_column']='string'})
+			assert.are.same(df.schema,
+				{['first_column']='integer',
+				 ['second_column']='integer',
+				 ['third_column']='string'})
 		end)
 
 		it("Keeps the provided column order",function()

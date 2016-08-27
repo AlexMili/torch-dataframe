@@ -61,69 +61,66 @@ _Return value_: self
 		       table.exact_length(self.column_order),
 		       "The column types must be of the same length as the columns")
 	else
-		self._infer_schema{
+		self:_infer_csvigo_schema{
 			iterator = data_iterator,
 			first_data_row = first_data_row
 		}
 	end
 
 	self.n_rows = #data_iterator - first_data_row + 1
-	self:_init_dataset(data_iterator, first_data_row)
+	self:_init_dataset()
 
-	self:_clean_columns()
-	self.column_order = trim_table_strings(self.column_order)
+	local data_rowno = 0
+	for csv_rowno=first_data_row,#data_iterator do
+		data_rowno = data_rowno + 1
+		local row = data_iterator[csv_rowno]
+		for col_idx=1,#row do
+			-- Clean the value according to the indicated data types
+			local val = row[col_idx]
+			if (val == "") then
+				val = 0/0
+			elseif(self.schema[col_idx] == "integer" or
+			       self.schema[col_idx] == "long" or
+			       self.schema[col_idx] == "double") then
+				val = tonumber(val)
+			elseif(self.schema[col_idx] == "boolean") then
+				local lwr_txt = val:lower()
+				if (lwr_txt:match("^true$")) then
+					val = true
+				elseif(lwr_txt:match("^false$")) then
+					val = false
+				else
+					print(("Invalid boolean value '%s' for row no. %d at column %s"):
+				         format(val, csv_rowno, self.column_order[col_idx]))
+				end
+			end
 
-	if infer_schema then
-		self:_infer_schema()
-	else
-		-- Default value for self.schema
-		for key,value in pairs(self.column_order) do
-			self.schema[value] = 'number'
+			self.dataset[self.column_order[col_idx]]:set(data_rowno, val)
 		end
 	end
 
-	-- Change all missing values to nan
-	self:_fill_missing()
+	self.dataset, self.column_order, self.schema =
+		self:_clean_columns{data = self.dataset,
+		                    column_order = self.column_order,
+		                    schema = self.schema}
 
 	return self
 end}
 
 Dataframe._init_dataset = argcheck{
 	{name="self", type="Dataframe"},
-	{name="iterator", type="csvigo", doc="The csvigo iterator initiated with mode='large'"},
-	{name="first_data_row", type="number", doc="Which iterator row should we start at"},
-	call=function(self, iterator, first_data_row)
+	call=function(self)
 	assert(self.n_rows ~= nil and self.n_rows > 0,
 	       "The self.n_rows hasn't been initialized")
-	assert(#self.schema > 0, "The schema hasn't been deduced yet")
-	assert(#self.column_order == #self.schema,
+	assert(table.exact_length(self.schema) > 0, "The schema hasn't been deduced yet")
+	assert(#self.column_order == table.exact_length(self.schema),
 	       ("The schema (%d entries) doesn't match the number of columns (%d)"):
-	       format(#self.column_order, #self.schema))
+	       format(#self.column_order, table.exact_length(self.schema)))
 
-	self.dataset = tds.Hash()
+	self.dataset = {}
 	for i=1,#self.column_order do
 		local cn = self.column_order[i]
-		self.dataset[cn] = tds.Vec():resize(self.n_rows)
-	end
-
-	for row_no=first_data_row,#iterator do
-		local row = iterator[i]
-		for i=1,#self.column_order do
-			local cn = self.column_order[i]
-			local val = row[i]
-			if (val == "") then
-				val = 0/0
-			elseif(self.schema[i] == "boolean") then
-				if (val:lower() == "false") then
-					val = false
-				else
-					val = true
-				end
-			elseif(self.schema[i] ~= "string") then
-				val = tonumber(val)
-			end
-			self.dataset[cn][i] = val
-		end
+		self.dataset[cn] = Dataseries(self.n_rows, self.schema[cn])
 	end
 
 	return self
@@ -146,9 +143,9 @@ _Return value_: self
 	]],
 	{name="self", type="Dataframe"},
 	{name="data", type="Df_Dict", doc="Table (dictionary) to import. Max depth 2."},
-	{name="infer_schema", type="Df_Dict|boolean", default=true,
-	 doc="automatically detect columns' type or use previous schema"},
-	{name="column_order", type="Df_Array", default=false,
+	{name="schema", type="Df_Dict", opt=true,
+	 doc="Provide if you want to force column types"},
+	{name="column_order", type="Df_Array", opt=true,
 	 doc="The order of the column (has to be array and _not_ a dictionary)"},
 	call=function(self, data, infer_schema, column_order)
 	self:_clean()
@@ -156,6 +153,13 @@ _Return value_: self
 	if (column_order) then
 		column_order = column_order.data
 	end
+	if (schema) then
+		schema = schema.data
+	end
+	data, column_order, schema =
+		self:_clean_columns{data = data,
+		                    column_order = column_order,
+		                    schema = schema}
 
 	-- Check that all columns with a length > 1 has the same number of rows (length)
 	local length = -1
@@ -172,73 +176,58 @@ _Return value_: self
 		end
 	end
 	assert(length > 0, "Could not find any valid elements")
+	self.n_rows = length
 
-	count = 0
-	for k,v in pairs(data) do
-		count = count + 1
-		self.column_order[count] = trim(k)
-
-		-- if there is only one value for this column we need to duplicate the value to all next rows
-		if (type(v) ~= 'table') then
-			-- Populate the table if single value has been provided
-			tmp = {}
-			for i = 1,length do
-				tmp[i] = v
-			end
-			self.dataset[k] = tmp
-		else
-			self.dataset[k] = clone(v) --TODO: Should we check if all elements are single values?
-		end
+	-- Get the column order set-up
+	local co = {}
+	for cn,_ in pairs(data) do
+		co[#co + 1] = cn
 	end
-
-	if column_order then column_order = trim_table_strings(column_order) end
-	self:_clean_columns()
-
-	if (column_order and not tables_equals(column_order,self.column_order)) then
-		no_cols = table.exact_length(self.dataset)
-		assert(#column_order == no_cols,
-		       "The length of the column order " .. #column_order ..
-		       " should be the same as the data " .. no_cols)
-
-		for i = 1,no_cols do
-			assert(column_order[i] ~= nil, "The column order should be continous." ..
-			       " Could not find column no. " .. i)
-
-			found = false
-			for k,v in pairs(self.dataset) do
-				if (k == column_order[i]) then
-					found = true
-					break
-				end
-			end
-			assert(found, "Could not find the order column name " .. column_order[i] ..
-			              " in the data columns")
+	if (column_order) then
+		if (not tables_equals(co, column_order, false, true)) then
+			assert(false, "The column order and names in the provided data don't match")
 		end
-
 		self.column_order = column_order
-	end
-
-	if infer_schema then
-		if (torch.type(infer_schema) == "Df_Dict") then
-			infer_schema = infer_schema.data
-			local new_schema = {}
-			for _,column_name in ipairs(self.column_order) do
-				assert(infer_schema[column_name],
-				       ("Could not find schema column '%s' in provided schema table"):format(tostring(column_name)))
-			end
-			self.schema = infer_schema
-		else
-			self:_infer_schema()
-		end
 	else
-		-- Default value for self.schema
-		for key,value in pairs(self.column_order) do
-			self.schema[value] = 'number'
-		end
+		self.column_order = co
 	end
 
-	-- Change all missing values to nan
-	self:_fill_missing()
+	if (schema) then
+		-- Some sanity checks
+		for _,cn in ipairs(self.column_order) do
+			assert(schema[cn], "Schema not defined for column: " .. cn)
+		end
+
+		for cn,_ in pairs(self.schema) do
+			assert(data[cn], "There is no data for schema column: " .. cn)
+		end
+
+		self.schema = schema
+	else
+		-- Get the data types from the data
+		self:_infer_schema{data = Df_Dict(data)}
+	end
+
+	-- Init the columns in the column order according to types
+	self:_init_dataset()
+
+	-- Copy the data into the columns
+	for cn,col_vals in pairs(data) do
+		for i=1,self.n_rows do
+			local value
+			if (type(col_vals) == "number" or
+				 type(col_vals) == "boolean" or
+				 type(col_vals) == "string") then
+				value = col_vals
+			else
+				value = col_vals[i]
+			end
+			if (value == nil) then
+				value = 0/0
+			end
+			self.dataset[cn]:set(i, value)
+		end
+	end
 
 	return self
 end}
@@ -254,77 +243,39 @@ Internal function to clean columns names
 
 _Return value_: self
 	]],
+	noordered=true,
 	{name="self", type="Dataframe"},
-	call = function(self)
+	{name="data", type="table"},
+	{name="column_order", type="table", opt=true},
+	{name="schema", type="table", opt=true},
+	call = function(self, data, column_order, schema)
 
-	temp_dataset = {}
-	for k,v in pairs(self.dataset) do
-		trimmed_column_name = trim(k)
-		assert(temp_dataset[trimmed_column_name] == nil,
+	local ret_data = {}
+	local cnames = {}
+	for k,v in pairs(data) do
+		local trimmed_column_name = trim(k)
+		assert(ret_data[trimmed_column_name] == nil,
 		       "The column name " .. trimmed_column_name ..
 					 " appears more than once in your data")
-		temp_dataset[trimmed_column_name] = v
+		ret_data[trimmed_column_name] = v
+		cnames[#cnames + 1] = trimmed_column_name
 	end
 
-	self.dataset = temp_dataset
+	if (column_order) then
+		column_order = trim_table_strings(column_order)
+		assert(tables_equals(cnames, column_order, false, true),
+		       "Column names don't match after string trimming")
+	end
 
-	return self
-end}
+	if (schema) then
+		local ret_schema = {}
 
--- Count missing values
-Dataframe._count_missing = argcheck{
-	doc =  [[
-<a name="Dataframe._count_missing">
-### Dataframe._count_missing(@ARGP)
-
-@ARGT
-
-Internal function for counting all missing values. _Note_: internally Dataframe
-uses nan (0/0) and this function only identifies missing values within an array.
-This is used within the test cases.
-
-_Return value_: number of missing values (integer)
-	]],
-	{name="self", type="Dataframe"},
-	call = function(self)
-	counter = 0
-	for index,col in pairs(self.column_order) do
-		for i = 1,self.n_rows do
-			if (self.dataset[col][i] == nil) then
-				counter = counter + 1
-			end
+		for k,v in pairs(schema) do
+			local trimmed_column_name = trim(k)
+			ret_schema[trimmed_column_name] = v
 		end
+		schema = ret_schema
 	end
 
-	return counter
-end}
-
--- Fill missing values with NaN value
-Dataframe._fill_missing = argcheck{
-	doc =  [[
-<a name="Dataframe._fill_missing">
-### Dataframe._fill_missing(@ARGP)
-
-@ARGT
-
-Internal function for changing missing values to NaN values.
-
-_Return value_: self
-	]],
-	{name="self", type="Dataframe"},
-	call = function(self)
-	for index,col in pairs(self.column_order) do
-		for i = 1,self.n_rows do
-			-- In CSV mode - only needed by number columns because the nil value
-			--  is due to tonumber() from _infer_schema()
-			if (self.dataset[col][i] == nil and self.schema[col] == 'number') then
-				self.dataset[col][i] = 0/0
-			-- In table mode only - TODO: Check if this is correct, maybe better to use 0/0 here as well
-			elseif (self.dataset[col][i] == nil and self.schema[col] == 'string') then
-				self.dataset[coll][i] = 'n/a'
-			end
-		end
-	end
-
-	return self
+	return ret_data, column_order, schema
 end}
