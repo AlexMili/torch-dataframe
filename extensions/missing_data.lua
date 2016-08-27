@@ -19,7 +19,7 @@ Count missing values in dataset
 
 @ARGT
 
-_Return value_: Datafrmae or table containing missing values per column
+_Return value_: Dataframe or table containing missing values per column, total na
 ]],
 	{name="self", type="Dataframe"},
 	{name="columns", type="Df_Array", doc="The columns to count", opt=true},
@@ -33,19 +33,21 @@ _Return value_: Datafrmae or table containing missing values per column
 	end
 
 	local ret = {}
+	local tot_na = 0
 	for i=1,#columns do
 		ret[columns[i]] = self:count_na(columns[i])
+		tot_na = tot_na, ret[columns[i]]
 	end
 
 	if (as_dataframe) then
 		local ret_df = Dataframe.new()
 		for name,val in pairs(ret) do
-			ret_df:append(Df_Dict{Column = name, Value = val},
-			              Df_Array("Column", "Value"))
+			ret_df:append{rows = Df_Dict{Column = name, Value = val},
+			              column_order = Df_Array("Column", "Value")}
 		end
-		return ret_df
+		return ret_df, tot_na
 	else
-		return ret
+		return ret, tot_na
 	end
 end}
 

@@ -78,7 +78,7 @@ end}
 Dataframe._clean = argcheck{
 	{name="self", type="Dataframe"},
 	call=function(self)
-	self.dataset = tds.Hash()
+	self.dataset = {}
 	self.column_order = {}
 	self.n_rows = 0
 	self.categorical = {}
@@ -99,58 +99,91 @@ Dataframe._copy_meta = argcheck{
 
 	return to
 end}
-
 -- Internal function to detect columns types
-Dataframe._infer_schema = argcheck{
+Dataframe._infer_csvigo_schema = argcheck{
+	noordered=true,
 	{name="self", type="Dataframe"},
-	{name="iterator", type="csvigo|table",
-	 doc="Data iterator where [i] returns the i:th row. If omitted it defaults to the self.dataset",
-	 opt=true},
+	{name="iterator", type="table", -- TODO: ask csvigo to add a class name
+	 doc="Data iterator where [i] returns the i:th row."},
 	{name="rows2explore", type="number",
-	 doc="The maximum number of rows to traverse", default=1e3},
+	 doc="The maximum number of rows to traverse",
+	 default=1e3},
 	{name="first_data_row", type="number",
 	 doc="The first number in the iterator to use (i.e. skip header == 2)",
 	 default=1},
 	call=function(self, iterator, rows2explore, first_data_row)
-	if (iterator == nil) then
+	rows2explore = math.min(rows2explore, #iterator)
+
+ 	self.schema = {}
+ 	for i = first_data_row,rows2explore do
+ 		local row = iterator[i]
+ 		for idx,val in ipairs(row) do
+			local cn = self.column_order[idx]
+ 			self.schema[cn] =
+ 				get_variable_type{value = val,
+ 				                  prev_type = self.schema[cn]}
+ 		end
+ 	end
+
+ 	return self
+ end}
+
+-- Internal function to detect columns types
+Dataframe._infer_schema = argcheck{
+	{name="self", type="Dataframe"},
+	{name="data", type="Df_Dict",
+	 doc="Data for exploration. If omitted it defaults to the self.dataset",
+	 opt=true},
+	{name="rows2explore", type="number",
+	 doc="The maximum number of rows to traverse",
+	 default=1e3},
+	{name="first_data_row", type="number",
+	 doc="The first number in the iterator to use (i.e. skip header == 2)",
+	 default=1},
+	call=function(self, data, rows2explore, first_data_row)
+	if (data == nil) then
 		rows2explore = math.min(rows2explore, self.n_rows)
 
 		assert(self.dataset, "No dataset available")
-		iterator = self.dataset
-
-		-- Add metatable to simulate the bahavior of csvigo
-		setmetatable(iterator, {__index = function(tbl, idx)
-			local ret = {}
-			for key,val in pairs(tbl) do
-				ret[key] = val[idx]
-			end
-			return ret
-		end})
-
-	elseif(torch.type(iterator) == "csvigo") then
-		rows2explore = math.min(rows2explore, #iterator)
-
+		data = self.dataset
 	else
+		data = data.data
 		local collength = nil
-		for key,column in pairs(iterator) do
-			if (collength ~= nil) then
-				assert(collength == #column,
-				("Column %s doesn't match the length of the other columns"):
-				format(key))
+		for key,column in pairs(data) do
+			local len = 1
+			if (type(column) == "table") then
+				len = #column
 			end
-			collength = #column
+			if (collength ~= nil) then
+				assert(collength == len or
+				       len == 1 or
+				       collength == 1,
+				      ("Column %s doesn't match the length of the other columns %d ~= %d"):
+				      format(key, len, collength))
+				collength = math.max(len, len)
+			else
+				collength = len
+			end
+
 		end
 
 		rows2explore = math.min(rows2explore, collength)
 	end
 
 	self.schema = {}
-	for i = first_data_row,rows2explore do
-		local row = iterator[i]
-		for cn,val in pairs(row) do
-			self.schema[cn] =
-				get_variable_type{value = val,
-				                  prev_value = self.schema[cn]}
+	for cn,col_vals in pairs(data) do
+		for i=first_data_row,rows2explore do
+			if (type(col_vals) == "number" or
+			    type(col_vals) == "boolean" or
+			    type(col_vals) == "string") then
+				self.schema[cn] =
+					get_variable_type{value = col_vals,
+					                  prev_type = self.schema[cn]}
+			else
+				self.schema[cn] =
+					get_variable_type{value = col_vals[i],
+					                  prev_type = self.schema[cn]}
+			end
 		end
 	end
 

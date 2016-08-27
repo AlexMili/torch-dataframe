@@ -44,7 +44,7 @@ _Return value_: string
 	{name="t", type="table", doc="The table with strings to trim"},
 	call = function(t)
 	for index,value in pairs(t) do
-		if(thtype == 'string') then
+		if(type(value) == 'string') then
 			t[index] = trim(value)
 		end
 	end
@@ -54,7 +54,14 @@ end}
 
 
 -- See https://stackoverflow.com/questions/20325332/how-to-check-if-two-tablesobjects-have-the-same-value-in-lua
-function tables_equals(o1, o2, ignore_mt)
+function tables_equals(o1, o2, ignore_mt, ignore_order)
+	if (ignore_order) then
+		o1 = clone(o1)
+		o2 = clone(o2)
+		table.sort(o1)
+		table.sort(o2)
+	end
+
 	if o1 == o2 then return true end
 	local o1Type = type(o1)
 	local o2Type = type(o2)
@@ -109,7 +116,7 @@ function isint(n)
 	if (n == nil) then
 		return false
 	end
-	
+
 	if (torch.isTensor(n)) then
 		return torch.eq(n, torch.floor(n))
 	else
@@ -348,7 +355,7 @@ previously seen a double then the type will still be double.
 
 @ARGT
 
-_Return value_: string of type: 'boolean', 'integer', 'double', or 'string'
+_Return value_: string of type: 'boolean', 'integer', 'long', 'double', or 'string'
 ]],
 	{name="value", type="!table", doc="The value to type-check"},
 	{name="prev_type", type="string", doc="The previous value type", opt=true},
@@ -379,11 +386,18 @@ _Return value_: string of type: 'boolean', 'integer', 'double', or 'string'
 			if (nmbr) then
 				if (prev_type ~= "double" and
 					nmbr == math.floor(nmbr)) then
-					return "integer"
+					-- 2^31 == 2147483648
+					if (prev_type == "long" or nmbr >= 2147483648) then
+						return "long"
+					else
+						return "integer"
+					end
 				else
 					return "double"
 				end
-			elseif (prev_type == "double" or prev_type == "integer") then
+			elseif (prev_type == "double" or
+			        prev_type == "integer" or
+			        prev_type == "long") then
 				return "string"
 			else
 				value = value:lower()
@@ -407,7 +421,12 @@ _Return value_: string of type: 'boolean', 'integer', 'double', or 'string'
 		elseif (prev_type == "boolean") then
 			return "string"
 		elseif (isint(value)) then
-			return "integer"
+			-- 2^31 == 2147483648
+			if (prev_type == "long" or value >= 2147483648) then
+				return "long"
+			else
+				return "integer"
+			end
 		else
 			return "double"
 		end

@@ -63,6 +63,8 @@ The type can be:
 	parent_class.__init(self)
 	if (type == "integer") then
 		self.data = torch.IntTensor(size)
+	elseif (type == "long") then
+		self.data = torch.LongTensor(size)
 	elseif (type == "double") then
 		self.data = torch.DoubleTensor(size)
 	elseif (type == "boolean" or
@@ -481,15 +483,56 @@ Dataseries.is_tensor = argcheck{
 end}
 
 Dataseries.type = argcheck{
+	doc=[[
+<a name="Dataseries.type">
+### Dataseries.type(@ARGP)
+
+Gets the torch.typename of the storage
+
+@ARGT
+
+_Return value_: string
+]],
 	{name="self", type="Dataseries"},
 	call=function(self)
 	return torch.typename(self.data)
 end}
 
 Dataseries.get_variable_type = argcheck{
+	doc=[[
+<a name="Dataseries.get_variable_type">
+### Dataseries.get_variable_type(@ARGP)
+
+Gets the variable type that was used to initiate the Dataseries
+
+@ARGT
+
+_Return value_: string
+]],
 	{name="self", type="Dataseries"},
 	call=function(self)
 	return self._variable_type
+end}
+
+Dataseries.to_table = argcheck{
+	doc=[[
+<a name="Dataseries.to_table">
+### Dataseries.to_table(@ARGP)
+
+Returns the values in table format
+
+@ARGT
+
+_Return value_: table
+]],
+	{name="self", type="Dataseries"},
+	call=function(self)
+	local ret = {}
+	for i=1,self:size() do
+		ret[i] = self:get(i)
+	end
+
+	return ret
 end}
 
 Dataseries.fill = argcheck{

@@ -29,6 +29,7 @@ _Return value_: boolean
 
 	return self.schema[column_name] == "boolean" or
 		self.schema[column_name] == "integer" or
+		self.schema[column_name] == "long" or
 		self.schema[column_name] == "double"
 end}
 
@@ -182,7 +183,7 @@ _Return value_: self
 
 	self.column_order = col_ordr
 
-	if (#self.dataset > 0) then
+	if (table.exact_length(self.dataset) > 0) then
 		self.categorical[column_name] = nil
 		self.schema[column_name] = nil
 	else
@@ -433,7 +434,7 @@ _Return value_: self
 
 	self.schema[new_column_name] = self.schema[old_column_name]
 	self.schema[old_column_name] = nil
-	
+
 	return self
 end}
 
