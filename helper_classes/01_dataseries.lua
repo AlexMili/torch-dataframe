@@ -154,29 +154,20 @@ _Return value_: Dataseries
 	return ret
 end}
 
-Dataseries.get = argcheck{
-	doc=[[
-<a name="Dataseries.get">
-### Dataseries.get(@ARGP)
-
-Gets a single or a set of elements. If you provde a string
-`start:stop` then the span between start and stop will be
-selected including the start and stop element.
-
-@ARGT
-
-_Return value_: number
-]],
+-- Function that copies another dataset into the current together with all the
+--  metadata
+Dataseries._replace_data = argcheck{
 	{name="self", type="Dataseries"},
-	{name="index", type="number", doc="The index to set the value to"},
-	call=function(self, index)
-	self:assert_is_index(index)
+	{name="new_data", type="Dataseries"},
+	call=function(self, data)
+	assert(self:size() == data:size(), "Can't replace when of different size")
 
-	if (self.missing[index]) then
-		 return 0/0
-	else
-		return self.data[index]
-	end
+	self.data = data.data
+	self.missing = data.missing
+	self._variable_type = data._variable_type
+	self.categorical = data.categorical
+
+	return self
 end}
 
 Dataseries.size = argcheck{
@@ -274,6 +265,42 @@ Dataseries.is_tensor = argcheck{
 	else
 		return false
 	end
+end}
+
+Dataseries.is_numerical = argcheck{
+	doc = [[
+<a name="Dataseries.is_numerical">
+### Dataseries.is_numerical(@ARGP)
+
+Checks if numerical
+
+@ARGT
+
+_Return value_: boolean
+]],
+	{name="self", type="Dataseries"},
+	call=function(self)
+
+	return self:get_variable_type() == "integer" or
+		self:get_variable_type() == "long" or
+		self:get_variable_type() == "double"
+end}
+
+Dataseries.is_boolean = argcheck{
+	doc = [[
+<a name="Dataseries.is_boolean">
+### Dataseries.is_boolean(@ARGP)
+
+Checks if boolean
+
+@ARGT
+
+_Return value_: boolean
+]],
+	{name="self", type="Dataseries"},
+	call=function(self)
+
+	return self:get_variable_type() == "boolean"
 end}
 
 Dataseries.type = argcheck{
@@ -412,6 +439,64 @@ _Return value_: string
 
 	ret = ret .. "\n-----\n"
 	return ret
+end}
+
+Dataseries.sub = argcheck{
+	doc = [[
+<a name="Dataseries.sub">
+### Dataseries.sub(@ARGP)
+
+Subsets the Dataseries to the element span
+
+@ARGT
+
+_Return value_: Dataseries
+]],
+	{name="self", type="Dataseries"},
+	{name="start", type="number", default=1},
+	{name="stop", type="number", opt=true},
+	call=function(self, start, stop)
+	stop = stop or self:size()
+
+	self:assert_is_index(start)
+	self:assert_is_index(stop)
+	assert(start <= stop,
+	      ("Start larger than stop, i.e. %d > %d"):format(start, stop))
+
+	local ret = Dataseries.new(stop - start + 1, self:get_variable_type())
+	for idx = start,stop do
+		ret:set(idx + 1 - start, self:get(idx))
+	end
+
+	return ret
+end}
+
+Dataseries.eq = argcheck{
+	doc = [[
+<a name="Dataseries.eq">
+### Dataseries.eq(@ARGP)
+
+Compares to Dataseries or table in order to see if they are identical
+
+@ARGT
+
+_Return value_: string
+]],
+	{name="self", type="Dataseries"},
+	{name="other", type="Dataseries|table"},
+	call=function(self, other)
+
+	if (#self ~= #other) then
+		return false
+	end
+
+	for i=1,self:size() do
+		if (self:get(i) ~= other[i]) then
+			return false
+		end
+	end
+
+	return true
 end}
 
 local paths = require 'paths'

@@ -14,40 +14,32 @@ Here are functions are mainly used for manipulating a single element.
 
 Dataseries.get = argcheck{
 	doc=[[
-<a name="Dataseries.set">
-### Dataseries.set(@ARGP)
+<a name="Dataseries.get">
+### Dataseries.get(@ARGP)
 
-Gets a single element
+Gets a single or a set of elements.
 
 @ARGT
 
-_Return value_:  number|string|boolean
+_Return value_: number|string|boolean
 ]],
 	{name="self", type="Dataseries"},
-	{name="index", type="string"},
-	overload=Dataseries.get,
-	call=function(self, index)
-	assert(index:match("^[0-9]*:[0-9]*$"),
-	       "Index must be in the form of start:stop where start and stop are integers")
-	start = index:gsub(":.*", "")
-	start = tonumber(start)
-	if (start == nil) then
-		start = 1
+	{name="index", type="number", doc="The index to set the value to"},
+	{name="as_raw", type="boolean", default=false,
+	 doc="Set to true if you want categorical values to be returned as their raw numeric representation"},
+	call=function(self, index, as_raw)
+	self:assert_is_index(index)
+
+	local ret
+	if (self.missing[index]) then
+		ret = 0/0
+	else
+		ret = self.data[index]
 	end
-	self:assert_is_index(start)
 
-	stop = index:gsub("[^:]*:", "")
-	stop = tonumber(stop)
-	if (stop == nil) then
-		stop = self:size()
-	end
-	self:assert_is_index(stop)
-
-	assert(start <= stop, "Start should not be larger than the stop")
-
-	local ret = Dataseries.new(stop - start + 1, self:get_variable_type())
-	for idx = start,stop do
-		ret:set(idx + 1 - start, self:get(idx))
+	-- Convert categorical values to strings unless directly asked not to
+	if (not as_raw and self:is_categorical()) then
+		ret = self:to_categorical(ret)
 	end
 
 	return ret
@@ -55,6 +47,8 @@ end}
 
 Dataseries.get = argcheck{
 	doc=[[
+If you provde a Df_Array you get back a Dataseries of elements
+
 @ARGT
 
 _Return value_:  Dataseries
@@ -62,12 +56,15 @@ _Return value_:  Dataseries
 	{name="self", type="Dataseries"},
 	{name="index", type="Df_Array"},
 	overload=Dataseries.get,
-	call=function(self, index)
+	call=function(self, index, as_raw)
 	index = index.data
+
 	local ret = Dataseries.new(#index, self:get_variable_type())
 	for ret_idx,org_idx in ipairs(index) do
-		ret:set(ret_idx, self:get(org_idx))
+		ret:set(ret_idx, self:get(org_idx, true))
 	end
+	ret.categorical = self.categorical
+
 	return ret
 end}
 
@@ -95,6 +92,9 @@ _Return value_: self
 	if (isnan(value) or value == nil) then
 		self.missing[index] = true
 	else
+		if (self:is_categorical()) then
+			value = self:from_categorical(value)[1]
+		end
 		self.missing[index] = nil
 		self.data[index] = value
 	end

@@ -129,11 +129,10 @@ Dataframe._infer_csvigo_schema = argcheck{
  end}
 
 -- Internal function to detect columns types
-Dataframe._infer_schema = argcheck{
+Dataframe._infer_data_schema = argcheck{
 	{name="self", type="Dataframe"},
 	{name="data", type="Df_Dict",
-	 doc="Data for exploration. If omitted it defaults to the self.dataset",
-	 opt=true},
+	 doc="Data for exploration. If omitted it defaults to the self.dataset"},
 	{name="rows2explore", type="number",
 	 doc="The maximum number of rows to traverse",
 	 default=1e3},
@@ -141,34 +140,28 @@ Dataframe._infer_schema = argcheck{
 	 doc="The first number in the iterator to use (i.e. skip header == 2)",
 	 default=1},
 	call=function(self, data, rows2explore, first_data_row)
-	if (data == nil) then
-		rows2explore = math.min(rows2explore, self.n_rows)
 
-		assert(self.dataset, "No dataset available")
-		data = self.dataset
-	else
-		data = data.data
-		local collength = nil
-		for key,column in pairs(data) do
-			local len = 1
-			if (type(column) == "table") then
-				len = #column
-			end
-			if (collength ~= nil) then
-				assert(collength == len or
-				       len == 1 or
-				       collength == 1,
-				      ("Column %s doesn't match the length of the other columns %d ~= %d"):
-				      format(key, len, collength))
-				collength = math.max(len, len)
-			else
-				collength = len
-			end
-
+	data = data.data
+	local collength = nil
+	for key,column in pairs(data) do
+		local len = 1
+		if (type(column) == "table") then
+			len = #column
+		end
+		if (collength ~= nil) then
+			assert(collength == len or
+			       len == 1 or
+			       collength == 1,
+			      ("Column %s doesn't match the length of the other columns %d ~= %d"):
+			      format(key, len, collength))
+			collength = math.max(len, len)
+		else
+			collength = len
 		end
 
-		rows2explore = math.min(rows2explore, collength)
 	end
+
+	rows2explore = math.min(rows2explore, collength)
 
 	self.schema = {}
 	for cn,col_vals in pairs(data) do
@@ -185,6 +178,18 @@ Dataframe._infer_schema = argcheck{
 					                  prev_type = self.schema[cn]}
 			end
 		end
+	end
+
+	return self
+end}
+
+Dataframe._infer_schema = argcheck{
+	{name="self", type="Dataframe"},
+	call=function(self)
+
+	self.schema = {}
+	for _,cn in ipairs(self.column_order) do
+		self.schema[cn] = self.dataset[cn]:get_variable_type()
 	end
 
 	return self

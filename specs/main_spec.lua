@@ -34,14 +34,14 @@ describe("Dataframe class", function()
 			assert.are.same(df:shape(),{rows=4, cols=3})
 		end)
 
-		it("Loads a table if passed in argument",function()
+		it("Loads a #table if passed in argument",function()
 			local df = Dataframe(Df_Dict({
 				['first_column']={3,4,5},
 				['second_column']={10,11,12}
 			}))
 
-			assert.are.same(df:get_column("first_column"):to_table(), {3,4,5})
-			assert.are.same(df:get_column("second_column"):to_table(), {10,11,12})
+			assert.are.same(df:get_column("first_column"), {3,4,5})
+			assert.are.same(df:get_column("second_column"), {10,11,12})
 		end)
 
 		it("Loads a table if passed in argument with column_order",function()

@@ -136,10 +136,7 @@ _Return value_: Dataframe or Batchframe
 	 doc='Arguments to be passed to the class initializer'},
 	call = function(self, index_items, frame_type, class_args)
 	index_items = index_items.data
-
-	if (not frame_type) then
-		frame_type = torch.type(self)
-	end
+	frame_type = frame_type or torch.type(self)
 
 	if (class_args) then
 		class_args = class_args.data
@@ -389,10 +386,7 @@ Dataframe._update_single_row = argcheck{
 		if (new_row.data[key] ~= old_row.data[key] or
 		    (isnan(new_row.data[key]) or
 		     isnan(old_row.data[key]))) then
-			if (self:is_categorical(key)) then
-				new_row.data[key] = self:_get_raw_cat_key(key, new_row.data[key])
-			end
-			self.dataset[key][index_row] = new_row.data[key]
+			self.dataset[key]:set(index_row, new_row.data[key])
 		end
 	end
 end}
@@ -427,10 +421,7 @@ _Return value_: Dataframe
 				-- If the column shoul be updated then the user should have set the key
 				-- in the new_key table
 				if new_value[k] ~= nil then
-					if (self:is_categorical(k)) then
-						new_value[k] = self:_get_raw_cat_key(column_name, new_value[k])
-					end
-					self.dataset[k][i] = new_value[k]
+					self.dataset[k]:set(i, new_value[k])
 				end
 			end
 		end

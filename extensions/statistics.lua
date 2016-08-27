@@ -33,44 +33,7 @@ _Return value_:  table with unique values or if as_keys == true then the unique
 	call=function(self, column_name, as_keys, as_raw)
 	self:assert_has_column(column_name)
 
-	local unique = {}
-
-	local column_values =
-		self:get_column{column_name = column_name,
-		                as_raw = as_raw}
-
-	for i = 1,self.n_rows do
-		local current_key_value = column_values[i]
-		if (current_key_value ~= nil and
-		    not isnan(current_key_value)) then
-
-			-- Check if has hash
-			if (unique[current_key_value] == nil) then
-				unique[current_key_value] = true
-			end
-
-		end
-	end
-
-	-- Extract an array with values
-	local unique_values = {}
-	for k,_ in pairs(unique) do
-		unique_values[#unique_values + 1] = k
-	end
-	table.sort(unique_values)
-
-	if as_keys == false then
-		return unique_values
-	else
-		-- Set the index in the original unique table, actually just a table flip
-		--  where the value becomes the key and the index the value
-		--  We reuse the unique just for convenience
-		for index,key in ipairs(unique_values) do
-			unique[key] = index
-		end
-
-		return unique
-	end
+	return self:get_column(column_name):unique{as_keys = as_keys, as_raw = as_raw}
 end}
 
 Dataframe.value_counts = argcheck{
@@ -101,83 +64,11 @@ _Return value_: Dataframe or nested table
 	call=function(self, column_name, normalize, dropna, as_dataframe)
 	self:assert_has_column(column_name)
 
-	count = {}
-	-- Experiencing odd behavior with large data > 254459 rows
-	--  better to use raw data and then convert the names at the end
-	column_data = self:get_column{column_name = column_name,
-																as_raw = true}
-	no_missing = 0
-	for i = 1,self.n_rows do
-		current_key_value = column_data[i]
-		if (not isnan(current_key_value)) then
-			assert(current_key_value ~= nil, "invalid data for row " .. i)
-
-			if (count[current_key_value] == nil) then
-				count[current_key_value] = 1
-			else
-				count[current_key_value] = count[current_key_value] + 1
-			end
-		else
-			no_missing = no_missing + 1
-		end
-	end
-
-	if (self:is_categorical(column_name)) then
-		count_w_keys = {}
-		for key,no_found in pairs(count) do
-			name = self:to_categorical(key, column_name)
-			count_w_keys[name] = no_found
-		end
-		count = count_w_keys
-	end
-
-	if (not dropna) then
-		count["_missing_"] = no_missing
-	end
-
-	if (normalize) then
-		total = 0
-		for _,n in pairs(count) do
-			total = total + n
-		end
-		for i,n in pairs(count) do
-			count[i] = n/total
-		end
-	end
-
-	if (not as_dataframe) then
-		return count
-	end
-
-	local data = {values  = {}, count = {}}
-	local i = 0
-	for v,c in pairs(count) do
-		i = i + 1
-		data.values[i] = v
-		data.count[i] = c
-	end
-	return Dataframe.new(Df_Dict(data))
-end}
-
-Dataframe.value_counts = argcheck{
-	doc =  [[
-If columns is left out then all numerical columns are used
-
-@ARGT
-
-]],
-	overload=Dataframe.value_counts,
-	{name="self", type="Dataframe"},
-	{name='normalize', type='boolean', default=false,
-	 doc=[[
-	 	If True then the object returned will contain the relative frequencies of
-		the unique values.]]},
-	{name='dropna', type='boolean', default=true,
-	 doc="Don’t include counts of NaN (missing values)."},
-	{name='as_dataframe', type='boolean', default=true,
-	 doc="Return a dataframe"},
-	call=function(self, normalize, dropna, as_dataframe)
-	return self:value_counts(Df_Array(self:get_numerical_colnames()), normalize, dropna, as_dataframe)
+	return self:get_column(column_name):value_counts{
+		normalize = normalize,
+		dropna = dropna,
+		as_dataframe = as_dataframe
+	}
 end}
 
 Dataframe.value_counts = argcheck{
@@ -190,7 +81,7 @@ _Return value_: Table or Dataframe
 ]],
 	overload=Dataframe.value_counts,
 	{name="self", type="Dataframe"},
-	{name='columns', type='Df_Array', doc='The columns to inspect'},
+	{name='columns', type='Df_Array', doc='The columns to inspect', opt=true},
 	{name='normalize', type='boolean', default=false,
 	 doc=[[
 	 	If True then the object returned will contain the relative frequencies of
@@ -200,7 +91,12 @@ _Return value_: Table or Dataframe
 	{name='as_dataframe', type='boolean', default=true,
 	 doc="Return a dataframe"},
 	call=function(self, columns, normalize, dropna, as_dataframe)
-	columns = columns.data
+	if (columns) then
+		columns = columns.data
+	else
+		columns = self:get_numerical_colnames()
+	end
+
 	assert(#columns > 0, "You haven't provided any columns")
 
 	local value_counts = {}
@@ -243,23 +139,8 @@ _Return value_: Table, max value
 	{name='column_name', type='string', doc='column to inspect'},
 	call=function(self, column_name)
 	self:assert_has_column(column_name)
-	assert(self:is_numerical(column_name) and not self:is_categorical(column_name),
-	       "Column has to be numerical")
 
-	local highest_indx = {}
-	local highest = false
-	local values = self:get_column(column_name)
-	for i=1,self.n_rows do
-		local v = values[i]
-		if (not highest or highest < v) then
-			highest = v
-			highest_indx = {i}
-		elseif (highest == v) then
-			table.insert(highest_indx, i)
-		end
-	end
-
-	return highest_indx, highest
+	return self:get_column(column_name):which_max()
 end}
 
 Dataframe.which_min = argcheck{
@@ -272,35 +153,25 @@ share the lowest value.
 
 @ARGT
 
-_Return value_: Table, lowest value
+_Return value_: table with the lowest indexes, lowest value
 ]],
 	{name="self", type="Dataframe"},
 	{name='column_name', type='string', doc='column to inspect'},
 	call=function(self, column_name)
 	self:assert_has_column(column_name)
-	assert(self:is_numerical(column_name) and not self:is_categorical(column_name),
-	       "Column has to be numerical")
 
-	local lowest_indx = {}
-	local lowest = false
-	local values = self:get_column(column_name)
-	for i=1,self.n_rows do
-		local v = values[i]
-		if (not lowest or lowest > v) then
-			lowest = v
-			lowest_indx = {i}
-		elseif (lowest == v) then
-			table.insert(lowest_indx, i)
-		end
-	end
-
-	return lowest_indx, lowest
+	return self:get_column(column_name):which_min()
 end}
 
 Dataframe.get_mode = argcheck{
 	doc =  [[
 <a name="Dataframe.get_mode">
 ### Dataframe.get_mode(@ARGP)
+
+Gets the mode for a Dataseries. A mode is defined as the most frequent value.
+Note that if two or more values are equally common then there are several modes.
+The mode is useful as it can be viewed as any algorithms most naive guess where
+it always guesses the same value.
 
 @ARGT
 
@@ -317,70 +188,13 @@ _Return value_: Table or Dataframe
 	{name='as_dataframe', type='boolean', default=true,
 	 doc="Return a dataframe"},
 	call=function(self, column_name, normalize, dropna, as_dataframe)
+	self:assert_has_column(column_name)
 
-	local counts = self:value_counts{column_name = column_name,
-	                                 normalize = normalize,
-	                                 dropna = dropna,
-	                                 as_dataframe = false}
-	local max_val = 0/0
-	for _,v in pairs(counts) do
-		if (isnan(max_val) or max_val < v) then
-			max_val  = v
-		end
-	end
-
-	local modes = {}
-	for key,v in pairs(counts) do
-		if (max_val == v) then
-			modes[key] = v
-		end
-	end
-
-	if (as_dataframe) then
-		modes = self:_convert_table_2_dataframe(Df_Tbl(modes))
-	end
-
-	return modes
-end}
-
-Dataframe._convert_table_2_dataframe = argcheck{
-	{name="self", type="Dataframe"},
-	{name="tbl", type="Df_Tbl"},
-	{name="value_name", type="string", default="value",
-	 doc="The name of the value column"},
-	{name="key_name", type="string", default="key",
-	 doc="The name of the key column"},
-	call=function(self, tbl, value_name, key_name)
-	tbl = tbl.data
-
-	local tmp = {[value_name]={}, [key_name]={}}
-	for key, value in pairs(tbl) do
-		table.insert(tmp[value_name], value)
-		table.insert(tmp[key_name], key)
-	end
-
-	return Dataframe.new(Df_Dict(tmp), Df_Array(key_name, value_name))
-end}
-
-Dataframe.get_mode = argcheck{
-	doc =  [[
-If you provide no column name then all numerical columns will be used
-
-@ARGT
-
-]],
-	overload=Dataframe.get_mode,
-	{name="self", type="Dataframe"},
-	{name='normalize', type='boolean', default=false,
-	 doc=[[
-	 	If True then the object returned will contain the relative frequencies of
-		the unique values.]]},
-	{name='dropna', type='boolean', default=true,
-	 doc="Don’t include counts of NaN (missing values)."},
-	{name='as_dataframe', type='boolean', default=true,
-	 doc="Return a dataframe"},
-	 call=function(self, normalize, dropna, as_dataframe)
-	return self:get_mode(Df_Array(self:get_numerical_colnames()), normalize, dropna, as_dataframe)
+	return self:get_column(column_name):get_mode{
+		normalize = normalize,
+		dropna = dropna,
+		as_dataframe = as_dataframe
+	}
 end}
 
 Dataframe.get_mode = argcheck{
@@ -391,7 +205,7 @@ Dataframe.get_mode = argcheck{
 ]],
 	overload=Dataframe.get_mode,
 	{name="self", type="Dataframe"},
-	{name="columns", type="Df_Array", doc="The columns of interest"},
+	{name="columns", type="Df_Array", doc="The columns of interest", opt=true},
 	{name='normalize', type='boolean', default=false,
 	 doc=[[
 	 	If True then the object returned will contain the relative frequencies of
@@ -401,7 +215,11 @@ Dataframe.get_mode = argcheck{
 	{name='as_dataframe', type='boolean', default=true,
 	 doc="Return a dataframe"},
 	call=function(self, columns, normalize, dropna, as_dataframe)
-	columns = columns.data
+	if (columns) then
+		columns = columns.data
+	else
+		columns = self:get_numerical_colnames()
+	end
 
 	local modes = {}
 	if (as_dataframe) then
@@ -430,9 +248,9 @@ Dataframe.get_max_value = argcheck{
 <a name="Dataframe.get_max_value">
 ### Dataframe.get_max_value(@ARGP)
 
-Gets the maximum value for a given column. Returns maximum values for all
-numerical columns if none is provided. Keeps the order although not if
-with_named_keys == true as the keys will be sorted in alphabetic order.
+Gets the maximum value. Similar in function to which_max but it will also return
+the maximum integer value for the categorical values. This can be useful when
+deciding on the number of neurons in the final layer.
 
 @ARGT
 
@@ -443,29 +261,7 @@ _Return value_: number
 	call=function(self, column_name)
 	self:assert_has_column(column_name)
 
-	local max = 0/0
-	if (self:is_categorical(column_name)) then
-		for k,i in pairs(self:get_cat_keys(column_name)) do
-			if (isnan(max)) then
-				max = i
-			elseif (i > max) then
-				max = i
-			end
-		end
-	elseif (self:is_numerical(column_name)) then
-		for _,v in pairs(self:get_column{column_name = column_name, as_raw = true}) do
-			if (isnan(max)) then
-				max = v
-			elseif (v > max) then
-				max = v
-			end
-		end
-	end
-
-	if (isnan(max)) then
-		self:output()
-	end
-	return max
+	return self:get_column(column_name):get_max_value()
 end}
 
 Dataframe.get_max_value = argcheck{
@@ -478,12 +274,16 @@ _Return value_: Table or Dataframe
 ]],
 	overload=Dataframe.get_max_value,
 	{name="self", type="Dataframe"},
-	{name='columns', type='Df_Array', doc='The names of the columns of interest'},
+	{name='columns', type='Df_Array', doc='The names of the columns of interest', opt=true},
 	{name='with_named_keys', type='boolean', doc='If the index should be named keys', default=false},
 	{name='as_dataframe', type='boolean', default=true,
 	 doc="Return a dataframe"},
 	call=function(self, columns, with_named_keys, as_dataframe)
-	columns = columns.data
+	if (columns) then
+		columns = columns.data
+	else
+		columns = self:get_numerical_colnames()
+	end
 
 	ret = {}
 	for col_no = 1,#self.column_order do
@@ -500,7 +300,7 @@ _Return value_: Table or Dataframe
 
 	if (as_dataframe) then
 		if (with_named_keys) then
-			ret = self:_convert_table_2_dataframe(Df_Tbl(ret))
+			ret = convert_table_2_dataframe(Df_Tbl(ret))
 		else
 			ret = Dataframe.new(Df_Dict({value=ret}))
 		end
@@ -509,30 +309,13 @@ _Return value_: Table or Dataframe
 	return ret
 end}
 
-Dataframe.get_max_value = argcheck{
-	doc=[[
-You can in addition choose all numerical columns by skipping the column name
-
-@ARGT
-]],
-	overload=Dataframe.get_max_value,
-	{name="self", type="Dataframe"},
-	{name='with_named_keys', type='boolean', doc='If the index should be named keys', default=false},
-	{name='as_dataframe', type='boolean', default=true,
-	 doc="Return a dataframe"},
-	call=function(self, with_named_keys, as_dataframe)
-	return self:get_max_value(Df_Array(self:get_numerical_colnames()), with_named_keys, as_dataframe)
-end}
-
 Dataframe.get_min_value = argcheck{
 	doc=[[
 <a name="Dataframe.get_min_value">
 ### Dataframe.get_min_value(@ARGP)
 
 Gets the minimum value for a given column. Returns minimum values for all
-numerical columns if none is provided. Keeps the order although not if
-with_named_keys == true as the keys will be sorted according to Lua's hash table
-algorithm.
+numerical columns if none is provided.
 
 @ARGT
 
@@ -543,26 +326,7 @@ _Return value_: number
 	call=function(self, column_name)
 	self:assert_has_column(column_name)
 
-	local min = 0/0
-	if (self:is_categorical(column_name)) then
-		for k,i in pairs(self:get_cat_keys(column_name)) do
-			if (isnan(min)) then
-				min = i
-			elseif (i < min) then
-				min = i
-			end
-		end
-	elseif (self:is_numerical(column_name)) then
-		for _,v in pairs(self:get_column{column_name = column_name, as_raw = true}) do
-			if (isnan(min)) then
-				min = v
-			elseif (v < min) then
-				min = v
-			end
-		end
-	end
-
-	return min
+	return self:get_column(column_name):get_min_value()
 end}
 
 Dataframe.get_min_value = argcheck{
@@ -575,12 +339,16 @@ _Return value_: Table or Dataframe
 ]],
 	overload=Dataframe.get_min_value,
 	{name="self", type="Dataframe"},
-	{name='columns', type='Df_Array', doc='The names of the columns of interest'},
+	{name='columns', type='Df_Array', doc='The names of the columns of interest', opt=true},
 	{name='with_named_keys', type='boolean', doc='If the index should be named keys', default=false},
 	{name='as_dataframe', type='boolean', default=true,
 	 doc="Return a dataframe"},
 	call=function(self, columns, with_named_keys, as_dataframe)
-	columns = columns.data
+	if (columns) then
+		columns = columns.data
+	else
+		columns = self:get_numerical_colnames()
+	end
 
 	ret = {}
 	for col_no = 1,#self.column_order do
@@ -597,26 +365,11 @@ _Return value_: Table or Dataframe
 
 	if (as_dataframe) then
 		if (with_named_keys) then
-			ret = self:_convert_table_2_dataframe(Df_Tbl(ret))
+			ret = convert_table_2_dataframe(Df_Tbl(ret))
 		else
 			ret = Dataframe.new(Df_Dict({value=ret}))
 		end
 	end
 
 	return ret
-end}
-
-Dataframe.get_min_value = argcheck{
-	doc=[[
-You can in addition choose all numerical columns by skipping the column name
-
-@ARGT
-]],
-	overload=Dataframe.get_min_value,
-	{name="self", type="Dataframe"},
-	{name='with_named_keys', type='boolean', doc='If the index should be named keys', default=false},
-	{name='as_dataframe', type='boolean', default=true,
-	 doc="Return a dataframe"},
-	call=function(self, with_named_keys, as_dataframe)
-	return self:get_min_value(Df_Array(self:get_numerical_colnames()), with_named_keys, as_dataframe)
 end}

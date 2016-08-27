@@ -205,7 +205,7 @@ _Return value_: self
 		self.schema = schema
 	else
 		-- Get the data types from the data
-		self:_infer_schema{data = Df_Dict(data)}
+		self:_infer_data_schema{data = Df_Dict(data)}
 	end
 
 	-- Init the columns in the column order according to types

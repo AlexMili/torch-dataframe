@@ -27,13 +27,8 @@ _Return value_: A table with the row content
 	self:assert_is_index(index)
 
 	local row = {}
-	for _,key in pairs(self.column_order) do
-		if (self:is_categorical(key)) then
-			row[key] = self:to_categorical(self.dataset[key][index],
-			                               key)
-		else
-			row[key] = self.dataset[key][index]
-		end
+	for _,cn in pairs(self.column_order) do
+		row[cn] = self.dataset[cn][index]
 	end
 
 	return row
