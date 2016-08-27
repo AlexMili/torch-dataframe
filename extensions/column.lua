@@ -27,8 +27,7 @@ _Return value_: boolean
 	call=function(self, column_name)
 	self:assert_has_column(column_name)
 
-	return self.schema[column_name] == "boolean" or
-		self.schema[column_name] == "integer" or
+	return self.schema[column_name] == "integer" or
 		self.schema[column_name] == "long" or
 		self.schema[column_name] == "double"
 end}
@@ -233,10 +232,17 @@ _Return value_: self
 	 default=0/0},
 	{name="type", type="string",
 	 doc="The type of column to add: integer, double, boolean or string",
-	 default="string"},
+	 opt=true},
 	call=function(self, column_name, pos, default_value, type)
+	if (not type) then
+		if (isnan(default_value)) then
+			type = "string"
+		else
+			type = get_variable_type(default_value)
+		end
+	end
+	
 	local column_data = Dataseries(self.n_rows, type):fill(default_value)
-
 	return self:add_column(column_name, pos, column_data)
 end}
 

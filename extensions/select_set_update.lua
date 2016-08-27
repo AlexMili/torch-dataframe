@@ -193,14 +193,11 @@ _Return value_: Dataframe or Batchframe
 		end
 	end
 
-	for _,i in pairs(index_items) do
-		local val = self:get_row(i)
-		if (ret:size(1) == 0) then
-			ret:load_table(Df_Dict(val), Df_Dict(self.schema))
-		else
-			ret:append(Df_Dict(val))
-		end
+	for _,cn in ipairs(self.column_order) do
+		ret.dataset[cn] = self:get_column(cn)[Df_Array(index_items)]
 	end
+	ret.n_rows = #index_items
+
 	self.categorical = tmp
 	ret = self:_copy_meta(ret)
 	return ret
