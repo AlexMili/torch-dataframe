@@ -53,7 +53,6 @@ describe("Column operations", function()
 			-- All are dropped
 			a:drop('Col C')
 			assert.are.same(a.dataset, {})-- "All columns are dropped"
-			assert.are.same(a.columns,{})
 			assert.are.same(a.column_order,{})
 			assert.are.same(a.categorical,{})
 			assert.are.same(a.tostring_defaults,
@@ -74,8 +73,8 @@ describe("Column operations", function()
 
 		it("Allows to use a table as the default value",function()
 			d_col = {0,1,2,3}
-			a:add_column('Col D', Df_Array(d_col))
-			assert.are.same(a:get_column('Col D'), d_col)-- "Col D isn't the expected value"
+			a:add_column('Col D', Dataseries(Df_Array(d_col)))
+			assert.are.same(a:get_column('Col D'):to_table(), d_col)-- "Col D isn't the expected value"
 			assert.are.same(a:shape(), {rows=4, cols=4})-- "The simple_short.csv is 4x3 after add should be 4x4"
 		end)
 
@@ -83,14 +82,14 @@ describe("Column operations", function()
 			a:add_column('Col E')
 			col = a:get_column('Col E')
 
-			for _,v in pairs(col) do
+			for _,v in pairs(col:to_table()) do
 				assert.is_true(isnan(v))
 			end
 		end)
 
 		it("Fills all the column with default value if it is a single value",function()
 			a:add_column('Col F', 1)
-			assert.are.same(a:get_column('Col F'), {1,1,1,1})
+			assert.are.same(a:get_column('Col F'):to_table(), {1,1,1,1})
 		end)
 
 		it("Fails if the default value provided is a table with a different number of rows",function()
@@ -101,7 +100,11 @@ describe("Column operations", function()
 			a:add_column('Position 1', 1, 1)
 			assert.are.same(a:get_column_order('Position 1'), 1)
 
-			a:add_column('Position 3', 3, 'A')
+			a:add_column{
+				column_name = 'Position 3',
+				pos = 3,
+				default_value = 'A' -- Can't do ordered call since 'A' becomes type
+			}
 			assert.are.same(a:get_column_order('Position 3'), 3)
 		end)
 	end)
@@ -109,7 +112,7 @@ describe("Column operations", function()
 	describe("Get a column functionality",function()
 		local a = Dataframe("./data/full.csv")
 
-		assert.are.same(a:get_column('Col A'), {1,2,3,4})
+		assert.are.same(a:get_column('Col A'):to_table(), {1,2,3,4})
 
 		it("Fails if the column doesn't exist",function()
 			assert.has.error(function() a:get_column('Col H') end)
@@ -117,8 +120,8 @@ describe("Column operations", function()
 
 		it("Returns a numerical column as a tensor",function()
 			a_tnsr = torch.Tensor({1,2,3,4})
-			a_col = a:get_column{column_name="Col A",as_tensor=true}
-
+			a_col = a:get_column{column_name="Col A", as_tensor=true}
+			a_col = a_col:type(a_tnsr:type())
 			assert.is_true(torch.all(a_tnsr:eq(a_col)))
 		end)
 
@@ -132,13 +135,13 @@ describe("Column operations", function()
 
 		it("Resets single column's values",function()
 			a:reset_column('Col C', 555)
-			assert.are.same(a:get_column('Col C'), {555, 555, 555, 555})
+			assert.are.same(a:get_column('Col C'):to_table(), {555, 555, 555, 555})
 		end)
 
 		it("Resets multiple columns at once",function()
 			a:reset_column(Df_Array('Col A', 'Col B'), 444)
-			assert.are.same(a:get_column('Col A'), {444, 444, 444, 444})
-			assert.are.same(a:get_column('Col B'), {444, 444, 444, 444})
+			assert.are.same(a:get_column('Col A'):to_table(), {444, 444, 444, 444})
+			assert.are.same(a:get_column('Col B'):to_table(), {444, 444, 444, 444})
 		end)
 	end)
 
@@ -158,7 +161,7 @@ describe("Column operations", function()
 
 		it("Refreshs metadata",function()
 			local colfound = false
-			for k,v in pairs(a.columns) do
+			for k,v in pairs(a.column_order) do
 				if v == 'Col V' then
 					colfound = true
 				end
@@ -234,8 +237,8 @@ describe("Column operations", function()
 			b:load_table(Df_Dict({Test = {1,2,3}}))
 			a:cbind(b)
 
-			assert.are.same(a:get_column('Test'),
-			                b:get_column('Test'))
+			assert.are.same(a:get_column('Test'):to_table(),
+			                b:get_column('Test'):to_table())
 		end)
 
 		it("Equal correct cbind with Df_Dict", function()
@@ -243,7 +246,7 @@ describe("Column operations", function()
 
 			a:cbind(Df_Dict({Test = {1,2,3}}))
 
-			assert.are.same(a:get_column('Test'),
+			assert.are.same(a:get_column('Test'):to_table(),
 			                {1,2,3})
 		end)
 
