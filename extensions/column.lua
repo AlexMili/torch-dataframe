@@ -241,7 +241,7 @@ _Return value_: self
 			type = get_variable_type(default_value)
 		end
 	end
-	
+
 	local column_data = Dataseries(self.n_rows, type):fill(default_value)
 	return self:add_column(column_name, pos, column_data)
 end}
@@ -354,9 +354,9 @@ _Return value_: table or tensor
 
 	if (not as_tensor and not as_raw and
 	    self:is_categorical(column_name)) then
-		return self:to_categorical(Df_Array(column_data), column_name)
+		return self:to_categorical(Df_Array(column_data:to_table()), column_name)
 	elseif (as_tensor) then
-		return torch.Tensor(column_data)
+		return column_data:to_tensor()
 	else
 		return column_data
 	end
