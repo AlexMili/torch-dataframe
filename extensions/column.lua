@@ -353,11 +353,12 @@ _Return value_: table or tensor
 
 	column_data = self.dataset[column_name]
 
-	if (not as_tensor and not as_raw and
-	    self:is_categorical(column_name)) then
-		return self:to_categorical(Df_Array(column_data:to_table()), column_name)
+	if (as_raw and column_data:is_categorical()) then
+		return column_data:from_categorical(Df_Array(column_data:to_table()))
+
 	elseif (as_tensor) then
 		return column_data:to_tensor()
+
 	else
 		return column_data
 	end
@@ -427,11 +428,6 @@ _Return value_: self
 
 	self.dataset[new_column_name] = self.dataset[old_column_name]
 	self.dataset[old_column_name] = nil
-
-	if (self:is_categorical(old_column_name)) then
-		self.categorical[new_column_name] = self.categorical[old_column_name]
-		self.categorical[old_column_name] = nil
-	end
 
 	for k,v in pairs(self.column_order) do
 		if v == old_column_name then

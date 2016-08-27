@@ -5,6 +5,10 @@ local dataframe_path = paths.thisfile():gsub("init.lua$", "?.lua")
 local argcheck_file = string.gsub(dataframe_path,"?", "argcheck")
 assert(loadfile(argcheck_file))()
 
+-- Custom busted assertions
+local assert_file = string.gsub(dataframe_path,"?", "custom_assertions")
+assert(loadfile(assert_file))()
+
 -- Make utils available to all
 local utils_file = string.gsub(dataframe_path,"?", "utils")
 assert(loadfile(utils_file))()

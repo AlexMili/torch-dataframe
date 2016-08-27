@@ -28,10 +28,18 @@ _Return value_: Table or Dataseries
 function Dataseries:__index__(index)
 	local thtype = torch.type(index)
 	if (thtype == "number" or
-	   (thtype == "Df_Array") or
-	   (thtype == "string" and index:match("^[0-9]*:[0-9]*$"))) then
+	    thtype == "Df_Array") then
 		return self:get(index), true
+	elseif (thtype == "string" and index:match("^[0-9]*:[0-9]*$")) then
+		start = index:gsub(":.*", "")
+		start = tonumber(start)
+
+		stop = index:gsub("[^:]*:", "")
+		stop = tonumber(stop)
+
+		return self:sub(start, stop), true
 	end
+
 
 	return false
 end

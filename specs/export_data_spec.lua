@@ -26,7 +26,8 @@ describe("Exporting data process", function()
 				a:fill_na(k,8)
 				b:fill_na(k,8)
 
-				assert.are.same(a:get_column(k), b:get_column(k))
+				assert.are.same(a:get_column(k):to_table(),
+				                b:get_column(k):to_table())
 			end
 
 			a:as_categorical("Col D")
@@ -37,7 +38,8 @@ describe("Exporting data process", function()
 			a:fill_na("Col D",8)
 			b:fill_na("Col D",8)
 
-			assert.are.same(a:get_column("Col D"), b:get_column("Col D"),
+			assert.are.same(a:get_column("Col D"):to_table(),
+			                b:get_column("Col D"):to_table(),
 			               "Failed to respect the categorical columns")
 
 			os.remove(file_name)

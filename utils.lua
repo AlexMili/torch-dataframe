@@ -102,6 +102,10 @@ function clone(t) -- shallow-copy a table
 end
 
 table.exact_length = function(tbl)
+	if (torch.type(tbl):match("^tds")) then
+		return #tbl
+	end
+	
 	if (type(tbl) ~= 'table') then
 		return 1
 	end
@@ -433,4 +437,35 @@ _Return value_: string of type: 'boolean', 'integer', 'long', 'double', or 'stri
 	end
 
 	assert("You should never end up here...")
+end}
+
+convert_table_2_dataframe = argcheck{
+	doc=[[
+<a name="convert_table_2_dataframe">
+### convert_table_2_dataframe(@ARGP)
+
+Converts a table to a Dataframe
+
+@ARGT
+
+_Return value_: Dataframe
+]],
+	{name="tbl", type="Df_Tbl"},
+	{name="value_name", type="string", default="value",
+	 doc="The name of the value column"},
+	{name="key_name", type="string", default="key",
+	 doc="The name of the key column"},
+	call=function(tbl, value_name, key_name)
+	tbl = tbl.data
+
+	local tmp = {[value_name]={}, [key_name]={}}
+	for key, value in pairs(tbl) do
+		table.insert(tmp[value_name], value)
+		table.insert(tmp[key_name], key)
+	end
+
+	return Dataframe{
+		data = Df_Dict(tmp),
+		column_order = Df_Array(key_name, value_name)
+	}
 end}
