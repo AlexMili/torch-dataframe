@@ -306,7 +306,8 @@ _Return value_: self
 	end
 
 	for i=1,#data.column_order do
-		self:add_column(data.column_order[i], Df_Array(data:get_column(data.column_order[i])))
+		self:add_column(data.column_order[i],
+		                data:get_column(data.column_order[i]))
 	end
 
 	return self
@@ -425,7 +426,7 @@ _Return value_: self
 	       "The column name can only be a number or a string value, yours is: " .. type(new_column_name))
 
 	self.dataset[new_column_name] = self.dataset[old_column_name]
-	self.dataser[old_column_name] = nil
+	self.dataset[old_column_name] = nil
 
 	if (self:is_categorical(old_column_name)) then
 		self.categorical[new_column_name] = self.categorical[old_column_name]
