@@ -19,7 +19,6 @@ describe("Dataframe class", function()
 			local df = Dataframe()
 
 			assert.are.same(df.dataset,{})
-			assert.are.same(df.columns,{})
 			assert.are.same(df.column_order,{})
 			assert.are.same(df.categorical,{})
 			assert.are.same(df.tostring_defaults,
@@ -41,8 +40,8 @@ describe("Dataframe class", function()
 				['second_column']={10,11,12}
 			}))
 
-			assert.are.same(df:get_column("first_column"), {3,4,5})
-			assert.are.same(df:get_column("second_column"), {10,11,12})
+			assert.are.same(df:get_column("first_column"):to_table(), {3,4,5})
+			assert.are.same(df:get_column("second_column"):to_table(), {10,11,12})
 		end)
 
 		it("Loads a table if passed in argument with column_order",function()
@@ -67,7 +66,6 @@ describe("Dataframe class", function()
 			df:_clean()
 
 			assert.are.same(df.dataset,{})
-			assert.are.same(df.columns,{})
 			assert.are.same(df.column_order,{})
 			assert.are.same(df.categorical,{})
 			assert.are.same(df.tostring_defaults,
@@ -85,7 +83,6 @@ describe("Dataframe class", function()
 			df:_copy_meta(df2)
 
 			assert.are.same(df2.dataset,{})
-			assert.are.same(df2.columns,{})
 			assert.is.equal(df2.n_rows,0)
 
 			assert.are.same(df.column_order,df2.column_order)
@@ -107,8 +104,8 @@ describe("Dataframe class", function()
 
 		a:load_table{data=Df_Dict(data)}
 
-		assert.is.equal(a.schema["firstColumn"], 'number')
-		assert.is.equal(a.schema["secondColumn"], 'number')
+		assert.is.equal(a.schema["firstColumn"], 'integer')
+		assert.is.equal(a.schema["secondColumn"], 'integer')
 		assert.is.equal(a.schema["thirdColumn"], 'string')
 	end)
 
@@ -136,7 +133,7 @@ describe("Dataframe class", function()
 		-- do a manual count
 		local no_elmnts = 0
 		for k,v in pairs(head.dataset) do
-			local l = table.exact_length(v)
+			local l = #v
 
 			if (l > no_elmnts) then
 				no_elmnts = l
@@ -161,7 +158,7 @@ describe("Dataframe class", function()
 		-- Do a manual count
 		local no_elmnts = 0
 		for k,v in pairs(tail.dataset) do
-			local l = table.exact_length(v)
+			local l = #v
 			if (l > no_elmnts) then
 				no_elmnts = l
 			end
