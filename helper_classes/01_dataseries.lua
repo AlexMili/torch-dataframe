@@ -598,6 +598,34 @@ _Return value_: number
 	return #self.missing
 end}
 
+Dataseries.tostring = argcheck{
+	doc = [[
+<a name="Dataseries.tostring">
+### Dataseries.tostring(@ARGP)
+
+Converts the series into a string output
+
+@ARGT
+
+_Return value_: string
+]],
+	{name="self", type="Dataseries"},
+	{name="max_elmnts", type="number", default=20},
+	call=function(self, max_elmnts)
+	max_elmnts = math.min(self:size(), max_elmnts)
+	ret = ("Type: %s\nLength: %d\n-----"):format(self:type(), self:size())
+	for i=1,max_elmnts do
+		ret = ret .. "\n" .. self:get(i)
+	end
+	if (max_elmnts < self:size()) then
+		ret = ret .. "\n..."
+	end
+
+	ret = ret .. "\n-----\n"
+	return ret
+end}
+
+
 -- Metatable functions
 doc =  [[
 <a name="Dataseries.[]">
@@ -655,4 +683,20 @@ _Return value_: integer
 	{name="other", type="Dataseries", opt=true},
 	call=function(self, other)
 	return self:size()
+end}
+
+Dataseries.__tostring__ = argcheck{
+	doc=[[
+	<a name="Dataseries.__tostring__">
+### Dataseries.__tostring__(@ARGP)
+
+A wrapper for `tostring()`
+
+@ARGT
+
+_Return value_: string
+]],
+	{name="self", type="Dataseries"},
+	call=function (self)
+	return self:tostring()
 end}
