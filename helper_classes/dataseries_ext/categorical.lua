@@ -81,9 +81,9 @@ _Return value_: self
 		new_col:set(i, val)
 	end
 
+
 	self:_replace_data(new_col)
 	self.categorical = levels
-
 	if (labels) then
 		labels = labels.data
 		assert(table.exact_length(levels),
@@ -108,13 +108,26 @@ _Return value_: index value for key (integer)
 	]],
 	{name="self", type="Dataseries"},
 	{name="key", type="number|string", doc="The new key to insert"},
-	call = function(self, key)
+	{name="key_index", type="number", doc="The key index to use", opt=true},
+	call = function(self, key, key_index)
 
 	assert(self:is_categorical(), "The current Dataseries isn't categorical")
 	assert(not isnan(key), "You can't add a nan key to categorical Dataseries")
 
-	keys = self:get_cat_keys()
-	key_index = table.exact_length(keys) + 1
+	local keys = self:get_cat_keys()
+	if (self:has_cat_key(key)) then
+		assert(not key_index, "The key is already present in the series: " ..
+		       table.collapse2str(keys))
+		return self.categorical[key]
+	end
+
+	if (key_index) then
+		assert(not self:has_cat_value(key_index),
+		       "The key index is already present among the categoricals: " ..
+		       table.collapse2str(keys))
+	else
+		key_index = table.exact_length(keys) + 1
+	end
 	keys[key] = key_index
 	self.categorical = keys
 
@@ -147,6 +160,7 @@ _Return value_: self
 	end
 
 	self:_replace_data(new_data)
+	self.categorical = nil
 
 	return self
 end}
@@ -233,13 +247,26 @@ Converts values to categorical according to a series's keys
 
 @ARGT
 
-_Return value_: string with the value
+_Return value_: string with the value. If provided `nan` it will also
+ return a `nan`. It returns `nil` if no key is found
 ]],
 	{name="self", type="Dataseries"},
-	{name='data', type='number', doc='The integer to be converted'},
-	call=function(self, data)
-	ret = self:to_categorical(Df_Array(data))
-	return ret[1]
+	{name='key_index', type='number', doc='The integer to be converted'},
+	call=function(self, key_index)
+
+	local val = nil
+	if (isnan(key_index)) then
+		val = 0/0
+	else
+		for k,index in pairs(self.categorical) do
+			if (index == key_index) then
+				val = k
+				break
+			end
+		end
+	end
+
+	return val
 end}
 
 Dataseries.to_categorical = argcheck{
@@ -277,7 +304,7 @@ _Return value_: table with values
 
 	for k,v in pairs(data) do
 		if (not isnan(data[k])) then
-			val = tonumber(data[k])
+			local val = tonumber(data[k])
 			assert(type(val) == 'number',
 			       "The data ".. tostring(val) .." in position " .. k .. " is not a valid number")
 			data[k] = val
@@ -286,22 +313,12 @@ _Return value_: table with values
 		end
 	end
 
-	ret = {}
+	local ret = {}
 	for _,v in pairs(data) do
-		local val = nil
-		if (isnan(v)) then
-			val = 0/0
-		else
-			for k,index in pairs(self.categorical) do
-				if (index == v) then
-					val = k
-					break
-				end
-			end
-			assert(val ~= nil,
-			       v .. " isn't present in the keyset among " ..
-			       table.get_val_string(self.categorical))
-		end
+		local val = self:to_categorical(v)
+		assert(val ~= nil,
+		       v .. " isn't present in the keyset among " ..
+		       table.get_val_string(self.categorical))
 		table.insert(ret, val)
 	end
 
@@ -321,9 +338,12 @@ _Return value_: table or tensor
 ]],
 	{name="self", type="Dataseries"},
 	{name='data', type='number|string', doc='The data to be converted'},
-	{name='as_tensor', type='boolean', doc='If the returned value should be a tensor', default=false},
-	call=function(self, data,  as_tensor)
-		return self:from_categorical(Df_Array(data), as_tensor)
+	call=function(self, data)
+	local val = self.categorical[data]
+	if (val == nil) then
+		val = 0/0
+	end
+	return val
 end}
 
 Dataseries.from_categorical = argcheck{
@@ -337,19 +357,16 @@ _Return value_: table or tensor
 	overload=Dataseries.from_categorical,
 	{name="self", type="Dataseries"},
 	{name='data', type='Df_Array', doc='The data to be converted'},
-	{name='as_tensor', type='boolean', doc='If the returned value should be a tensor', default=false},
+	{name='as_tensor', type='boolean',
+	 doc='If the returned value should be a tensor', default=false},
 	call=function(self, data, as_tensor)
 	assert(self:is_categorical(), "The series isn't categorical")
 
 	data = data.data
 
-	ret = {}
+	local ret = {}
 	for _,v in pairs(data) do
-		local val = self.categorical[v]
-		if (val == nil) then
-			val = 0/0
-		end
-		table.insert(ret, val)
+		table.insert(ret, self:from_categorical(v))
 	end
 
 	if (as_tensor) then
@@ -357,4 +374,38 @@ _Return value_: table or tensor
 	else
 		return ret
 	end
+end}
+
+Dataseries.has_cat_key = argcheck{
+	doc =  [[
+Checks if categorical key exists
+
+@ARGT
+
+_Return value_: boolean
+]],
+	{name="self", type="Dataseries"},
+	{name='value', type='number|string',
+	 doc='The value that should be present in the categorical hash'},
+	call=function(self, value)
+	assert(self:is_categorical(), "The series isn't categorical")
+
+	return not isnan(self:from_categorical(value))
+end}
+
+Dataseries.has_cat_value = argcheck{
+	doc =  [[
+Checks if categorical value exists
+
+@ARGT
+
+_Return value_: boolean
+]],
+	{name="self", type="Dataseries"},
+	{name='value', type='number|string',
+	 doc='The value that should be present in the categorical hash'},
+	call=function(self, value)
+	assert(self:is_categorical(), "The series isn't categorical")
+
+	return self:to_categorical(value) ~= nil
 end}
