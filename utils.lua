@@ -155,8 +155,11 @@ table.get_val_string = function(tbl)
 end
 
 table.collapse2str = function(tbl, indent, start)
+	if (torch.isTypeOf(tbl, "Dataseries")) then
+		return tbl:tostring()
+	end
 	assert(torch.type(tbl) == "table" or
-	       torch.type(tbl) == "tds.Hash", 
+	       torch.type(tbl) == "tds.Hash",
 	       "The object isn't of type table: " .. torch.type(tbl))
 
 	indent = indent or ""
@@ -194,7 +197,11 @@ table.collapse2str = function(tbl, indent, start)
 			else
 				local v_string = tostring(v)
 				if (#v_string > 50) then
-					ret = ret .. "'" .. k .. "'=> '" .. v_string:sub(1, 50) .. "...'"
+					ret = ret .. "'" .. k .. "'=> '" .. v_string:sub(1, 50) .. "..."
+					if (v_string:match("^[[]")) then
+						ret = ret .. "]"
+					end
+					ret = ret .. "'"
 				else
 					ret = ret .. "'" .. k .. "'=> '" .. v_string .. "'"
 				end
