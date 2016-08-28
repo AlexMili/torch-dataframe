@@ -10,7 +10,6 @@ env:
   global:
     - TORCH_SERVER=https://raw.githubusercontent.com/torch/rocks/master/
   matrix:
-    - LUA="LUA51"
     - LUA="LUA52"
     - LUA="LUA53"
     - LUA="LUAJIT20"
