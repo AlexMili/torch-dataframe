@@ -164,14 +164,21 @@ _Return value_: self
 	-- Check that all columns with a length > 1 has the same number of rows (length)
 	local length = -1
 	for k,v in pairs(data) do
-		if (type(v) == 'table') then
+		if (torch.type(v) == 'table') then
 			if (length > 1) then
 				assert(length == table.maxn(v),
 				       "The length of the provided tables do not match")
 			else
 				length = math.max(length, table.maxn(v))
 			end
+		elseif (torch.type(v):match("Dataseries")) then
+			if (length > 1) then
+				assert(length == #v,
+				       "The length of the provided tables do not match")
 			else
+				length = math.max(length, #v)
+			end
+		else
 			length = math.max(1, length)
 		end
 	end
