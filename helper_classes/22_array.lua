@@ -27,7 +27,9 @@ function da:__init(...)
 
 	local array_data = {}
 	if (torch.isTensor(arg)) then
-		array_data = torch.totable(arg)
+		array_data = arg:totable()
+	elseif (torch.type(arg) == "Dataseries") then
+		array_data = arg:to_table()
 	else
 		for i=1,#arg do
 			assert(type(arg[i]) ~= "table",

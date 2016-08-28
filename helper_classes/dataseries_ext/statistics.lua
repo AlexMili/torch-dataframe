@@ -171,7 +171,7 @@ _Return value_: table with the highest indexes, max value
 
 	local highest_indx = {}
 	local highest = false
-	for i=1,self.size() do
+	for i=1,self:size() do
 		local v = self:get(i)
 		if (not highest or highest < v) then
 			highest = v

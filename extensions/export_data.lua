@@ -91,8 +91,9 @@ You can export selected columns using the columns argument:
 	for _,k in pairs(columns) do
 		self:assert_has_column(k)
 		assert(self:is_numerical(k), "Column " .. tostring(k) .. " is not numerical")
-		numeric_dataset[k] =  self:get_column(k):to_tensor()
-		local current_type = self:get_column(k):type()
+		local col = self:get_column(k)
+		numeric_dataset[k] =  col:to_tensor()
+		local current_type = col:type()
 
 		for idx,tnsr_type in ipairs(tensor_types) do
 			if (current_type:match(tnsr_type)) then

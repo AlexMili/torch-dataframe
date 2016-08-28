@@ -122,7 +122,7 @@ _Return value_: self
 		self:drop('indexes')
 	end
 
-	self:add_column('indexes', indexes)
+	self:add_column('indexes', Dataseries(indexes))
 
 	return self
 end}
@@ -180,7 +180,7 @@ _Return value_: self
 
 	-- TODO: an appealing alternative would be to store the label by ref. but this requires quite a few changes...
 	-- Column does not have to be numerical for this to work
-	self:add_column('labels', labels)
+	self:add_column('labels', Dataseries(labels))
 
 	return self
 end}
@@ -411,7 +411,7 @@ _Return value_: integer
 		return self.n_rows
 	end
 
-	return #self.parent.columns
+	return #self.parent.column_order
 end}
 
 subset.shape = argcheck{
@@ -427,7 +427,7 @@ _Return value_: table
 ]],
 	{name="self", type="Df_Subset"},
 	call=function(self)
-	return {rows=self.n_rows,cols=#self.parent.columns}
+	return {rows=self.n_rows,cols=#self.parent.column_order}
 end}
 
 

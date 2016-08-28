@@ -124,7 +124,7 @@ use. The method is primarily intended for internal use.
 _Return value_: Dataframe or Batchframe
 ]],
 	{name="self", type="Dataframe"},
-	{name='index_items', type='Df_Array', doc='The indexes to retrieve'},
+	{name='index_items', type='Df_Array|Dataseries', doc='The indexes to retrieve'},
 	{name='frame_type', type='string',
 	 doc=[[Choose any of the avaiable frame Dataframe classes to be returned as:
 	 - Dataframe
@@ -135,7 +135,12 @@ _Return value_: Dataframe or Batchframe
 	{name='class_args', type='Df_Tbl', opt=true,
 	 doc='Arguments to be passed to the class initializer'},
 	call = function(self, index_items, frame_type, class_args)
-	index_items = index_items.data
+	if (torch.isTypeOf(index_items, "Df_Array")) then
+		index_items = index_items.data
+	else
+		index_items = index_items:to_table()
+	end
+
 	frame_type = frame_type or torch.type(self)
 
 	if (class_args) then

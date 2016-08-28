@@ -401,7 +401,7 @@ _Return value_: Df_Subset, Dataframe or Batchframe
 	end
 
 	local create_args = {
-		index_items = Df_Array(sub_obj:get_column('indexes')),
+		index_items = sub_obj:get_column('indexes'),
 		frame_type = frame_type
 	}
 
