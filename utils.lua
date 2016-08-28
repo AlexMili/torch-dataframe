@@ -154,7 +154,7 @@ table.get_val_string = function(tbl)
 	return ret
 end
 
-table.collapse2str = function(tbl, indent, start)
+table.collapse2str = function(tbl, indent, start, limit)
 	if (torch.isTypeOf(tbl, "Dataseries")) then
 		return tbl:tostring()
 	end
@@ -162,6 +162,7 @@ table.collapse2str = function(tbl, indent, start)
 	       torch.type(tbl) == "tds.Hash",
 	       "The object isn't of type table: " .. torch.type(tbl))
 
+	limit = limit or 50
 	indent = indent or ""
 	start = start or indent
 	local ret = start
@@ -196,8 +197,8 @@ table.collapse2str = function(tbl, indent, start)
 				ret = ret .. "'" .. k .. "'=> Tensor with size: '" .. tostring(v:size()) .. "'"
 			else
 				local v_string = tostring(v)
-				if (#v_string > 50) then
-					ret = ret .. "'" .. k .. "'=> '" .. v_string:sub(1, 50) .. "..."
+				if (#v_string > limit) then
+					ret = ret .. "'" .. k .. "'=> '" .. v_string:sub(1, limit) .. "..."
 					if (v_string:match("^[[]")) then
 						ret = ret .. "]"
 					end
@@ -269,10 +270,11 @@ table._dump = function(tbl, txt)
 	io.stderr:write(dump_str)
 end
 
-_dump = function(var, txt)
+_dump = function(var, txt, limit)
+	limit = limit or 50
 	local dump_str = ""
 	if (torch.type(var) == "table") then
-		dump_str = ("\n-[ Table dump ]-\n%s"):format(table.collapse2str(var))
+		dump_str = ("\n-[ Table dump ]-\n%s"):format(table.collapse2str(var, nil, nil, limit))
 	elseif(torch.type(var):match("Tensor")) then
 		dump_str = ("\n-[ Tensor dump ]-\n%s"):format(tostring(var:size()))
 	else
