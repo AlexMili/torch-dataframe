@@ -122,6 +122,7 @@ _Return value_: Dataframe|table
 			else
 				count[current_key_value] = count[current_key_value] + 1
 			end
+
 		else
 			no_missing = no_missing + 1
 		end
@@ -142,7 +143,7 @@ _Return value_: Dataframe|table
 	end
 
 	if (not as_dataframe) then
-		return data
+		return count
 	end
 
 	return convert_table_2_dataframe{

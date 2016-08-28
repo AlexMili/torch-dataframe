@@ -35,14 +35,6 @@ describe("Usual statistics functions", function()
 				{[8]=1, [9]=1, ["_missing_"] = 1})
 		end)
 
-		it("Doesn't count missing values when categorical",function()
-			df:as_categorical('Col C')
-			assert.are.same(df:value_counts{column_name='Col C', as_dataframe=false}, {[8]=1, [9]=1})
-
-			df:as_string('Col C')
-			assert.are.same(df:value_counts{column_name='Col C', as_dataframe=false}, {[8]=1, [9]=1})
-		end)
-
 		it("Count integer frequencies when 'normalize' argument is set to true",function()
 			assert.are.same(df:value_counts{column_name ='Col A',normalize = true, as_dataframe=false},
 				{[1] = 1/3, [2] = 1/3, [3] = 1/3})
@@ -68,10 +60,30 @@ describe("Usual statistics functions", function()
 		         ['Col A'] = {[1] = 1, [2] = 1, [3] = 1}})
 		end)
 
-		it("Count all colmns values with missing values",function()
-			assert.are.same(df:value_counts{dropna=false, as_dataframe=false},
-		         {['Col C'] = {[8]=1, [9]=1, ["_missing_"] = 1},
-		         ['Col A'] = {[1] = 1, [2] = 1, [3] = 1, ["_missing_"] = 0}})
+		it("Count all colmns  values with missing values",function()
+			assert.are.same(
+				df:value_counts{dropna=false, as_dataframe=false},
+				{
+					['Col C'] = {[8]=1, [9]=1, ["_missing_"] = 1},
+					['Col A'] = {[1] = 1, [2] = 1, [3] = 1, ["_missing_"] = 0}
+				})
+		end)
+
+		it("The missing value counts shouldn't be affected by categorical status",
+			function()
+			local df = Dataframe("./data/advanced_short.csv")
+			df:as_categorical('Col C')
+			assert.are.same(df:value_counts{column_name='Col C', as_dataframe=false},
+			                {[8]=1, [9]=1})
+
+			df:as_string('Col C')
+			assert.are.same(df:value_counts{column_name='Col C', as_dataframe=false},
+			                {[8]=1, [9]=1})
+
+			df:as_categorical('Col C')
+			df:fill_na('Col C', 0)
+			assert.are.same(df:value_counts{column_name='Col C', as_dataframe=false},
+			                {[8]=1, [9]=1, __nan__=1})
 		end)
 	end)
 

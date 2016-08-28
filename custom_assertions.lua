@@ -131,8 +131,7 @@ local function torch_same(state, arguments, level)
 	if torch.type(arguments[1]) == 'table' and
 	   torch.type(arguments[2]) == 'table' then
 
-		local result, crumbs = util.deepcompare(arguments[1], arguments[2], true)
-
+		local result, crumbs = deepcompare(arguments[1], arguments[2], true)
 		-- switch arguments for proper output message
 		-- util.tinsert(arguments, 1, util.tremove(arguments, 2))
 

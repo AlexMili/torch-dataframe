@@ -62,13 +62,13 @@ _Return value_: self
 		self:_check_and_prep_row_argmnt{rows = rows,
 		                                add_new_columns = true,
 		                                add_old_columns = true}
-
 	for _, column_name in pairs(self.column_order) do
 		for j = index,(index + no_rows_2_insert - 1) do
 			value = rows[column_name][j-index + 1]
 			self.dataset[column_name]:insert(j, value)
 		end
 	end
+	self.n_rows = self.n_rows + no_rows_2_insert
 	self:_infer_schema()
 
 	return self
@@ -125,8 +125,19 @@ Dataframe._check_and_prep_row_argmnt  = argcheck{
 	local new_columns = {}
 	for k,v in pairs(rows) do
 		-- Force all input into tables
-		if (type(v) ~= 'table') then
-			v = {v}
+		local thtype = torch.type(v)
+		if (thtype ~= 'table') then
+			if (thtype == "number" or
+			    thtype == "string" or
+			    thtype == "boolean") then
+				v = {v}
+			elseif (v.totable) then
+				v = v:totable()
+			elseif (v.to_table) then
+				v = v:to_table()
+			else
+				v = {v}
+			end
 			rows[k] = v
 		end
 
@@ -187,7 +198,6 @@ _Return value_: self
 		self:_check_and_prep_row_argmnt{rows = rows,
 		                                add_new_columns = true,
 		                                add_old_columns = true}
-
 	for _, column_name in pairs(self.column_order) do
 		for j = 1,no_rows_2_insert do
 			value = rows[column_name][j]

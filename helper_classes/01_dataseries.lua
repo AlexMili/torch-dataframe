@@ -412,6 +412,7 @@ _Return value_: self
 		assert(not self:has_cat_value(default_value),
 		       "The value " .. default_value .. " is already present in the Dataseries")
 		self:add_cat_key("__nan__", default_value)
+		default_value = "__nan__"
 	end
 
 	for pos,_ in pairs(self.missing) do

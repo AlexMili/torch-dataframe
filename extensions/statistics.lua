@@ -225,6 +225,7 @@ Dataframe.get_mode = argcheck{
 	if (as_dataframe) then
 		modes = Dataframe.new()
 	end
+
 	for i = 1,#columns do
 		local cn = columns[i]
 		local value =
@@ -233,7 +234,11 @@ Dataframe.get_mode = argcheck{
 			              dropna = dropna,
 			              as_dataframe = as_dataframe}
 		if (as_dataframe) then
-			value:add_column('Column', 1, cn)
+			value:add_column{
+				column_name = 'Column',
+				pos = 1,
+				type = self:get_column(cn):get_variable_type()
+			}
 			modes:append(value)
 		else
 			modes[cn] = value

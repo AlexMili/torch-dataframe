@@ -196,7 +196,7 @@ _Return value_: self
 	end
 
 	-- Shift the missing one step to the right
-	for i=0,(self:size() - index + 1) do
+	for i=0,(self:size() - index) do
 		local pos = self:size() - i
 		if (self.missing[pos]) then
 			self.missing[pos + 1] = true

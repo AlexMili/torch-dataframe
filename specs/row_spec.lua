@@ -78,7 +78,6 @@ describe("Row functions", function()
 
 	it("Inserts three rows", function()
 		local a = Dataframe("./data/simple_short.csv")
-
 		a:insert(2, Df_Dict({['Col A']={15, 16, 17}}))
 		assert.are.same(a:shape(), {rows=7, cols=3})
 		assert.are.same(a:get_column('Col A'), {1, 15, 16, 17, 2, 3, 4})
