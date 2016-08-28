@@ -57,7 +57,7 @@ for i = 1,a:shape()["rows"] do
     table.insert(left_right, "right")
   end
 end
-a:add_column("Side", Df_Array(left_right))
+a:add_column("Side", Dataseries(Df_Array(left_right)))
 print(a:head(4):tostring(Df_Array("Weight")))
 
 a:as_categorical("Side")

@@ -10,6 +10,7 @@ Version: development
 * There is now a custom busted assertion that can compare tensors, tds, and Dataseries.
 * The csv data is entered using csvigo's `large` mode thus circumventing the memory limit for large csv's.
 * The to_/from_categorical now always return a single value when a single value is entered.
+* Add column now takes a Dataseries instead of a Df_Array
 * Generalized the argcheck by adding string.split for `|` separated arguments
 * Multiple minor bug-fixes with non-local variables
 
