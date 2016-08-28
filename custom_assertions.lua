@@ -116,6 +116,7 @@ local function deepcompare(t1,t2,ignore_mt,cycles,thresh1,thresh2)
 	return true
 end
 
+-- Adapation of the original same function for torch and Dataframe compatibility
 local function torch_same(state, arguments, level)
 	local level = (level or 1) + 1
 	local argcnt = arguments.n
@@ -162,11 +163,76 @@ local function torch_same(state, arguments, level)
 	return result
 end
 
-local function set_message(state, arguments, level)
-  state.failure_message = arguments[1]
+local function torch_same_elements(state, arguments, level)
+	local level = (level or 1) + 1
+	local argcnt = arguments.n
+	assert(argcnt > 1, s("assertion.internal.argtolittle", { "same", 2, tostring(argcnt) }), level)
+
+	for i=1,2 do
+		if (torch.type(arguments[i]):match("Dataseries") or
+		    torch.type(arguments[i]):match("torch.*Tensor")) then
+			arguments[i] = arguments[i]:to_table()
+		end
+	end
+
+	set_failure_message(state, arguments[3])
+	for _,needle in ipairs(arguments[1]) do
+		found = false
+		for _,hay in ipairs(arguments[2]) do
+			if (needle == hay) then
+				found = true
+				break
+			end
+		end
+
+		if (not found) then
+			return false
+		end
+	end
+
+	return true
+end
+
+local function torch_same_keys(state, arguments, level)
+	local level = (level or 1) + 1
+	local argcnt = arguments.n
+	assert(argcnt > 1, s("assertion.internal.argtolittle", { "same", 2, tostring(argcnt) }), level)
+
+	for i=1,2 do
+		if (torch.type(arguments[i]):match("Dataseries") or
+		    torch.type(arguments[i]):match("torch.*Tensor")) then
+			arguments[i] = arguments[i]:to_table()
+		end
+	end
+
+	set_failure_message(state, arguments[3])
+	for needle,_ in pairs(arguments[1]) do
+		found = false
+		for hay,_ in pairs(arguments[2]) do
+			if (needle == hay) then
+				found = true
+				break
+			end
+		end
+
+		if (not found) then
+			return false
+		end
+	end
+
+	return true
 end
 
 -- Override the original "same" with our own method
 assert:register("assertion", "same",
                 torch_same,
                 "assertion.same.positive", "assertion.same.negative")
+
+-- Register custom helperes
+assert:register("assertion", "same_keys",
+                torch_same_keys,
+                "assertion.same.positive", "assertion.same.negative")
+
+assert:register("assertion", "same_elements",
+                torch_same_elements,
+               "assertion.same.positive", "assertion.same.negative")
