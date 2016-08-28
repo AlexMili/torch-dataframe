@@ -32,6 +32,7 @@ build = {
 			["Dataframe.init"] = 'init.lua',
 			["Dataframe.utils"] = 'utils.lua',
 			["Dataframe.argcheck"] = 'argcheck.lua',
+			["Dataframe.custom_assertions"] = 'custom_assertions.lua',
 			["Dataframe.main"] = 'main.lua',
 			["Dataframe.extensions.metatable"] = 'extensions/metatable.lua',
 			["Dataframe.extensions.categorical"] = 'extensions/categorical.lua',
@@ -50,6 +51,17 @@ build = {
 			["Dataframe.sub_classes.subset_extensions.samplers"] = 'sub_classes/subset_extensions/samplers.lua',
 
 			["Dataframe.helper_classes.01_dataseries"] = 'helper_classes/01_dataseries.lua',
+			["Dataframe.helper_classes.dataseries_ext.categorical"] =
+				'helper_classes/dataseries_ext/categorical.lua',
+			["Dataframe.helper_classes.dataseries_ext.export"] =
+				'helper_classes/dataseries_ext/export.lua',
+			["Dataframe.helper_classes.dataseries_ext.metatable"] =
+				'helper_classes/dataseries_ext/metatable.lua',
+			["Dataframe.helper_classes.dataseries_ext.sngl_elmnt_ops"] =
+				'helper_classes/dataseries_ext/sngl_elmnt_ops.lua',
+			["Dataframe.helper_classes.dataseries_ext.statistics"] =
+				'helper_classes/dataseries_ext/statistics.lua',
+
 			["Dataframe.helper_classes.10_iterator"] = 'helper_classes/10_iterator.lua',
 			["Dataframe.helper_classes.11_paralleliterator"] = 'helper_classes/11_paralleliterator.lua',
 			["Dataframe.helper_classes.20_tbl"] = 'helper_classes/20_tbl.lua',
