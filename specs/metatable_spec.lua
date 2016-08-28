@@ -48,8 +48,8 @@ describe("Indexing the dataframe", function()
 		local df = Dataframe("./data/simple_short.csv")
 
 		it("Set a single row",function()
-			df[1]= {["Col A"] = "new value"}
-			assert.are.same(df[1]["Col A"], "new value")
+			df[1]= {["Col A"] = 3231}
+			assert.are.same(df[1]["Col A"], 3231)
 		end)
 	end)
 
