@@ -155,7 +155,9 @@ table.get_val_string = function(tbl)
 end
 
 table.collapse2str = function(tbl, indent, start)
-	assert(type(tbl) == "table", "The object isn't of type table: " .. type(tbl))
+	assert(torch.type(tbl) == "table" or
+	       torch.type(tbl) == "tds.Hash", 
+	       "The object isn't of type table: " .. torch.type(tbl))
 
 	indent = indent or ""
 	start = start or indent
