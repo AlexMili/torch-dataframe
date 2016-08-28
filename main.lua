@@ -146,7 +146,7 @@ Dataframe._infer_data_schema = argcheck{
 	for key,column in pairs(data) do
 		local len = 1
 		if (type(column) == "table") then
-			len = #column
+			len = table.maxn(column)
 		end
 		if (collength ~= nil) then
 			assert(collength == len or
@@ -154,28 +154,31 @@ Dataframe._infer_data_schema = argcheck{
 			       collength == 1,
 			      ("Column %s doesn't match the length of the other columns %d ~= %d"):
 			      format(key, len, collength))
-			collength = math.max(len, len)
+			collength = math.max(collength, len)
 		else
 			collength = len
 		end
 
 	end
-
 	rows2explore = math.min(rows2explore, collength)
 
 	self.schema = {}
 	for cn,col_vals in pairs(data) do
-		for i=first_data_row,rows2explore do
-			if (type(col_vals) == "number" or
-			    type(col_vals) == "boolean" or
-			    type(col_vals) == "string") then
-				self.schema[cn] =
-					get_variable_type{value = col_vals,
-					                  prev_type = self.schema[cn]}
-			else
-				self.schema[cn] =
-					get_variable_type{value = col_vals[i],
-					                  prev_type = self.schema[cn]}
+		if (torch.isTypeOf(col_vals, "Dataseries")) then
+			self.schema[cn] = col_vals:get_variable_type()
+		else
+			for i=first_data_row,rows2explore do
+				if (type(col_vals) == "number" or
+				    type(col_vals) == "boolean" or
+				    type(col_vals) == "string") then
+					self.schema[cn] =
+						get_variable_type{value = col_vals,
+						                  prev_type = self.schema[cn]}
+				elseif(col_vals[i]) then
+					self.schema[cn] =
+						get_variable_type{value = col_vals[i],
+						                  prev_type = self.schema[cn]}
+				end
 			end
 		end
 	end

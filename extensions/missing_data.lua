@@ -65,7 +65,7 @@ _Return value_: single integer
 	call=function(self, column)
 	self:assert_has_column(column)
 
-	return self.dataset[column]:count_na()
+	return self:get_column(column):count_na()
 end}
 
 Dataframe.fill_na = argcheck{

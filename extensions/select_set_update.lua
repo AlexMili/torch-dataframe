@@ -493,13 +493,28 @@ _Return value_: Dataframe
 	self:assert_has_not_column(id_name)
 	self:assert_has_not_column(value_name)
 
+	local type = nil
 	for _,column_name in ipairs(columns) do
 		self:assert_has_column(column_name)
+		local new_type = self:get_column(column_name):get_variable_type()
+		if (type) then
+			assert(type == new_type,
+			      ("Convert the column types to the same before calling wide2long. %s ~= %s (column: %s)"):
+			      format(type, new_type, column_name))
+		else
+			type = new_type
+		end
 	end
 
 	local ret = self:copy()
-	ret:add_column(id_name)
-	ret:add_column(value_name)
+	ret:add_column{
+		column_name = id_name,
+		type = "string"
+	}
+	ret:add_column{
+		column_name = value_name,
+		type = type
+	}
 
 	all_columns_na = function(row, columns)
 		for _,column_name in ipairs(columns) do
