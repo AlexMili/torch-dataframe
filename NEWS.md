@@ -3,6 +3,9 @@ News file for torch-dataframe
 
 Version: development
 --------------------
+* The data is now stored in Dataseries that handles all the manipulations, statistics, categoricals, etc internally. The data backend is either a tensor or a tds.Vec in order to better accomodate large datasets.
+* The csv data is entered using csvigo's `large` mode thus circumventing the memory limit for large csv's.
+* The to_/from_categorical now always return a single value when a single value is entered.
 * Generalized the argcheck by adding string.split for `|` separated arguments
 
 Version: 1.5
