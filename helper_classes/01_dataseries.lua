@@ -159,13 +159,12 @@ end}
 Dataseries._replace_data = argcheck{
 	{name="self", type="Dataseries"},
 	{name="new_data", type="Dataseries"},
-	call=function(self, data)
-	assert(self:size() == data:size(), "Can't replace when of different size")
+	call=function(self, new_data)
+	assert(self:size() == new_data:size(), "Can't replace when of different size")
 
-	self.data = data.data
-	self.missing = data.missing
-	self._variable_type = data._variable_type
-	self.categorical = data.categorical
+	for k,val in pairs(new_data) do
+		self[k] = val
+	end
 
 	return self
 end}
@@ -406,6 +405,14 @@ _Return value_: self
 	{name="default_value", type="number|string|boolean",
 	 doc="The default missing value", default=0},
 	call=function(self, default_value)
+
+	if (self:is_categorical() and
+	    not self:has_cat_key("__nan__")) then
+		assert(isint(default_value), "The default value has to be an integer")
+		assert(not self:has_cat_value(default_value),
+		       "The value " .. default_value .. " is already present in the Dataseries")
+		self:add_cat_key("__nan__", default_value)
+	end
 
 	for pos,_ in pairs(self.missing) do
 		self:set(pos, default_value)

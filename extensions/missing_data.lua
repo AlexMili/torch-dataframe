@@ -81,16 +81,14 @@ _Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	{name="column_name", type="string", doc="The column to fill"},
-	{name="default_value", type="number|string|boolean", doc="The default missing value", default=0},
+	{name="default_value", type="number|string|boolean",
+	 doc="The default missing value", default=0},
 	call=function(self, column_name, default_value)
 	self:assert_has_column(column_name)
 
-	if (self:is_categorical(column_name) and
-	    self.categorical[column_name][default_value] == nil) then
-		self.categorical[column_name]["__nan__"] = default_value
-	end
+	local column_data = self:get_column(column_name)
 
-	self.dataset[column_name]:fill_na(default_value)
+	column_data:fill_na(default_value)
 
 	return self
 end}
