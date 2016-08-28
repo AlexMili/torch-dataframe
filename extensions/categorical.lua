@@ -218,10 +218,20 @@ Converts categorical to numerical according to a column's keys
 _Return value_: table or tensor
 ]],
 	{name="self", type="Dataframe"},
-	{name='data', type='number|string|Df_Array', doc='The data to be converted'},
+	{name='data', type='Df_Array', doc='The data to be converted'},
 	{name='column_name', type='string', doc='The name of the column'},
 	{name='as_tensor', type='boolean', doc='If the returned value should be a tensor', default=false},
 	call=function(self, data, column_name, as_tensor)
 	self:assert_has_column(column_name)
 	return self:get_column(column_name):from_categorical(data, as_tensor)
+end}
+
+Dataframe.from_categorical = argcheck{
+	{name="self", type="Dataframe"},
+	{name='data', type='number|string', doc='The data to be converted'},
+	{name='column_name', type='string', doc='The name of the column'},
+	overload=Dataframe.from_categorical,
+	call=function(self, data, column_name)
+	self:assert_has_column(column_name)
+	return self:get_column(column_name):from_categorical(data)
 end}
