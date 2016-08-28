@@ -240,12 +240,12 @@ describe("Categorical column", function()
 	end
 	end)
 
-	it("Set a new value given a column name", function()
+	it("Set a new value given a column name #1", function()
 		local a = Dataframe()
 		a:load_csv{path = "./data/advanced_short.csv"}
 		a:as_categorical('Col B')
-		a:set('A', 'Col B', Df_Dict({['Col B'] = 'C'}))
 
+		a:set('A', 'Col B', Df_Dict({['Col B'] = 'C'}))
 		assert.are.same(a:get_cat_keys('Col B'), {A=1, B=2, C=3})
 
 		a:set('C', 'Col B', Df_Dict({['Col B'] = 'B'}))
@@ -271,7 +271,7 @@ describe("Categorical column", function()
 		assert.is_true(a:is_categorical('Col B'))
 	end)
 
-	it(" Loads from a CSV or a table",function()
+	it("Loads from a CSV or a table",function()
 		local a = Dataframe()
 		a:load_csv{path = "./data/advanced_short.csv"}
 		a:as_categorical('Col B')
@@ -345,8 +345,8 @@ describe("Categorical column", function()
 		assert.is.equal(ret:where('values', 'A'):get_column('count')[1], 1)
 
 		local ret = a:value_counts('Col A')
-		assert.are.same(ret:get_column('count'), {1,1,1})
-		assert.are.same(ret:get_column('values'), {1,2,3})
+		assert.are.same_elements(ret:get_column('count'), {1,1,1})
+		assert.are.same_elements(ret:get_column('values'), {1,2,3})
 
 		local ret = a:value_counts('Col C')
 		assert.are.same(ret:get_column('count'), {1,1})
