@@ -157,7 +157,9 @@ _Return value_: self
 	if (self:type():match("^tds.Vec")) then
 		self.data:remove(index)
 	else
-		if (index == self:size()) then
+		if (self:size() == 1) then
+			self.data:resize(0)
+		elseif (index == self:size()) then
 			self.data = self.data[{{1,index - 1}}]
 		elseif (index == 1) then
 			self.data = self.data[{{index + 1, self:size()}}]
