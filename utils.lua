@@ -105,7 +105,7 @@ table.exact_length = function(tbl)
 	if (torch.type(tbl):match("^tds")) then
 		return #tbl
 	end
-	
+
 	if (type(tbl) ~= 'table') then
 		return 1
 	end
@@ -247,17 +247,20 @@ if (not table.unpack) then
 end
 
 -- Util for debugging purpose
-table._dump = function(tbl)
-	local dump_str = ""
+table._dump = function(tbl, txt)
+	local dump_str
 	if (torch.type(tbl) == "table") then
 		dump_str = ("\n-[ Table dump ]-\n%s"):format(table.collapse2str(tbl))
 	else
 		dump_str = ("\n-[ not a table: '%s' ]-\ntostring(): %s"):format(torch.type(tbl), tostring(tbl))
 	end
+	if (txt) then
+		dump_str = ("\n** %s **%s"):format(txt, dump_str)
+	end
 	io.stderr:write(dump_str)
 end
 
-_dump = function(var)
+_dump = function(var, txt)
 	local dump_str = ""
 	if (torch.type(var) == "table") then
 		dump_str = ("\n-[ Table dump ]-\n%s"):format(table.collapse2str(var))
@@ -267,6 +270,9 @@ _dump = function(var)
 		dump_str = ("\n-[ not a table: '%s' ]-\ntostring(): %s"):format(torch.type(var), tostring(var))
 	end
 
+	if (txt) then
+		dump_str = ("\n** %s **%s"):format(txt, dump_str)
+	end
 	io.stderr:write(dump_str)
 end
 
