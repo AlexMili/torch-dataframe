@@ -191,10 +191,10 @@ _Return value_: self
 	for _, column_name in pairs(self.column_order) do
 		for j = 1,no_rows_2_insert do
 			value = rows[column_name][j]
-			self.dataset[column_name][self.n_rows + j] = value
+			self.dataset[column_name]:append(value)
 		end
 	end
-
+	self.n_rows = self.n_rows + no_rows_2_insert
 	self:_infer_schema()
 
 	return self
