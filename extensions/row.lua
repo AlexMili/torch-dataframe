@@ -66,10 +66,6 @@ _Return value_: self
 	for _, column_name in pairs(self.column_order) do
 		for j = index,(index + no_rows_2_insert - 1) do
 			value = rows[column_name][j-index + 1]
-			if (self:is_categorical(column_name) and
-			    not isnan(value)) then
-				vale = self:_get_raw_cat_key(column_name, value)
-			end
 			self.dataset[column_name]:insert(j, value)
 		end
 	end
@@ -195,10 +191,6 @@ _Return value_: self
 	for _, column_name in pairs(self.column_order) do
 		for j = 1,no_rows_2_insert do
 			value = rows[column_name][j]
-			if (self:is_categorical(column_name) and
-			    not isnan(value)) then
-				vale = self:_get_raw_cat_key(column_name, value)
-			end -- TODO: Should we convert string columns with '' to nan?
 			self.dataset[column_name][self.n_rows + j] = value
 		end
 	end

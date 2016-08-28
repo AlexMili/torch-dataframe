@@ -218,24 +218,6 @@ _Return value_: table
 	return {rows=self.n_rows,cols=#self.column_order}
 end}
 
--- Internal function for getting raw value for a categorical variable
-Dataframe._get_raw_cat_key = argcheck{
-	{name="self", type="Dataframe"},
-	{name="column_name", type="string", doc="The name of the column"},
-	{name="key", type="number|string|boolean|nan"},
-	call=function(self, column_name, key)
-	if (isnan(key)) then
-		return key
-	end
-
-	local keys = self:get_cat_keys(column_name)
-	if (keys[key] ~= nil) then
-		return keys[key]
-	end
-
-	return self:add_cat_key(column_name, key)
-end}
-
 Dataframe.version = argcheck{
 	doc =  [[
 <a name="Dataframe.version">
