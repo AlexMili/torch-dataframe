@@ -147,7 +147,10 @@ describe([[
 			a = Dataframe("./data/realistic_29_row_data.csv")
 			a:create_subsets()
 			a:as_categorical("Gender")
-			a:add_column("Overweight")
+			a:add_column{
+				column_name = "Overweight",
+				type = "integer"
+			}
 			a:update(
 			function(row) return true end,
 			function(row)
@@ -209,6 +212,20 @@ describe([[
 		end)
 	end)
 
+	local init_fn = function(idx)
+		-- Load the libraries needed
+		require 'torch'
+		require 'lfs'
+		if (string.match(lfs.currentdir(), "/specs$")) then
+			lfs.chdir("..")
+		end
+
+		-- Include Dataframe lib
+		dofile('init.lua')
+
+		-- Go into specs so that the loading of CSV:s is the same as always
+		lfs.chdir("specs")
+	end
 	describe([[
 		Multiple targets with a the parallel_iterator for generating tensors
 		#parallel_iterator
@@ -237,7 +254,8 @@ describe([[
 				end):
 				get_parallel_iterator{
 					batch_size = 5,
-					nthread = 2}
+					nthread = 2,
+					init = init_fn}
 
 			local sample = iterator()()
 			local data = sample.input
@@ -278,7 +296,7 @@ describe([[
 			assert.near(seq_err, total_err, 10^-6, "Errors are not identical when running alone or in batch")
 		end)
 
-		it("Classification targets #multclss", function()
+		it("Classification targets #multclss #1", function()
 			a = Dataframe("./data/realistic_29_row_data.csv")
 			a:create_subsets{
 				class_args = Df_Tbl{
@@ -288,7 +306,10 @@ describe([[
 				}
 			}
 			a:as_categorical("Gender")
-			a:add_column("Overweight")
+			a:add_column{
+				column_name = "Overweight",
+				type = "integer"
+			}
 			a:update(
 			function(row) return true end,
 			function(row)
@@ -309,7 +330,8 @@ describe([[
 				set_label_retriever(Df_Array("Gender", "Overweight")):
 				get_parallel_iterator{
 					batch_size = 5,
-					nthread = 2}
+					nthread = 2,
+					init = init_fn}
 
 			local sample = iterator()()
 			local data = sample.input
@@ -427,7 +449,10 @@ describe([[
 				}
 			}
 			a:as_categorical("Gender")
-			a:add_column("Overweight")
+			a:add_column{
+				column_name = "Overweight",
+				type = "integer"
+			}
 			a:update(
 			function(row) return true end,
 			function(row)

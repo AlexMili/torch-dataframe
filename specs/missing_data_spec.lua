@@ -46,7 +46,7 @@ describe("Dataframe class", function()
 		assert.are.same(a:get_column('Col A'), {1,2,-1})
 	end)
 
-	it("The count_na should return a Dataframe by default", function()
+	it("The count_na should #1 return a Dataframe by default", function()
 		local a = Dataframe("./data/advanced_short.csv")
 
 		local ret = a:count_na()
