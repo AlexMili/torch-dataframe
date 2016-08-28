@@ -93,7 +93,12 @@ _Return value_: self
 		self.missing[index] = true
 	else
 		if (self:is_categorical()) then
-			value = self:from_categorical(value)[1]
+			local new_value = self:from_categorical(value)[1]
+			if (isnan(new_value)) then
+				value = self:add_cat_key(value)
+			else
+				value = new_value
+			end
 		end
 		self.missing[index] = nil
 		self.data[index] = value

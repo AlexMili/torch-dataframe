@@ -454,9 +454,6 @@ _Return value_: Dataframe
 	for i=1,#self.column_order do
 		local key = self.column_order[i]
 		if (new_values[key] ~= nil) then
-			if (self:is_categorical(key)) then
-				new_values[key] = self:_get_raw_cat_key(key, new_values[key])
-			end
 			self.dataset[key][index] = new_values[key]
 		end
 	end
