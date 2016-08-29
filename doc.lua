@@ -113,6 +113,7 @@ for group_name,group in pairs(docs) do
 		gnrl_rough_toc, gnrl_detailed_toc =
 		 	get_doc_anchors(doc_path, md_path, pd, gnrl_rough_toc, gnrl_detailed_toc)
 	end
+
 	local readmefile = io.open(sub_doc_path .. "README.md", "w")
 	readmefile:write(([[# Documentation for %s\n
 

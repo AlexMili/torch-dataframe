@@ -26,6 +26,7 @@ add apropriate anchor tags during documentation.
 ## Dataseries - Dataframe's data storage
 
 
+- [Dataseries](dataseries/init.md)
 - [Categorical functions](dataseries/categorical.md)
 - [Export functions](dataseries/export.md)
 - [Metatable functions](dataseries/metatable.md)
@@ -146,6 +147,23 @@ add apropriate anchor tags during documentation.
 ## Dataseries - Dataframe's data storage
 
 
+- **[Dataseries](dataseries/init.md)**
+  - [Dataseries.__init(self, size[, type])](dataseries/init.md#Dataseries.__init)
+  - [Dataseries.copy(self)](dataseries/init.md#Dataseries.copy)
+  - [Dataseries.size(self)](dataseries/init.md#Dataseries.size)
+  - [Dataseries.resize(self, new_size)](dataseries/init.md#Dataseries.resize)
+  - [Dataseries.assert_is_index(self, index[, plus_one])](dataseries/init.md#Dataseries.assert_is_index)
+  - [Dataseries.is_numerical(self)](dataseries/init.md#Dataseries.is_numerical)
+  - [Dataseries.is_boolean(self)](dataseries/init.md#Dataseries.is_boolean)
+  - [Dataseries.is_string(self)](dataseries/init.md#Dataseries.is_string)
+  - [Dataseries.type(self)](dataseries/init.md#Dataseries.type)
+  - [Dataseries.get_variable_type(self)](dataseries/init.md#Dataseries.get_variable_type)
+  - [Dataseries.boolean2tensor(self, false_value, true_value)](dataseries/init.md#Dataseries.boolean2tensor)
+  - [Dataseries.fill(self, default_value)](dataseries/init.md#Dataseries.fill)
+  - [Dataseries.fill_na(self[, default_value])](dataseries/init.md#Dataseries.fill_na)
+  - [Dataseries.tostring(self[, max_elmnts])](dataseries/init.md#Dataseries.tostring)
+  - [Dataseries.sub(self[, start][, stop])](dataseries/init.md#Dataseries.sub)
+  - [Dataseries.eq(self, other)](dataseries/init.md#Dataseries.eq)
 - **[Categorical functions](dataseries/categorical.md)**
   - [Dataseries.as_categorical(self[, levels][, labels][, exclude])](dataseries/categorical.md#Dataseries.as_categorical)
   - [Dataseries.add_cat_key(self, key[, key_index])](dataseries/categorical.md#Dataseries.add_cat_key)
