@@ -262,4 +262,30 @@ describe("Column operations", function()
 			assert.has_error(function() a:cbind(c) end)
 		end)
 	end)
+
+	describe("Boolean columns", function()
+		a = Dataframe(Df_Dict{
+			nmbr = {1, 2, 3},
+			str = {"a", "b", "c"},
+			bool = {true, false, true}
+		})
+
+		it("Check that column type is boolean", function()
+			assert.is_true(a:is_boolean("bool"))
+			assert.is_false(a:is_boolean("nmbr"))
+			assert.is_false(a:is_boolean("str"))
+		end)
+
+		it("Verify that boolean2tensor conversion works", function()
+			a:boolean2tensor{
+				column_name = "bool",
+				true_value = 1,
+				false_value = 2
+			}
+
+			assert.is_false(a:is_boolean("bool"))
+			assert.is_true(a:is_numerical("bool"))
+			assert.are.same(a:get_column("bool"), {1,2,1	})
+		end)
+	end)
 end)
