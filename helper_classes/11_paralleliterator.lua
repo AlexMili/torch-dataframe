@@ -8,10 +8,18 @@
 	same directory.
 ]]--
 
-require 'torchnet'
-local Threads = require 'threads'
 local argcheck = require 'argcheck'
 local doc = require 'argcheck.doc'
+local torchnet
+if (doc.__record) then
+	doc.stop()
+	torchnet = require "torchnet"
+	doc.record()
+else
+	torchnet = require "torchnet"
+end
+
+local Threads = require 'threads'
 if (not Df_Iterator) then
 	require 'Dataframe.helper_classes.iterator'
 end

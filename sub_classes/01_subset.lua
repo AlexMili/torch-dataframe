@@ -3,10 +3,17 @@ local Dataframe = params[1]
 local current_file_path = params[2] -- used for loading extensions at the end
 
 require 'torch'
-local tnt = require 'torchnet'
 
 local argcheck = require "argcheck"
 local doc = require "argcheck.doc"
+local tnt
+if (doc.__record) then
+	doc.stop()
+	tnt = require "torchnet"
+	doc.record()
+else
+	v = require "torchnet"
+end
 
 doc[[
 
