@@ -213,12 +213,7 @@ end}
 
 -- Load the extensions
 local ext_path = string.gsub(current_file_path, "[^/]+$", "") .. "subset_extensions/"
-local ext_files = paths.get_sorted_files(ext_path)
-for _, extension_file in pairs(ext_files) do
-  local file = ext_path .. extension_file
-  assert(loadfile(file))(subset)
-end
-
+load_dir_files(ext_path, {subset})
 
 subset.get_batch = argcheck{
 	doc =  [[
