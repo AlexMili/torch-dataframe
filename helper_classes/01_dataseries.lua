@@ -360,7 +360,7 @@ Converts a boolean Dataseries into a torch.ByteTensor
 
 @ARGT
 
-_Return value_: self
+_Return value_: self, boolean indicating successful conversion
 ]],
 	{name="self", type="Dataseries"},
 	{name="false_value", type="number",
@@ -368,6 +368,11 @@ _Return value_: self
 	{name="true_value", type="number",
 	 doc="The numeric value for true"},
 	call=function(self, false_value, true_value)
+	if (not self:is_boolean()) then
+		warning("The series isn't a boolean")
+		return self, false
+	end
+
 	local data = torch.ByteTensor(self:size())
 	for i=1,self:size() do
 		local val = self:get(i)
@@ -382,7 +387,7 @@ _Return value_: self
 	self.data = data
 	self._variable_type = "integer"
 
-	return self
+	return self, true
 end}
 
 Dataseries.fill = argcheck{
