@@ -30,9 +30,11 @@ build = {
 	type = 'builtin',
 	modules = {
 			["Dataframe.init"] = 'init.lua',
-			["Dataframe.utils"] = 'utils.lua',
+
+			["Dataframe.utils.loader"] = 'utils/loader.lua',
+			["Dataframe.utils.utils"] = 'utils/utils.lua',
 			["Dataframe.argcheck"] = 'argcheck.lua',
-			["Dataframe.custom_assertions"] = 'custom_assertions.lua',
+
 			["Dataframe.main"] = 'main.lua',
 			["Dataframe.extensions.metatable"] = 'extensions/metatable.lua',
 			["Dataframe.extensions.categorical"] = 'extensions/categorical.lua',

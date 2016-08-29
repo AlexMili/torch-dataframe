@@ -535,8 +535,6 @@ local dataseries_path = paths.thisfile():gsub("init.lua$", "?.lua")
 
 -- Load all extensions, i.e. .lua files in extensions directory
 ext_path = string.gsub(dataseries_path, "[^/]+$", "") .. "dataseries_ext/"
-local ext_files = paths.get_sorted_files(ext_path)
-for _, extension_file in pairs(ext_files) do
-  local file = ext_path .. extension_file
-  assert(loadfile(file))(Dataseries)
-end
+load_dir_files(ext_path, {Dataseries})
+
+return Dataseries
