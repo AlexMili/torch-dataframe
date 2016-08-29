@@ -15,7 +15,6 @@ else
 end
 
 doc[[
-
 ## Dataseries
 
 The Dataseries is an array of data with an additional layer
@@ -34,6 +33,8 @@ The class has the following metatable functions available:
 * `__index__`: You can access any element by `[]`
 * `__newindex__`: You can set the value of an element via `[]`
 * `__len__`: The `#` returns the length of the series
+
+
 ]]
 
 -- create class object
@@ -529,12 +530,5 @@ _Return value_: string
 
 	return true
 end}
-
-local paths = require 'paths'
-local dataseries_path = paths.thisfile():gsub("init.lua$", "?.lua")
-
--- Load all extensions, i.e. .lua files in extensions directory
-ext_path = string.gsub(dataseries_path, "[^/]+$", "") .. "dataseries_ext/"
-load_dir_files(ext_path, {Dataseries})
 
 return Dataseries
