@@ -57,7 +57,7 @@ _Return values_:
 	-- Hidden variable that makes sure we don't reload files
 	local loaded_files = {paths.thisfile()}
 
-	local function is_loaded(filepath)
+	local function is_loaded(file)
 		for _,fn in ipairs(loaded_files) do
 			if (fn == file) then
 				return true
@@ -67,11 +67,32 @@ _Return values_:
 		return false
 	end
 
+	local function load_file(file, params, docs, ret_docs)
+		if (docs) then
+			argdoc.record()
+		end
+
+		local ret = assert(loadfile(file))(table.unpack(params))
+
+		if (docs) then
+			-- Assigns to parent ret_docs
+			ret_docs[file] = argdoc.stop()
+		end
+
+		table.insert(loaded_files, file)
+		return ret
+	end
+
 	return function(path, params, docs)
 		assert(paths.dirp(path), ("The path '%s' isn't a valid directory"):format(path))
 		table.insert(params, path)
 		local ret_docs = {}
 		local ret_fpaths = {}
+
+		if (paths.filep(path .. "init.lua")) then
+			local obj = load_file(path .. "init.lua", params, docs, ret_docs)
+			table.insert(params, 1, obj)
+		end
 
 		local files = paths.get_sorted_files(path)
 		for _,file in pairs(files) do
@@ -79,18 +100,9 @@ _Return values_:
 
 			if (not is_loaded(file)) then
 
-				if (docs) then
-					argdoc.record()
-				end
-
-				assert(loadfile(file))(table.unpack(params))
-
-				if (docs) then
-					ret_docs[file] = argdoc.stop()
-				end
+				load_file(file, params, docs, ret_docs)
 
 				table.insert(ret_fpaths, file)
-				table.insert(loaded_files, file)
 			end
 		end
 
