@@ -89,6 +89,8 @@ for group_name,group in pairs(docs) do
 
 	local grp_rough_toc = ""
 	local grp_detailed_toc = ""
+	local gnrl_rough_toc = ""
+	local gnrl_detailed_toc = ""
 
 	parsed_docs[group_name] = {}
 	for _,file_name in ipairs(files[group_name]) do
@@ -101,14 +103,11 @@ for group_name,group in pairs(docs) do
 		write_doc(pd,
 		          md_path)
 
-		grp_rough_toc = grp_rough_toc .. "\n- [".. pd.title .."]("..md_path..")"
-		grp_detailed_toc = grp_detailed_toc .. "\n- [".. pd.title .."]("..md_path..")"
-		for i=1,#pd.anchors.titles do
-			grp_detailed_toc = ("%s\n  - [%s](%s#%s)"):
-				format(grp_detailed_toc, pd.anchors.titles[i], md_path, pd.anchors.tags[i])
-		end
+		grp_rough_toc, grp_detailed_toc =
+		 	get_doc_anchors(sub_doc_path, md_path, pd, grp_rough_toc, grp_detailed_toc)
+		gnrl_rough_toc, gnrl_detailed_toc =
+		 	get_doc_anchors(doc_path, md_path, pd, gnrl_rough_toc, gnrl_detailed_toc)
 	end
-
 	local readmefile = io.open(sub_doc_path .. "README.md", "w")
 	readmefile:write(([[# Documentation for %s\n
 
@@ -124,11 +123,11 @@ add apropriate anchor tags during documentation.
 
 ## Detailed table of contents (file-level + anchors)<a name=\"detailed\">
 
-%s]]):format(group_name, grp_rough_toc, grp_detailed_toc))
+%s]]):format(group_name:gsub("_", " "), grp_rough_toc, grp_detailed_toc))
 
 	-- Save the group TOCS for the general README
-	rough_toc_tbl[group_name] = grp_rough_toc
-	detailed_toc_tbl[group_name] = grp_detailed_toc
+	rough_toc_tbl[group_name] = gnrl_rough_toc
+	detailed_toc_tbl[group_name] = gnrl_detailed_toc
 end
 
 local readmefile = io.open("doc/README.md", "w")

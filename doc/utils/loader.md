@@ -1,9 +1,12 @@
 # API documentation
 
-- [paths.get_sorted_lua_files(path[, match_str])](#__paths.get_sorted_lua_files(path[, match_str])__)
+- [Package load functions](#__Package load functions__)
+- [paths.get_sorted_lua_files(path[, match_str])](#paths.get_sorted_lua_files)
 - [load_dir_files(ARGP)](#load_dir_files)
 
-<a name="__paths.get_sorted_lua_files(path[, match_str])__">
+<a name="__Package load functions__">
+## Package load functions
+
 <a name="paths.get_sorted_lua_files">
 ### paths.get_sorted_lua_files(path[, match_str])
 
