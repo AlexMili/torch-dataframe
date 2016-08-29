@@ -1,3 +1,9 @@
+# API documentation
+
+- [Df_Iterator and general about Dataframe's iterators](#__Df_Iterator and general about Dataframe's iterators__)
+- [Df_Iterator(self, dataset, batch_size[, filter][, transform][, input_transform][, target_transform])](#Df_Iterator)
+
+<a name="__Df_Iterator and general about Dataframe's iterators__">
 ## Df_Iterator and general about Dataframe's iterators
 
 The `torchnet` iterators allow a simple iteration over a dataset. If combined
@@ -80,4 +86,3 @@ my_data:create_subsets{
   [target_transform = function]    -- Allows transforming the target (label) values after the `Batchframe:to_tensor` call [has default value]
 })
 ```
-

@@ -1,4 +1,32 @@
+# API documentation
 
+- [Df_Subset](#__Df_Subset__)
+- [Df_Subset.__init(self, parent, indexes[, sampler][, label_column][, sampler_args][, batch_args])](#Df_Subset.__init)
+- [Df_Subset._clean(self)](#Df_Subset._clean)
+- [Df_Subset.set_idxs(self, indexes)](#Df_Subset.set_idxs)
+- [Df_Subset.get_idx(self, index)](#Df_Subset.get_idx)
+- [Df_Subset.set_labels(self, label_column)](#Df_Subset.set_labels)
+- [Df_Subset.set_sampler(self, sampler[, sampler_args])](#Df_Subset.set_sampler)
+- [Df_Subset.get_sampler(self, sampler[, args])](#Df_Subset.get_sampler)
+- [Sampler: linear - Df_Subset.get_sampler_linear(self)](#Df_Subset.get_sampler_linear)
+- [Sampler: ordered - Df_Subset.get_sampler_ordered(self)](#Df_Subset.get_sampler_ordered)
+- [Sampler: uniform - Df_Subset.get_sampler_uniform(self)](#Df_Subset.get_sampler_uniform)
+- [Sampler: permutation - Df_Subset.get_sampler_permutation(self)](#Df_Subset.get_sampler_permutation)
+- [Sampler: label-uniform - Df_Subset.get_sampler_label_uniform(self)](#Df_Subset.get_sampler_label_uniform)
+- [Sampler: label-distribution - Df_Subset.get_sampler_label_distribution(self, distribution)](#Df_Subset.get_sampler_label_distribution)
+- [Sampler: label-permutation - Df_Subset.get_sampler_label_permutation(self)](#Df_Subset.get_sampler_label_permutation)
+- [Df_Subset.get_batch(self, no_lines[, class_args])](#Df_Subset.get_batch)
+- [Df_Subset.reset_sampler(self)](#Df_Subset.reset_sampler)
+- [Df_Subset.get_iterator(self, batch_size[, filter][, transform][, input_transform][, target_transform])](#Df_Subset.get_iterator)
+- [Df_Subset.get_parallel_iterator(self, batch_size[, init], nthread[, filter][, transform][, input_transform][, target_transform][, ordered])](#	Df_Subset.get_parallel_iterator)
+- [Df_Subset.size(self[, dim])](#	Df_Subset.size)
+- [Df_Subset.shape(self)](#Df_Subset.shape)
+- [Df_Subset.__tostring__(self)](#	Df_Subset.__tostring__)
+- [Df_Subset.set_data_retriever(self[, data])](#Df_Subset.set_data_retriever)
+- [Df_Subset.set_label_retriever(self[, label])](#Df_Subset.set_label_retriever)
+- [Df_Subset.set_label_shape(self[, label_shape])](#Df_Subset.set_label_shape)
+
+<a name="__Df_Subset__">
 ## Df_Subset
 
 The subset class contains all the information for a specific subset of an

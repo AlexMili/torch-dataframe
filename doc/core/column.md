@@ -1,4 +1,24 @@
+# API documentation
 
+- [Column functions](#__Column functions__)
+- [Dataframe.is_numerical(self, column_name)](#Dataframe.is_numerical)
+- [Dataframe.is_string(self, column_name)](#Dataframe.is_string)
+- [Dataframe.is_boolean(self, column_name)](#Dataframe.is_boolean)
+- [Dataframe.has_column(self, column_name)](#Dataframe.has_column)
+- [Dataframe.assert_has_column(self, column_name[, comment])](#Dataframe.assert_has_column)
+- [Dataframe.assert_has_not_column(self, column_name[, comment])](#Dataframe.assert_has_not_column)
+- [Dataframe.drop(self, column_name)](#Dataframe.drop)
+- [Dataframe.add_column(self, column_name[, pos][, default_value][, type])](#Dataframe.add_column)
+- [Dataframe.get_column(self, column_name[, as_raw][, as_tensor])](#Dataframe.get_column)
+- [Dataframe.reset_column(self, columns[, new_value])](#Dataframe.reset_column)
+- [Dataframe.rename_column(self, old_column_name, new_column_name)](#Dataframe.rename_column)
+- [Dataframe.get_numerical_colnames(self)](#Dataframe.get_numerical_colnames)
+- [Dataframe.get_column_order(self, column_name[, as_tensor])](#Dataframe.get_column_order)
+- [Dataframe.swap_column_order(self, first, second)](#Dataframe.swap_column_order)
+- [Dataframe.pos_column_order(self, column_name, position)](#Dataframe.pos_column_order)
+- [Dataframe.boolean2tensor(self, column_name, false_value, true_value)](#Dataframe.boolean2tensor)
+
+<a name="__Column functions__">
 ## Column functions
 
 <a name="Dataframe.is_numerical">
@@ -105,48 +125,30 @@ You can also delete multiple columns by supplying a Df_Array
 })
 ```
 <a name="Dataframe.add_column">
-### Dataframe.add_column(self, column_name)
+### Dataframe.add_column(self, column_name[, pos][, default_value][, type])
 
 Add new column to Dataframe. Automatically orders the column last, i.e. furthest to
 the right.
 
 ```
 ({
-   self        = Dataframe  -- 
-   column_name = string     -- The column to add
+   self          = Dataframe               -- 
+   column_name   = string                  -- The column to add
+  [pos           = number]                 -- The position to input the column at, 1 == furthest to the left [default=-1]
+  [default_value = number|string|boolean]  -- The initial value for the elements [default=nan]
+  [type          = string]                 -- The type of column to add: integer, double, boolean or string
 })
 ```
 
 _Return value_: self
-The default_value argument will fill the new column. If omitted will be 0/0
+If you have a column with values to add then directly input a tds.Vec
 
 ```
 ({
-   self          = Dataframe              -- 
-   column_name   = string                 -- The column to add
-   default_value = number|string|boolean  -- The default_value
-})
-```
-You can also specify the position of the new column by using the pos argument. When
-specifying the position you also must provide the default_value.
-
-```
-({
-   self          = Dataframe              -- 
-   column_name   = string                 -- The column to add
-   pos           = number                 -- The position to input the column at, 1 == furthest to the left
-   default_value = number|string|boolean  -- The default_value
-})
-```
-If you have a column with values to add then use the Df_Array together with
-default_value
-
-```
-({
-   self           = Dataframe  -- 
-   column_name    = string     -- The column to add
-  [pos            = number]    -- The position to input the column at, 1 == furthest to the left [default=-1]
-   default_values = Df_Array   -- The default values
+   self        = Dataframe   -- 
+   column_name = string      -- The column to add
+  [pos         = number]     -- The position to input the column at, 1 == furthest to the left [default=-1]
+   column_data = Dataseries  -- The data to be stored in the column
 })
 ```
 
@@ -270,6 +272,21 @@ Set a position in the column order
    self        = Dataframe  -- 
    column_name = string     -- The name of the column
    position    = number     -- An integer that indicates the position to insert at
+})
+```
+
+_Return value_: self
+<a name="Dataframe.boolean2tensor">
+### Dataframe.boolean2tensor(self, column_name, false_value, true_value)
+
+Converts a boolean column into a torch.ByteTensor of type integer
+
+```
+({
+   self        = Dataframe  -- 
+   column_name = string     -- The boolean column that you want to convert
+   false_value = number     -- The numeric value for false
+   true_value  = number     -- The numeric value for true
 })
 ```
 

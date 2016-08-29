@@ -1,3 +1,9 @@
+# API documentation
+
+- [Df_ParallelIterator](#__Df_ParallelIterator__)
+- [Df_ParallelIterator(self, dataset, batch_size[, init], nthread[, filter][, transform][, input_transform][, target_transform][, ordered])](#Df_ParallelIterator)
+
+<a name="__Df_ParallelIterator__">
 ## Df_ParallelIterator
 
 The Df_ParallelIterator allows parallel loading when callin the `to_tensor`

@@ -1,4 +1,15 @@
+# API documentation
 
+- [Batchframe](#__Batchframe__)
+- [Batchframe.__init(self[, data][, label][, label_shape])](#Batchframe.__init)
+- [Batchframe.set_data_retriever(self[, data])](#Batchframe.set_data_retriever)
+- [Batchframe.get_data_retriever(self)](#Batchframe.get_data_retriever)
+- [Batchframe.set_label_retriever(self[, label])](#Batchframe.set_label_retriever)
+- [Batchframe.get_label_retriever(self)](#Batchframe.get_label_retriever)
+- [Batchframe.set_label_shape(self[, label_shape])](#Batchframe.set_label_shape)
+- [Batchframe.to_tensor(self, data_columns, label_columns[, label_shape])](#Batchframe.to_tensor)
+
+<a name="__Batchframe__">
 ## Batchframe
 
 The Batchframe is returned by the `Dataframe.get_batch` and contains only a subset
@@ -185,4 +196,3 @@ columns while the retriever is for the data.
 	 and thus the shape must be `NxM` or `NxMx1` for it to work as expected.
 })
 ```
-

@@ -1,4 +1,11 @@
+# API documentation
 
+- [Data save/export functions](#__Data save/export functions__)
+- [Dataframe.to_csv(self, path[, separator][, verbose])](#Dataframe.to_csv)
+- [Dataframe.to_tensor(self)](#Dataframe.to_tensor)
+- [Dataframe.get(self, idx)](#Dataframe.get)
+
+<a name="__Data save/export functions__">
 ## Data save/export functions
 
 <a name="Dataframe.to_csv">
@@ -63,4 +70,3 @@ A funtion for *torchnet* compliance. It subsets a single index and returns the
 ```
 
 _Return value_: (1) torch.tensor with 1 row and #numerical columns
-

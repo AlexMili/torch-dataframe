@@ -1,4 +1,13 @@
+# API documentation
 
+- [Metatable functions](#__Metatable functions__)
+- [Dataframe.size(self[, dim])](#Dataframe.size)
+- [Dataframe.__tostring__(self)](#	Dataframe.__tostring__)
+- [Dataframe.copy(self)](#Dataframe.copy)
+- [Dataframe.#](#Dataframe.#)
+- [Dataframe.==](#Dataframe.==)
+
+<a name="__Metatable functions__">
 ## Metatable functions
 
 <a name="Dataframe.size">

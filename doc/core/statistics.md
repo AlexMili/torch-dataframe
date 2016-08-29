@@ -1,4 +1,15 @@
+# API documentation
 
+- [Statistical functions](#__Statistical functions__)
+- [Dataframe.unique(self, column_name[, as_keys][, as_raw])](#Dataframe.unique)
+- [Dataframe.value_counts(self, column_name[, normalize][, dropna][, as_dataframe])](#Dataframe.value_counts)
+- [Dataframe.which_max(self, column_name)](#Dataframe.which_max)
+- [Dataframe.which_min(self, column_name)](#Dataframe.which_min)
+- [Dataframe.get_mode(self, column_name[, normalize][, dropna][, as_dataframe])](#Dataframe.get_mode)
+- [Dataframe.get_max_value(self, column_name)](#Dataframe.get_max_value)
+- [Dataframe.get_min_value(self, column_name)](#Dataframe.get_min_value)
+
+<a name="__Statistical functions__">
 ## Statistical functions
 
 <a name="Dataframe.unique">
@@ -38,24 +49,12 @@ column counts with column name as key.
 ```
 
 _Return value_: Dataframe or nested table
-If columns is left out then all numerical columns are used
-
-```
-({
-   self         = Dataframe  -- 
-  [normalize    = boolean]   -- 	 	If True then the object returned will contain the relative frequencies of
-		the unique values. [default=false]
-  [dropna       = boolean]   -- Don’t include counts of NaN (missing values). [default=true]
-  [as_dataframe = boolean]   -- Return a dataframe [default=true]
-})
-```
-
 Use the columns argument together with a Df_Array for specifying columns
 
 ```
 ({
    self         = Dataframe  -- 
-   columns      = Df_Array   -- The columns to inspect
+  [columns      = Df_Array]  -- The columns to inspect
   [normalize    = boolean]   -- 	 	If True then the object returned will contain the relative frequencies of
 		the unique values. [default=false]
   [dropna       = boolean]   -- Don’t include counts of NaN (missing values). [default=true]
@@ -91,9 +90,14 @@ share the lowest value.
 })
 ```
 
-_Return value_: Table, lowest value
+_Return value_: table with the lowest indexes, lowest value
 <a name="Dataframe.get_mode">
 ### Dataframe.get_mode(self, column_name[, normalize][, dropna][, as_dataframe])
+
+Gets the mode for a Dataseries. A mode is defined as the most frequent value.
+Note that if two or more values are equally common then there are several modes.
+The mode is useful as it can be viewed as any algorithms most naive guess where
+it always guesses the same value.
 
 ```
 ({
@@ -107,23 +111,11 @@ _Return value_: Table, lowest value
 ```
 
 _Return value_: Table or Dataframe
-If you provide no column name then all numerical columns will be used
 
 ```
 ({
    self         = Dataframe  -- 
-  [normalize    = boolean]   -- 	 	If True then the object returned will contain the relative frequencies of
-		the unique values. [default=false]
-  [dropna       = boolean]   -- Don’t include counts of NaN (missing values). [default=true]
-  [as_dataframe = boolean]   -- Return a dataframe [default=true]
-})
-```
-
-
-```
-({
-   self         = Dataframe  -- 
-   columns      = Df_Array   -- The columns of interest
+  [columns      = Df_Array]  -- The columns of interest
   [normalize    = boolean]   -- 	 	If True then the object returned will contain the relative frequencies of
 		the unique values. [default=false]
   [dropna       = boolean]   -- Don’t include counts of NaN (missing values). [default=true]
@@ -134,9 +126,9 @@ If you provide no column name then all numerical columns will be used
 <a name="Dataframe.get_max_value">
 ### Dataframe.get_max_value(self, column_name)
 
-Gets the maximum value for a given column. Returns maximum values for all
-numerical columns if none is provided. Keeps the order although not if
-with_named_keys == true as the keys will be sorted in alphabetic order.
+Gets the maximum value. Similar in function to which_max but it will also return
+the maximum integer value for the categorical values. This can be useful when
+deciding on the number of neurons in the final layer.
 
 ```
 ({
@@ -151,29 +143,18 @@ You can in addition choose or supplying a Df_Array with the columns of interest
 ```
 ({
    self            = Dataframe  -- 
-   columns         = Df_Array   -- The names of the columns of interest
+  [columns         = Df_Array]  -- The names of the columns of interest
   [with_named_keys = boolean]   -- If the index should be named keys [default=false]
   [as_dataframe    = boolean]   -- Return a dataframe [default=true]
 })
 ```
 
 _Return value_: Table or Dataframe
-You can in addition choose all numerical columns by skipping the column name
-
-```
-({
-   self            = Dataframe  -- 
-  [with_named_keys = boolean]   -- If the index should be named keys [default=false]
-  [as_dataframe    = boolean]   -- Return a dataframe [default=true]
-})
-```
 <a name="Dataframe.get_min_value">
 ### Dataframe.get_min_value(self, column_name)
 
 Gets the minimum value for a given column. Returns minimum values for all
-numerical columns if none is provided. Keeps the order although not if
-with_named_keys == true as the keys will be sorted according to Lua's hash table
-algorithm.
+numerical columns if none is provided.
 
 ```
 ({
@@ -188,19 +169,10 @@ You can in addition choose or supplying a Df_Array with the columns of interest
 ```
 ({
    self            = Dataframe  -- 
-   columns         = Df_Array   -- The names of the columns of interest
+  [columns         = Df_Array]  -- The names of the columns of interest
   [with_named_keys = boolean]   -- If the index should be named keys [default=false]
   [as_dataframe    = boolean]   -- Return a dataframe [default=true]
 })
 ```
 
 _Return value_: Table or Dataframe
-You can in addition choose all numerical columns by skipping the column name
-
-```
-({
-   self            = Dataframe  -- 
-  [with_named_keys = boolean]   -- If the index should be named keys [default=false]
-  [as_dataframe    = boolean]   -- Return a dataframe [default=true]
-})
-```
