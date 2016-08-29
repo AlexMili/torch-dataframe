@@ -1,4 +1,3 @@
-# Documentation
 # Documentation for torch-dataframe
 
 This documentation ha been auto-generated from code using the `argcheck` system.

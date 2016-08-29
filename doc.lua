@@ -137,7 +137,6 @@ add apropriate anchor tags during documentation.
 end
 
 local readmefile = io.open("doc/README.md", "w")
-readmefile:write("# Documentation\n")
 readmefile:write(([[# Documentation for torch-dataframe
 
 This documentation ha been auto-generated from code using the `argcheck` system.
