@@ -154,7 +154,9 @@ add apropriate anchor tags during documentation.
              rough_toc_tbl["sub_classes"],
              rough_toc_tbl["helper_classes"]))
 
-detailed_toc = ([[# Detailed table of contents (file-level + anchors)<a name=\"detailed\">
+detailed_toc = ([[
+
+# Detailed table of contents (file-level + anchors)<a name=\"detailed\">
 
 ## Dataframe core components
 

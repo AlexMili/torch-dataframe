@@ -43,6 +43,7 @@ add apropriate anchor tags during documentation.
 
 - [Package load functions](utils/loader.md)
 - [Utility functions](utils/utils.md)
+
 # Detailed table of contents (file-level + anchors)<a name=\"detailed\">
 
 ## Dataframe core components
