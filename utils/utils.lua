@@ -477,3 +477,12 @@ _Return value_: Dataframe
 		column_order = Df_Array(key_name, value_name)
 	}
 end}
+
+-- Helper for handling gsub()
+string.quote = (function()
+	local quotepattern = '(['..("%^$().[]*+-?"):gsub("(.)", "%%%1")..'])'
+
+	return function(str)
+    return str:gsub(quotepattern, "%%%1")
+	end
+end)()

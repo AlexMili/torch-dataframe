@@ -12,7 +12,7 @@ if (paths.filep(assert_file)) then
   assert(loadfile(assert_file))()
 end
 
--- Make utils available to all
+-- Get the loader funciton and start by making utils available to all
 local loader_file = string.gsub(dataframe_path,"?", "utils/loader")
 assert(loadfile(loader_file))()
 load_dir_files(dataframe_dir .. "utils/")

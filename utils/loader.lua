@@ -1,5 +1,6 @@
 local argcheck = require "argcheck"
 local paths = require "paths"
+local argdoc = require 'argcheck.doc'
 
 paths.get_sorted_files  = argcheck{
 	doc=[[
@@ -20,9 +21,9 @@ _Return value_: table with sorted file names
 	call=function(path, match_str)
 	local files = {}
 	for f in paths.files(path) do
-	  if (f:match(match_str)) then
-	    files[#files + 1] = f
-	  end
+		if (f:match(match_str)) then
+			files[#files + 1] = f
+		end
 	end
 
 	table.sort(files)
@@ -31,7 +32,7 @@ _Return value_: table with sorted file names
 end}
 
 load_dir_files = argcheck{
-  doc=[[
+	doc=[[
 <a name="load_dir_files">
 ### load_dir_files(ARGP)
 
@@ -39,33 +40,54 @@ Traverses a directory and loads all files within
 
 @ARPT
 
+_Return values_:
+ 1. The files loaded in the processed order
+ 2. The doc content if `docs` argument was true - otherwise it's an empty table
 ]],
 	{name="path", type="string", doc="The directory"},
-  {name="params", type="table", doc="Objects to pass to the files", default={}},
+	{name="params", type="table", doc="Objects to pass to the files", default={}},
+	{name="docs", type="boolean", doc="Run with argcheck.doc", default=false},
 	call = (function()
-  -- Hidden variable that makes sure we don't reload files
-  local loaded_files = {paths.thisfile()}
+	-- Hidden variable that makes sure we don't reload files
+	local loaded_files = {paths.thisfile()}
 
-  return function(path, params)
-    assert(paths.dirp(path), ("The path '%s' isn't a valid directory"):format(path))
-    table.insert(params, path)
+	local function is_loaded(filepath)
+		for _,fn in ipairs(loaded_files) do
+			if (fn == file) then
+				return true
+			end
+		end
 
-    local files = paths.get_sorted_files(path)
-    for _,file in pairs(files) do
-      local file = path .. file
+		return false
+	end
 
-      local already_loaded = false
-      for _,fn in ipairs(loaded_files) do
-        if (fn == file) then
-          already_loaded = true
-          break
-        end
-      end
+	return function(path, params, docs)
+		assert(paths.dirp(path), ("The path '%s' isn't a valid directory"):format(path))
+		table.insert(params, path)
+		local ret_docs = {}
+		local ret_fpaths = {}
 
-      if (not already_loaded) then
-        assert(loadfile(file))(table.unpack(params))
-        table.insert(loaded_files, file)
-      end
-    end
-  end
+		local files = paths.get_sorted_files(path)
+		for _,file in pairs(files) do
+			local file = path .. file
+
+			if (not is_loaded(file)) then
+
+				if (docs) then
+					argdoc.record()
+				end
+
+				assert(loadfile(file))(table.unpack(params))
+
+				if (docs) then
+					ret_docs[file] = argdoc.stop()
+				end
+
+				table.insert(ret_fpaths, file)
+				table.insert(loaded_files, file)
+			end
+		end
+
+		return ret_fpaths, ret_docs
+	end
 end)()}
