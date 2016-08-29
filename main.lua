@@ -322,7 +322,11 @@ _Return value_: Dataframe
 	end
 
 	if (current_version <= 1.6) then
-		assert(false, "The update to version 1.6 has not yet been implemented")
+		self.columns = nil
+		for _,cn in self.column_order do
+			self.dataset[cn] = Dataseries(Df_Array(cn))
+			self.schema[cn] = self.dataset[cn].get_variable_type()
+		end
 	end
 
 	return self
