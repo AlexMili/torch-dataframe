@@ -9,6 +9,7 @@ the different functions. Not this list may be incompleted due to failure to
 add apropriate anchor tags during documentation.
 
 
+- [Dataseries](init.md)
 - [Categorical functions](categorical.md)
 - [Export functions](export.md)
 - [Metatable functions](metatable.md)
@@ -18,6 +19,23 @@ add apropriate anchor tags during documentation.
 ## Detailed table of contents (file-level + anchors)<a name=\"detailed\">
 
 
+- **[Dataseries](init.md)**
+  - [Dataseries.__init(self, size[, type])](init.md#Dataseries.__init)
+  - [Dataseries.copy(self)](init.md#Dataseries.copy)
+  - [Dataseries.size(self)](init.md#Dataseries.size)
+  - [Dataseries.resize(self, new_size)](init.md#Dataseries.resize)
+  - [Dataseries.assert_is_index(self, index[, plus_one])](init.md#Dataseries.assert_is_index)
+  - [Dataseries.is_numerical(self)](init.md#Dataseries.is_numerical)
+  - [Dataseries.is_boolean(self)](init.md#Dataseries.is_boolean)
+  - [Dataseries.is_string(self)](init.md#Dataseries.is_string)
+  - [Dataseries.type(self)](init.md#Dataseries.type)
+  - [Dataseries.get_variable_type(self)](init.md#Dataseries.get_variable_type)
+  - [Dataseries.boolean2tensor(self, false_value, true_value)](init.md#Dataseries.boolean2tensor)
+  - [Dataseries.fill(self, default_value)](init.md#Dataseries.fill)
+  - [Dataseries.fill_na(self[, default_value])](init.md#Dataseries.fill_na)
+  - [Dataseries.tostring(self[, max_elmnts])](init.md#Dataseries.tostring)
+  - [Dataseries.sub(self[, start][, stop])](init.md#Dataseries.sub)
+  - [Dataseries.eq(self, other)](init.md#Dataseries.eq)
 - **[Categorical functions](categorical.md)**
   - [Dataseries.as_categorical(self[, levels][, labels][, exclude])](categorical.md#Dataseries.as_categorical)
   - [Dataseries.add_cat_key(self, key[, key_index])](categorical.md#Dataseries.add_cat_key)
