@@ -3,9 +3,17 @@ if (Df_Iterator) then
 	return true
 end
 
-local torchnet = require 'torchnet'
 local argcheck = require 'argcheck'
 local doc = require 'argcheck.doc'
+local torchnet
+if (doc.__record) then
+	doc.stop()
+	torchnet = require "torchnet"
+	doc.record()
+else
+	torchnet = require "torchnet"
+end
+
 
 doc[[
 ## Df_Iterator and general about Dataframe's iterators
