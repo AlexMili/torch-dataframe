@@ -2,121 +2,198 @@ local argdoc = require 'argcheck.doc'
 local paths = require 'paths'
 
 local dataframe_path = paths.thisfile():gsub("doc.lua$", "?.lua")
-
--- Make utils available to all
-local utils_file = string.gsub(dataframe_path,"?", "utils")
-assert(loadfile(utils_file))()
+local dataframe_dir = string.gsub(dataframe_path, "[^/]+$", "")
 
 -- Custom argument checks
 local argcheck_file = string.gsub(dataframe_path,"?", "argcheck")
 assert(loadfile(argcheck_file))()
 
--- README file
-if (not paths.dirp("doc")) then
-  paths.mkdir("doc")
+-- Get the core loader function
+local loader_file = string.gsub(dataframe_path,"?", "utils/loader")
+assert(loadfile(loader_file))()
+
+load_dir_files(dataframe_dir .. "utils/doc_helpers/")
+
+--[[
+The doc.lua loads everything in the same order as the init script. As
+we want to later link the scripts has three sections:
+
+1. Load the scripts and store the full docs in the docs table. The file order is
+   retained via the files table.
+2. Parse the files in the apropriate order and generate a table of content for exact_length
+   file that is written to the doc folder with the same name as the file but with
+	 `md` as file ending.
+3. Merge all the table of contents data into the README so that the docs are
+   easier to navigate.
+]]
+local docs = {}
+local files = {}
+files.utils, docs.utils = load_dir_files{
+	path = dataframe_dir .. "utils/",
+	docs = true
+}
+
+files.helper_classes, docs.helper_classes = load_dir_files{
+	path = dataframe_dir .. "helper_classes/",
+	docs = true
+}
+
+argdoc.record()
+local main_file = string.gsub(dataframe_path,"?", "main")
+local Dataframe = assert(loadfile(main_file))()
+docs.core = {[main_file] = argdoc.stop()}
+files.core = {main_file}
+
+-- Load all extensions, i.e. .lua files in extensions directory
+files.extensions, docs.extensions =
+	load_dir_files{
+		path = dataframe_dir .. "extensions/",
+		params = {Dataframe},
+		docs = true
+	}
+-- Add extensions to the core docs
+for _,fn in ipairs(files.extensions) do
+	files.core[#files.core + 1] = fn
+	docs.core[fn] = docs.extensions[fn]
 end
-local readmefile = io.open("doc/README.md", "w")
-readmefile:write("# Documentation\n")
-readmefile:write([[
+docs.extensions = nil
+files.extensions = nil
+
+files.sub_classes, docs.sub_classes =
+	-- Load all sub classes
+	load_dir_files{
+		path = dataframe_dir .. "sub_classes/",
+		params = {Dataframe},
+		docs = true
+	}
+
+--[[
+!!! Start section 2 !!!
+Parse each group, create a directory for that group, parse all files and write an
+MD for each file. Then add a Readme for that directory.
+]]
+
+local parsed_docs = {}
+local doc_path = "doc"
+if (not paths.dirp(doc_path)) then
+	paths.mkdir(doc_path)
+end
+
+local rough_toc_tbl = {}
+local detailed_toc_tbl = {}
+for group_name,group in pairs(docs) do
+	local sub_doc_path = ("%s/%s"):format(doc_path,group_name)
+	if (not paths.dirp(sub_doc_path)) then
+		paths.mkdir(sub_doc_path)
+	end
+
+	local grp_rough_toc = ""
+	local grp_detailed_toc = ""
+
+	parsed_docs[group_name] = {}
+	for _,file_name in ipairs(files[group_name]) do
+		local base_fn = paths.basename(file_name)
+		local md_path = ("%s%s"):format(sub_doc_path,
+		                                base_fn:gsub("%.lua$", ".md"))
+
+		parsed_docs[group_name][base_fn] = parse_doc(group[file_name], base_fn)
+		local pd = parsed_docs[group_name][base_fn]
+		write_doc(pd,
+		          md_path)
+
+		grp_rough_toc = grp_rough_toc .. "\n- [".. pd.title .."]("..md_path..")"
+		grp_detailed_toc = grp_detailed_toc .. "\n- [".. pd.title .."]("..md_path..")"
+		for i=1,#pd.anchors.titles do
+			grp_detailed_toc = ("%s\n  - [%s](%s#%s)"):
+				format(grp_detailed_toc, pd.anchors.titles[i], md_path, pd.anchors.tags[i])
+		end
+	end
+
+	local readmefile = io.open(sub_doc_path .. "README.md", "w")
+	readmefile:write(([[# Documentation for %s\n
 
 This documentation ha been auto-generated from code using the `argcheck` system.
 
-]])
+## Table of contents (file-level)
 
--- Documentation
-readmefile:write("## Dataframe\n\n")
-local mainfile = io.open("doc/main.md", "w")
-argdoc.record()
+Below follows a more [detailed](#detailed) table of contents with links to
+the different functions. Not this list may be incompleted due to failure to
+add apropriate anchor tags during documentation.
 
-local main_file = string.gsub(dataframe_path,"?", "main")
-local Dataframe = assert(loadfile(main_file))()
+%s
 
-content = argdoc.stop()
-title = content:split("\n")[1]
-title = trim(title:gsub("#",""))
-readmefile:write("- ["..title.."](main.md)\n")
+## Detailed table of contents (file-level + anchors)<a name=\"detailed\">
 
-mainfile:write(content)
-mainfile:close()
+%s]]):format(group_name, grp_rough_toc, grp_detailed_toc))
 
--- Load all extensions, i.e. .lua files in extensions directory
-ext_path = string.gsub(dataframe_path, "[^/]+$", "") .. "extensions/"
-local ext_files = paths.get_sorted_files(ext_path)
-
-for _, extension_file in pairs(ext_files) do
-  if (string.match(extension_file, "[.]lua$")) then
-    local file = ext_path .. extension_file
-
-    -- Documentation
-    local doc_filename = extension_file:gsub(".lua",".md")
-    local doc_file = io.open("doc/"..doc_filename, "w")
-    argdoc.record()
-
-    assert(loadfile(file))(Dataframe)
-
-    content = argdoc.stop()
-    title = content:split("\n")[1]
-    title = trim(title:gsub("#",""))
-    readmefile:write("- ["..title.."]("..doc_filename..")\n")
-
-    doc_file:write(content)
-    doc_file:close()
-  end
+	-- Save the group TOCS for the general README
+	rough_toc_tbl[group_name] = grp_rough_toc
+	detailed_toc_tbl[group_name] = grp_detailed_toc
 end
 
-readmefile:write("\n## Child classes\n\n")
+local readmefile = io.open("doc/README.md", "w")
+readmefile:write("# Documentation\n")
+readmefile:write(([[# Documentation for torch-dataframe
 
--- Load all extensions, i.e. .lua files in extensions directory
-sub_clss_path = string.gsub(dataframe_path, "[^/]+$", "") .. "sub_classes/"
-local sub_files = paths.get_sorted_files(sub_clss_path)
+This documentation ha been auto-generated from code using the `argcheck` system.
 
-for _, sub_file in pairs(sub_files) do
-  if (string.match(sub_file, "[.]lua$")) then
-    local file = sub_clss_path .. sub_file
+Below follows a more [detailed](#detailed) table of contents with links to
+the different functions. Not this list may be incompleted due to failure to
+add apropriate anchor tags during documentation.
 
-    -- Documentation
-    local doc_filename = sub_file:gsub(".lua",".md")
-    local doc_file = io.open("doc/"..doc_filename, "w")
-    argdoc.record()
+## Dataframe core components
 
-    assert(loadfile(file))(Dataframe, sub_clss_path)
+%s
 
-    content = argdoc.stop()
-    title = content:split("\n")[1]
-    title = trim(title:gsub("#",""))
-    readmefile:write("- ["..title.."]("..doc_filename..")\n")
+## Dataframe sub-classes
 
-    doc_file:write(content)
-    doc_file:close()
-  end
+%s
+
+## Helper classes
+
+%s]]):format(rough_toc_tbl["core"],
+             rough_toc_tbl["sub_classes"],
+             rough_toc_tbl["helper_classes"]))
+
+detailed_toc = ([[# Detailed table of contents (file-level + anchors)<a name=\"detailed\">
+
+## Dataframe core components
+
+%s
+
+## Dataframe sub-classes
+
+%s
+
+## Helper classes
+
+%s]]):format(detailed_toc_tbl["core"],
+             detailed_toc_tbl["sub_classes"],
+             detailed_toc_tbl["helper_classes"])
+
+-- Remove these elements from the tables in order to avoid ouputting them twice
+for _,key in ipairs({"core", "sub_classes", "helper_classes"}) do
+	rough_toc_tbl[key] = nil
+	detailed_toc_tbl[key] = nil
 end
 
+for group_name, toc in pairs(rough_toc_tbl) do
+	local group_title = group_name:sub(1,1):upper() .. group_name:sub(2):gsub("_", " ")
+	readmefile:write(([[
 
-readmefile:write("\n## Helper classes\n\n")
+## %s
 
--- Load all extensions, i.e. .lua files in extensions directory
-local hlpr_clss_path = string.gsub(dataframe_path, "[^/]+$", "") .. "helper_classes/"
-local hlpr_files = paths.get_sorted_files(hlpr_clss_path)
+%s]]):format(group_title, toc))
+	detailed_toc = ([[%s
 
-for _,hlpr_file in pairs(hlpr_files) do
-  if (string.match(hlpr_file, "[.]lua$")) then
-    local file = hlpr_clss_path .. hlpr_file
+## %s
 
-    -- Documentation
-    local doc_filename = hlpr_file:gsub(".lua",".md")
-    local doc_file = io.open("doc/"..doc_filename, "w")
-    argdoc.record()
-
-    assert(loadfile(file))()
-
-    content = argdoc.stop()
-    title = content:split("\n")[1]
-    title = trim(title:gsub("#",""))
-    readmefile:write("- ["..title.."]("..doc_filename..")\n")
-
-    doc_file:write(content)
-    doc_file:close()
-  end
+%s]]):format(detailed_toc, group_title, detailed_toc_tbl[group_name])
 end
+
+readmefile:write(([[
+
+%s
+]]):format(detailed_toc))
 
 readmefile:close()
