@@ -335,35 +335,6 @@ if (itorch ~= nil) then
 end
 -- END UTILS
 
-paths.get_sorted_files  = argcheck{
-	doc=[[
-<a name="paths.get_sorted_lua_files">
-### paths.get_sorted_lua_files(@ARGP)
-
-Calls the `paths.files()` with the directory and sorts the files according to
-name.
-
-@ARGT
-
-_Return value_: table with sorted file names
-]],
-	{name="path", type="string",
-	 doc="The directory path"},
-	{name="match_str", type="string", default="[.]lua$",
-	 doc="The file matching string to search for. Defaults to lua file endings."},
-	call=function(path, match_str)
-	local files = {}
-	for f in paths.files(path) do
-	  if (f:match(match_str)) then
-	    files[#files + 1] = f
-	  end
-	end
-
-	table.sort(files)
-
-	return files
-end}
-
 get_variable_type = argcheck{
 	doc=[[
 <a name="get_variable_type">
@@ -456,7 +427,7 @@ _Return value_: string of type: 'boolean', 'integer', 'long', 'double', or 'stri
 	assert("You should never end up here...")
 end}
 
-warning = argchec{
+warning = argcheck{
 	doc=[[
 <a name="warning">
 ### warning(ARGP)
@@ -474,7 +445,7 @@ the `no_warnings = true` in the global environement.
 	end
 
 	print("Warning: " .. txt)
-end
+end}
 
 convert_table_2_dataframe = argcheck{
 	doc=[[
