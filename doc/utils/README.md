@@ -9,15 +9,11 @@ the different functions. Not this list may be incompleted due to failure to
 add apropriate anchor tags during documentation.
 
 
-- [Package load functions](loader.md)
 - [Utility functions](utils.md)
 
 ## Detailed table of contents (file-level + anchors)<a name=\"detailed\">
 
 
-- **[Package load functions](loader.md)**
-  - [paths.get_sorted_lua_files(path[, match_str])](loader.md#paths.get_sorted_lua_files)
-  - [load_dir_files(ARGP)](loader.md#load_dir_files)
 - **[Utility functions](utils.md)**
   - [trim(s[, ignore])](utils.md#trim)
   - [trim_table_strings(t)](utils.md#trim_table_strings)

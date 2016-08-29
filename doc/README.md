@@ -23,6 +23,15 @@ add apropriate anchor tags during documentation.
 - [Statistical functions](core/statistics.md)
 - [Subsets and batches](core/subsets_and_batches.md)
 
+## Dataseries - Dataframe's data storage
+
+
+- [Categorical functions](dataseries/categorical.md)
+- [Export functions](dataseries/export.md)
+- [Metatable functions](dataseries/metatable.md)
+- [Single element functions](dataseries/sngl_elmnt_ops.md)
+- [Statistics](dataseries/statistics.md)
+
 ## Dataframe sub-classes
 
 
@@ -32,8 +41,7 @@ add apropriate anchor tags during documentation.
 ## Helper classes
 
 
-- [Dataseries](helper_classes/01_dataseries.md)
-- [Df_Iterator and general about Dataframe's iterators](helper_classes/10_iterator.md)
+- [torchnet](helper_classes/10_iterator.md)
 - [Df_ParallelIterator](helper_classes/11_paralleliterator.md)
 - [Df_Tbl](helper_classes/20_tbl.md)
 - [Df_Dict](helper_classes/21_dict.md)
@@ -41,7 +49,6 @@ add apropriate anchor tags during documentation.
 ## Utils
 
 
-- [Package load functions](utils/loader.md)
 - [Utility functions](utils/utils.md)
 
 # Detailed table of contents (file-level + anchors)<a name=\"detailed\">
@@ -136,6 +143,40 @@ add apropriate anchor tags during documentation.
   - [Dataframe.has_subset(self, subset)](core/subsets_and_batches.md#Dataframe.has_subset)
   - [Dataframe.get_subset(self, subset[, frame_type][, class_args])](core/subsets_and_batches.md#Dataframe.get_subset)
 
+## Dataseries - Dataframe's data storage
+
+
+- **[Categorical functions](dataseries/categorical.md)**
+  - [Dataseries.as_categorical(self[, levels][, labels][, exclude])](dataseries/categorical.md#Dataseries.as_categorical)
+  - [Dataseries.add_cat_key(self, key[, key_index])](dataseries/categorical.md#Dataseries.add_cat_key)
+  - [Dataseries.as_string(self)](dataseries/categorical.md#	Dataseries.as_string)
+  - [Dataseries.clean_categorical(self[, reset_keys])](dataseries/categorical.md#Dataseries.clean_categorical)
+  - [Dataseries.is_categorical(self)](dataseries/categorical.md#Dataseries.is_categorical)
+  - [Dataseries.get_cat_keys(self)](dataseries/categorical.md#Dataseries.get_cat_keys)
+  - [Dataseries.to_categorical(self, key_index)](dataseries/categorical.md#Dataseries.to_categorical)
+  - [Dataseries.from_categorical(self, data)](dataseries/categorical.md#Dataseries.from_categorical)
+- **[Export functions](dataseries/export.md)**
+  - [Dataseries.to_tensor(self[, missing_value][, copy])](dataseries/export.md#Dataseries.to_tensor)
+  - [Dataseries.to_table(self)](dataseries/export.md#Dataseries.to_table)
+- **[Metatable functions](dataseries/metatable.md)**
+  - [Dataseries.#](dataseries/metatable.md#Dataseries.#)
+  - [Dataseries.__tostring__(self)](dataseries/metatable.md#	Dataseries.__tostring__)
+- **[Single element functions](dataseries/sngl_elmnt_ops.md)**
+  - [Dataseries.get(self, index[, as_raw])](dataseries/sngl_elmnt_ops.md#Dataseries.get)
+  - [Dataseries.set(self, index, value)](dataseries/sngl_elmnt_ops.md#Dataseries.set)
+  - [Dataseries.append(self, value)](dataseries/sngl_elmnt_ops.md#Dataseries.append)
+  - [Dataseries.remove(self, index)](dataseries/sngl_elmnt_ops.md#Dataseries.remove)
+  - [Dataseries.insert(self, index, value)](dataseries/sngl_elmnt_ops.md#Dataseries.insert)
+- **[Statistics](dataseries/statistics.md)**
+  - [Dataseries.count_na(self)](dataseries/statistics.md#Dataseries.count_na)
+  - [Dataseries.unique(self[, as_keys][, as_raw])](dataseries/statistics.md#Dataseries.unique)
+  - [Dataseries.value_counts(self[, normalize][, dropna][, as_raw][, as_dataframe])](dataseries/statistics.md#Dataseries.value_counts)
+  - [Dataseries.which_max(self)](dataseries/statistics.md#Dataseries.which_max)
+  - [Dataseries.which_min(self)](dataseries/statistics.md#Dataseries.which_min)
+  - [Dataseries.get_mode(self[, normalize][, dropna][, as_dataframe])](dataseries/statistics.md#Dataseries.get_mode)
+  - [Dataseries.get_max_value(self)](dataseries/statistics.md#Dataseries.get_max_value)
+  - [Dataseries.get_min_value(self)](dataseries/statistics.md#Dataseries.get_min_value)
+
 ## Dataframe sub-classes
 
 
@@ -176,49 +217,55 @@ add apropriate anchor tags during documentation.
 ## Helper classes
 
 
-- **[Dataseries](helper_classes/01_dataseries.md)**
-  - [Dataseries.__init(self, size[, type])](helper_classes/01_dataseries.md#Dataseries.__init)
-  - [Dataseries.copy(self)](helper_classes/01_dataseries.md#Dataseries.copy)
-  - [Dataseries.size(self)](helper_classes/01_dataseries.md#Dataseries.size)
-  - [Dataseries.resize(self, new_size)](helper_classes/01_dataseries.md#Dataseries.resize)
-  - [Dataseries.assert_is_index(self, index[, plus_one])](helper_classes/01_dataseries.md#Dataseries.assert_is_index)
-  - [Dataseries.is_numerical(self)](helper_classes/01_dataseries.md#Dataseries.is_numerical)
-  - [Dataseries.is_boolean(self)](helper_classes/01_dataseries.md#Dataseries.is_boolean)
-  - [Dataseries.is_string(self)](helper_classes/01_dataseries.md#Dataseries.is_string)
-  - [Dataseries.type(self)](helper_classes/01_dataseries.md#Dataseries.type)
-  - [Dataseries.get_variable_type(self)](helper_classes/01_dataseries.md#Dataseries.get_variable_type)
-  - [Dataseries.boolean2tensor(self, false_value, true_value)](helper_classes/01_dataseries.md#Dataseries.boolean2tensor)
-  - [Dataseries.fill(self, default_value)](helper_classes/01_dataseries.md#Dataseries.fill)
-  - [Dataseries.fill_na(self[, default_value])](helper_classes/01_dataseries.md#Dataseries.fill_na)
-  - [Dataseries.tostring(self[, max_elmnts])](helper_classes/01_dataseries.md#Dataseries.tostring)
-  - [Dataseries.sub(self[, start][, stop])](helper_classes/01_dataseries.md#Dataseries.sub)
-  - [Dataseries.eq(self, other)](helper_classes/01_dataseries.md#Dataseries.eq)
-  - [Dataseries.as_categorical(self[, levels][, labels][, exclude])](helper_classes/01_dataseries.md#Dataseries.as_categorical)
-  - [Dataseries.add_cat_key(self, key[, key_index])](helper_classes/01_dataseries.md#Dataseries.add_cat_key)
-  - [Dataseries.as_string(self)](helper_classes/01_dataseries.md#	Dataseries.as_string)
-  - [Dataseries.clean_categorical(self[, reset_keys])](helper_classes/01_dataseries.md#Dataseries.clean_categorical)
-  - [Dataseries.is_categorical(self)](helper_classes/01_dataseries.md#Dataseries.is_categorical)
-  - [Dataseries.get_cat_keys(self)](helper_classes/01_dataseries.md#Dataseries.get_cat_keys)
-  - [Dataseries.to_categorical(self, key_index)](helper_classes/01_dataseries.md#Dataseries.to_categorical)
-  - [Dataseries.from_categorical(self, data)](helper_classes/01_dataseries.md#Dataseries.from_categorical)
-  - [Dataseries.to_tensor(self[, missing_value][, copy])](helper_classes/01_dataseries.md#Dataseries.to_tensor)
-  - [Dataseries.to_table(self)](helper_classes/01_dataseries.md#Dataseries.to_table)
-  - [Dataseries.#](helper_classes/01_dataseries.md#Dataseries.#)
-  - [Dataseries.__tostring__(self)](helper_classes/01_dataseries.md#	Dataseries.__tostring__)
-  - [Dataseries.get(self, index[, as_raw])](helper_classes/01_dataseries.md#Dataseries.get)
-  - [Dataseries.set(self, index, value)](helper_classes/01_dataseries.md#Dataseries.set)
-  - [Dataseries.append(self, value)](helper_classes/01_dataseries.md#Dataseries.append)
-  - [Dataseries.remove(self, index)](helper_classes/01_dataseries.md#Dataseries.remove)
-  - [Dataseries.insert(self, index, value)](helper_classes/01_dataseries.md#Dataseries.insert)
-  - [Dataseries.count_na(self)](helper_classes/01_dataseries.md#Dataseries.count_na)
-  - [Dataseries.unique(self[, as_keys][, as_raw])](helper_classes/01_dataseries.md#Dataseries.unique)
-  - [Dataseries.value_counts(self[, normalize][, dropna][, as_raw][, as_dataframe])](helper_classes/01_dataseries.md#Dataseries.value_counts)
-  - [Dataseries.which_max(self)](helper_classes/01_dataseries.md#Dataseries.which_max)
-  - [Dataseries.which_min(self)](helper_classes/01_dataseries.md#Dataseries.which_min)
-  - [Dataseries.get_mode(self[, normalize][, dropna][, as_dataframe])](helper_classes/01_dataseries.md#Dataseries.get_mode)
-  - [Dataseries.get_max_value(self)](helper_classes/01_dataseries.md#Dataseries.get_max_value)
-  - [Dataseries.get_min_value(self)](helper_classes/01_dataseries.md#Dataseries.get_min_value)
-- **[Df_Iterator and general about Dataframe's iterators](helper_classes/10_iterator.md)**
+- **[torchnet](helper_classes/10_iterator.md)**
+  - [tnt.utils.table.clone(table)](helper_classes/10_iterator.md#utils.table.clone)
+  - [tnt.utils.table.merge(dst, src)](helper_classes/10_iterator.md#utils.table.merge)
+  - [tnt.utils.table.foreach(tbl, closure[, recursive])](helper_classes/10_iterator.md#utils.table.foreach)
+  - [tnt.utils.table.canmergetensor(tbl)](helper_classes/10_iterator.md#utils.table.canmergetensor)
+  - [tnt.utils.table.mergetensor(tbl)](helper_classes/10_iterator.md#utils.table.mergetensor)
+  - [transform.identity(...)](helper_classes/10_iterator.md#transform.identity)
+  - [tnt.ListDataset(self, list, load[, path])](helper_classes/10_iterator.md#ListDataset)
+  - [tnt.IndexedDataset(self, fields[, path][, maxload][, mmap][, mmapidx])](helper_classes/10_iterator.md#IndexedDataset)
+  - [tnt.IndexedDatasetWriter(self, indexfilename, datafilename, type)](helper_classes/10_iterator.md#IndexedDatasetWriter)
+  - [tnt.IndexedDatasetWriter.add(self, tensor)](helper_classes/10_iterator.md#IndexedDatasetWriter.add)
+  - [tnt.IndexedDatasetReader(self, indexfilename, datafilename[, mmap][, mmapidx])](helper_classes/10_iterator.md#IndexedDatasetReader)
+  - [tnt.IndexedDatasetReader.size(self)](helper_classes/10_iterator.md#IndexedDatasetReader.size)
+  - [tnt.IndexedDatasetReader.get(self, index)](helper_classes/10_iterator.md#IndexedDatasetReader.get)
+  - [tnt.TransformDataset(self, dataset, transform[, key])](helper_classes/10_iterator.md#TransformDataset)
+  - [tnt.TransformDataset(self, dataset, transforms)](helper_classes/10_iterator.md#TransformDataset)
+  - [tnt.BatchDataset(self, dataset, batchsize[, perm][, merge][, policy])](helper_classes/10_iterator.md#BatchDataset)
+  - [tnt.CoroutineBatchDataset(self, dataset, batchsize[, perm][, merge][, policy])](helper_classes/10_iterator.md#CoroutineBatchDataset)
+  - [tnt.ConcatDataset(self, datasets)](helper_classes/10_iterator.md#ConcatDataset)
+  - [tnt.ResampleDataset(self, dataset[, sampler][, size])](helper_classes/10_iterator.md#ResampleDataset)
+  - [tnt.ShuffleDataset(self, dataset[, size][, replacement])](helper_classes/10_iterator.md#ShuffleDataset)
+  - [tnt.ShuffleDataset.resample(self)](helper_classes/10_iterator.md#ShuffleDataset.resample)
+  - [tnt.SplitDataset(self, dataset, partitions)](helper_classes/10_iterator.md#SplitDataset)
+  - [tnt.SplitDataset.select(self, partition)](helper_classes/10_iterator.md#SplitDataset.select)
+  - [tnt.DatasetIterator(self, dataset[, perm][, filter][, transform])](helper_classes/10_iterator.md#DatasetIterator)
+  - [tnt.DatasetIterator.exec(tnt.DatasetIterator, name, ...)](helper_classes/10_iterator.md#DatasetIterator.exec)
+  - [tnt.ParallelDatasetIterator(self[, init], closure, nthread[, perm][, filter][, transform][, ordered])](helper_classes/10_iterator.md#ParallelDatasetIterator)
+  - [tnt.ParallelDatasetIterator.execSingle(tnt.DatasetIterator, name, ...)](helper_classes/10_iterator.md#ParallelDatasetIterator.execSingle)
+  - [tnt.ParallelDatasetIterator.exec(tnt.DatasetIterator, name, ...)](helper_classes/10_iterator.md#ParallelDatasetIterator.exec)
+  - [tnt.APMeter(self)](helper_classes/10_iterator.md#APMeter)
+  - [tnt.AverageValueMeter(self)](helper_classes/10_iterator.md#AverageValueMeter)
+  - [tnt.AUCMeter(self)](helper_classes/10_iterator.md#AUCMeter)
+  - [tnt.ConfusionMeter(self, k[, normalized])](helper_classes/10_iterator.md#ConfusionMeter)
+  - [tnt.mAPMeter(self)](helper_classes/10_iterator.md#mAPMeter)
+  - [tnt.MultiLabelConfusionMeter(self, k[, normalized])](helper_classes/10_iterator.md#MultiLabelConfusionMeter)
+  - [tnt.ClassErrorMeter(self[, topk][, accuracy])](helper_classes/10_iterator.md#ClassErrorMeter)
+  - [tnt.TimeMeter(self[, unit])](helper_classes/10_iterator.md#TimeMeter)
+  - [tnt.PrecisionAtKMeter(self[, topk][, dim][, online])](helper_classes/10_iterator.md#PrecisionAtKMeter)
+  - [tnt.RecallMeter(self[, threshold][, perclass])](helper_classes/10_iterator.md#RecallMeter)
+  - [tnt.PrecisionMeter(self[, threshold][, perclass])](helper_classes/10_iterator.md#PrecisionMeter)
+  - [tnt.NDCGMeter(self[, K])](helper_classes/10_iterator.md#NDCGMeter)
+  - [tnt.Log(self, keys[, onClose][, onFlush][, onGet][, onSet])](helper_classes/10_iterator.md#Log)
+  - [tnt.Log:status(self[, message][, time])](helper_classes/10_iterator.md#Log.status)
+  - [tnt.Log:set(self, keys)](helper_classes/10_iterator.md#Log.set)
+  - [tnt.Log:get(self, key)](helper_classes/10_iterator.md#Log.get)
+  - [tnt.Log:flush(self)](helper_classes/10_iterator.md#Log.flush)
+  - [tnt.Log:close(self)](helper_classes/10_iterator.md#Log.close)
+  - [tnt.Log:attach(self, event, closures)](helper_classes/10_iterator.md#Log.attach)
+  - [tnt.RemoteLog(self, keys[, server][, name][, onClose][, onFlush][, onGet][, onSet])](helper_classes/10_iterator.md#RemoteLog)
   - [Df_Iterator(self, dataset, batch_size[, filter][, transform][, input_transform][, target_transform])](helper_classes/10_iterator.md#Df_Iterator)
 - **[Df_ParallelIterator](helper_classes/11_paralleliterator.md)**
   - [Df_ParallelIterator(self, dataset, batch_size[, init], nthread[, filter][, transform][, input_transform][, target_transform][, ordered])](helper_classes/11_paralleliterator.md#Df_ParallelIterator)
@@ -229,9 +276,6 @@ add apropriate anchor tags during documentation.
 ## Utils
 
 
-- **[Package load functions](utils/loader.md)**
-  - [paths.get_sorted_lua_files(path[, match_str])](utils/loader.md#paths.get_sorted_lua_files)
-  - [load_dir_files(ARGP)](utils/loader.md#load_dir_files)
 - **[Utility functions](utils/utils.md)**
   - [trim(s[, ignore])](utils/utils.md#trim)
   - [trim_table_strings(t)](utils/utils.md#trim_table_strings)
