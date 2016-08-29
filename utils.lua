@@ -456,6 +456,26 @@ _Return value_: string of type: 'boolean', 'integer', 'long', 'double', or 'stri
 	assert("You should never end up here...")
 end}
 
+warning = argchec{
+	doc=[[
+<a name="warning">
+### warning(ARGP)
+
+A function for printing warnings, i.e. events that souldn't occur but are not
+serious anough to throw an error. If you want to supress the warning then set
+the `no_warnings = true` in the global environement.
+
+@ARPT
+]],
+	{name="txt", type="string", doc="Warning text"},
+	call = function(txt)
+	if (no_warnings) then
+		return
+	end
+
+	print("Warning: " .. txt)
+end
+
 convert_table_2_dataframe = argcheck{
 	doc=[[
 <a name="convert_table_2_dataframe">
