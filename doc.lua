@@ -59,6 +59,11 @@ end
 docs.extensions = nil
 files.extensions = nil
 
+files.dataseries, docs.dataseries = load_dir_files{
+	path = dataframe_dir .. "dataseries/",
+	docs = true
+}
+
 files.sub_classes, docs.sub_classes =
 	-- Load all sub classes
 	load_dir_files{
@@ -144,6 +149,10 @@ add apropriate anchor tags during documentation.
 
 %s
 
+## Dataseries - Dataframe's data storage
+
+%s
+
 ## Dataframe sub-classes
 
 %s
@@ -151,6 +160,7 @@ add apropriate anchor tags during documentation.
 ## Helper classes
 
 %s]]):format(rough_toc_tbl["core"],
+             rough_toc_tbl["dataseries"],
              rough_toc_tbl["sub_classes"],
              rough_toc_tbl["helper_classes"]))
 
@@ -162,6 +172,10 @@ detailed_toc = ([[
 
 %s
 
+## Dataseries - Dataframe's data storage
+
+%s
+
 ## Dataframe sub-classes
 
 %s
@@ -169,11 +183,12 @@ detailed_toc = ([[
 ## Helper classes
 
 %s]]):format(detailed_toc_tbl["core"],
+             detailed_toc_tbl["dataseries"],
              detailed_toc_tbl["sub_classes"],
              detailed_toc_tbl["helper_classes"])
 
 -- Remove these elements from the tables in order to avoid ouputting them twice
-for _,key in ipairs({"core", "sub_classes", "helper_classes"}) do
+for _,key in ipairs({"core", "dataseries", "sub_classes", "helper_classes"}) do
 	rough_toc_tbl[key] = nil
 	detailed_toc_tbl[key] = nil
 end
