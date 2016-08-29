@@ -27,9 +27,7 @@ _Return value_: boolean
 	call=function(self, column_name)
 	self:assert_has_column(column_name)
 
-	return self.schema[column_name] == "integer" or
-		self.schema[column_name] == "long" or
-		self.schema[column_name] == "double"
+	return self:get_column(column_name):is_numerical()
 end}
 
 Dataframe.is_string = argcheck{
@@ -48,7 +46,7 @@ _Return value_: boolean
 	call=function(self, column_name)
 	self:assert_has_column(column_name)
 
-	return self.schema[column_name] == "string"
+	return self:get_column(column_name):is_string()
 end}
 
 Dataframe.is_boolean = argcheck{
@@ -67,7 +65,7 @@ _Return value_: boolean
 	call=function(self, column_name)
 	self:assert_has_column(column_name)
 
-	return self.schema[column_name] == "boolean"
+	return self:get_column(column_name):is_boolean()
 end}
 
 Dataframe.has_column = argcheck{
@@ -590,6 +588,36 @@ _Return value_: self
 
 		self.column_order = tmp
 	end
+
+	return self
+end}
+
+Dataframe.boolean2tensor = argcheck{
+	doc = [[
+<a name="Dataframe.boolean2tensor">
+### Dataframe.boolean2tensor(@ARGP)
+
+Converts a boolean column into a torch.ByteTensor of type integer
+
+@ARGT
+
+_Return value_: self
+]],
+	{name="self", type="Dataframe"},
+	{name="column_name", type="string",
+	 doc="The boolean column that you want to convert"},
+	{name="false_value", type="number",
+	 doc="The numeric value for false"},
+	{name="true_value", type="number",
+	 doc="The numeric value for true"},
+	call=function(self, column_name, false_value, true_value)
+	self:assert_has_column(column_name)
+
+	self:get_column(column_name):boolean2tensor{
+		false_value = false_value,
+		true_value = true_value
+	}
+	self:_infer_schema()
 
 	return self
 end}

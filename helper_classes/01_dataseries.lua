@@ -302,6 +302,23 @@ _Return value_: boolean
 	return self:get_variable_type() == "boolean"
 end}
 
+Dataseries.is_string = argcheck{
+	doc = [[
+<a name="Dataseries.is_string">
+### Dataseries.is_string(@ARGP)
+
+Checks if boolean
+
+@ARGT
+
+_Return value_: boolean
+]],
+	{name="self", type="Dataseries"},
+	call=function(self)
+
+	return self:get_variable_type() == "string"
+end}
+
 Dataseries.type = argcheck{
 	doc=[[
 <a name="Dataseries.type">
@@ -363,6 +380,7 @@ _Return value_: self
 		end
 	end
 	self.data = data
+	self._variable_type = "integer"
 
 	return self
 end}
