@@ -67,7 +67,7 @@ _Return values_:
 		return false
 	end
 
-	local function load_file(file, params, docs, ret_docs)
+	local function load_file(file, params, docs, ret_docs, ret_fpaths)
 		if (docs) then
 			argdoc.record()
 		end
@@ -75,11 +75,13 @@ _Return values_:
 		local ret = assert(loadfile(file))(table.unpack(params))
 
 		if (docs) then
+
 			-- Assigns to parent ret_docs
 			ret_docs[file] = argdoc.stop()
 		end
 
 		table.insert(loaded_files, file)
+		table.insert(ret_fpaths, file)
 		return ret
 	end
 
@@ -90,7 +92,7 @@ _Return values_:
 		local ret_fpaths = {}
 
 		if (paths.filep(path .. "init.lua")) then
-			local obj = load_file(path .. "init.lua", params, docs, ret_docs)
+			local obj = load_file(path .. "init.lua", params, docs, ret_docs, ret_fpaths)
 			table.insert(params, 1, obj)
 		end
 
@@ -100,9 +102,8 @@ _Return values_:
 
 			if (not is_loaded(file)) then
 
-				load_file(file, params, docs, ret_docs)
+				load_file(file, params, docs, ret_docs, ret_fpaths)
 
-				table.insert(ret_fpaths, file)
 			end
 		end
 
