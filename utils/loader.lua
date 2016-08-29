@@ -2,6 +2,12 @@ local argcheck = require "argcheck"
 local paths = require "paths"
 local argdoc = require 'argcheck.doc'
 
+argdoc[[
+
+## Package load functions
+
+]]
+
 paths.get_sorted_files  = argcheck{
 	doc=[[
 <a name="paths.get_sorted_lua_files">
