@@ -1,4 +1,14 @@
+# API documentation
 
+- [Core functions](#__Core functions__)
+- [Dataframe.__init(self)](#Dataframe.__init)
+- [Dataframe.shape(self)](#Dataframe.shape)
+- [Dataframe.version(self)](#Dataframe.version)
+- [Dataframe.set_version(self)](#Dataframe.set_version)
+- [Dataframe.upgrade_frame(self)](#Dataframe.upgrade_frame)
+- [Dataframe.assert_is_index(self, index[, plus_one])](#Dataframe.assert_is_index)
+
+<a name="__Core functions__">
 ## Core functions
 
 <a name="Dataframe.__init">
@@ -12,7 +22,7 @@ Creates and initializes a Dataframe class. Envoked through `local my_dataframe =
 })
 ```
 
-Read in an csv-filef
+Read in an csv-file
 
 ```
 ({
@@ -27,7 +37,7 @@ Directly input a table
 ({
    self         = Dataframe  -- 
    data         = Df_Dict    -- The data to read in
-  [column_order = Df_Array]  -- The order of the column (has to be array and _not_ a dictionary) [default=false]
+  [column_order = Df_Array]  -- The order of the column (has to be array and _not_ a dictionary)
 })
 ```
 

@@ -1,4 +1,12 @@
+# API documentation
 
+- [Subsets and batches](#__Subsets and batches__)
+- [Dataframe.create_subsets(self[, subsets][, data_retriever][, label_retriever][, class_args])](#Dataframe.create_subsets)
+- [Dataframe.reset_subsets(self)](#Dataframe.reset_subsets)
+- [Dataframe.has_subset(self, subset)](#Dataframe.has_subset)
+- [Dataframe.get_subset(self, subset[, frame_type][, class_args])](#Dataframe.get_subset)
+
+<a name="__Subsets and batches__">
 ## Subsets and batches
 
 The core idea behind loading batches and is that you split your dataset using the

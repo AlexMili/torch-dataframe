@@ -1,29 +1,27 @@
+# API documentation
 
+- [Missing data functions](#__Missing data functions__)
+- [Dataframe.count_na(self[, columns][, as_dataframe])](#Dataframe.count_na)
+- [Dataframe.fill_na(self, column_name[, default_value])](#	Dataframe.fill_na)
+- [Dataframe.fill_na(self[, default_value])](#Dataframe.fill_na)
+
+<a name="__Missing data functions__">
 ## Missing data functions
 
 <a name="Dataframe.count_na">
-### Dataframe.count_na(self[, as_dataframe])
+### Dataframe.count_na(self[, columns][, as_dataframe])
 
 Count missing values in dataset
 
 ```
 ({
    self         = Dataframe  -- 
+  [columns      = Df_Array]  -- The columns to count
   [as_dataframe = boolean]   -- Return a dataframe [default=true]
 })
 ```
 
-_Return value_: Datafrmae or table containing missing values per column
-You can manually choose the columns by providing a Df_Array
-
-```
-({
-   self         = Dataframe  -- 
-   columns      = Df_Array   -- The columns to count
-  [as_dataframe = boolean]   -- Return a dataframe [default=true]
-})
-```
-
+_Return value_: Dataframe or table containing missing values per column, total na
 If you only want to count a single column
 
 ```

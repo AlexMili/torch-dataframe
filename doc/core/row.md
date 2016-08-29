@@ -1,4 +1,13 @@
+# API documentation
 
+- [Row functions](#__Row functions__)
+- [Dataframe.get_row(self, index)](#Dataframe.get_row)
+- [Dataframe.insert(self, index, rows)](#Dataframe.insert)
+- [Dataframe.append(self, rows[, column_order][, schema])](#Dataframe.append)
+- [Dataframe.rbind(self, rows)](#Dataframe.rbind)
+- [Dataframe.remove_index(self, index)](#Dataframe.remove_index)
+
+<a name="__Row functions__">
 ## Row functions
 
 <a name="Dataframe.get_row">
@@ -40,7 +49,7 @@ be the ones that are kept
 ```
 
 <a name="Dataframe.append">
-### Dataframe.append(self, rows[, column_order])
+### Dataframe.append(self, rows[, column_order][, schema])
 
 Appends the row(s) to the Dataframe.
 
@@ -48,7 +57,8 @@ Appends the row(s) to the Dataframe.
 ({
    self         = Dataframe  -- 
    rows         = Df_Dict    -- Values to append to the Dataframe
-  [column_order = Df_Array]  -- The order of the column (has to be array and _not_ a dictionary). Only used when the Dataframe is empty [default=false]
+  [column_order = Df_Array]  -- The order of the column (has to be array and _not_ a dictionary). Only used when the Dataframe is empty
+  [schema       = Df_Array]  -- The schema for the data - used in case the table is new
 })
 ```
 

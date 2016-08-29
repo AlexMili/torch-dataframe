@@ -82,7 +82,7 @@ end
 local rough_toc_tbl = {}
 local detailed_toc_tbl = {}
 for group_name,group in pairs(docs) do
-	local sub_doc_path = ("%s/%s"):format(doc_path,group_name)
+	local sub_doc_path = ("%s/%s/"):format(doc_path,group_name)
 	if (not paths.dirp(sub_doc_path)) then
 		paths.mkdir(sub_doc_path)
 	end
