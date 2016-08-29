@@ -323,9 +323,9 @@ _Return value_: Dataframe
 
 	if (current_version <= 1.6) then
 		self.columns = nil
-		for _,cn in self.column_order do
+		for _,cn in ipairs(self.column_order) do
 			self.dataset[cn] = Dataseries(Df_Array(cn))
-			self.schema[cn] = self.dataset[cn].get_variable_type()
+			self.schema[cn] = self.dataset[cn]:get_variable_type()
 		end
 	end
 
