@@ -370,7 +370,6 @@ _Return value_: Dataframe
 		self:_update_single_row(i, Df_Tbl(new_row), Df_Tbl(row))
 	end
 
-	self:_infer_schema()
 	return self
 end}
 
@@ -427,8 +426,6 @@ _Return value_: Dataframe
 		end
 	end
 
-	self:_infer_schema()
-
 	return self
 end}
 
@@ -457,8 +454,6 @@ _Return value_: Dataframe
 			self.dataset[key][index] = new_values[key]
 		end
 	end
-
-	self:_infer_schema()
 
 	return self
 end}

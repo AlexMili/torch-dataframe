@@ -250,13 +250,6 @@ Dataframe._infer_data_schema = argcheck{
 	return schema
 end}
 
-Dataframe._infer_schema = argcheck{
-	{name="self", type="Dataframe"},
-	call=function(self)
-
-	return self:get_schema()
-end}
-
 Dataframe.get_schema = argcheck{
 	doc =  [[
 <a name="Dataframe.get_schema">

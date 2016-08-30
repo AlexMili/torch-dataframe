@@ -69,7 +69,6 @@ _Return value_: self
 		end
 	end
 	self.n_rows = self.n_rows + no_rows_2_insert
-	self:_infer_schema()
 
 	return self
 end}
@@ -209,7 +208,6 @@ _Return value_: self
 		end
 	end
 	self.n_rows = self.n_rows + no_rows_2_insert
-	self:_infer_schema()
 
 	return self
 end}
@@ -229,7 +227,6 @@ be the ones that are kept
 	if (self:size(1) == 0) then
 		self.dataset = clone(rows.dataset)
 		self.n_rows = rows.n_rows
-		self:_infer_schema()
 		rows:_copy_meta(self)
 		return self
 	end
