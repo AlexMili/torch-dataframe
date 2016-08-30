@@ -36,7 +36,7 @@ _Return value_: Dataframe or table containing missing values per column, total n
 	local tot_na = 0
 	for i=1,#columns do
 		ret[columns[i]] = self:count_na(columns[i])
-		tot_na = tot_na, ret[columns[i]]
+		tot_na = tot_na + ret[columns[i]]
 	end
 
 	if (as_dataframe) then
