@@ -2,7 +2,7 @@
 
 - [Dataseries](#__Dataseries__)
 - [Dataseries.__init(self, size[, type])](#Dataseries.__init)
-- [Dataseries.copy(self)](#Dataseries.copy)
+- [Dataseries.copy(self[, type])](#Dataseries.copy)
 - [Dataseries.size(self)](#Dataseries.size)
 - [Dataseries.resize(self, new_size)](#Dataseries.resize)
 - [Dataseries.assert_is_index(self, index[, plus_one])](#Dataseries.assert_is_index)
@@ -67,13 +67,14 @@ The type can be:
 ```
 
 <a name="Dataseries.copy">
-### Dataseries.copy(self)
+### Dataseries.copy(self[, type])
 
 Creates a new Dataseries and with a copy/clone of the current data
 
 ```
 ({
    self = Dataseries  -- 
+  [type = string]     -- Specify type if you  want other type than the current
 })
 ```
 
@@ -167,6 +168,17 @@ Gets the torch.typename of the storage
 ```
 
 _Return value_: string
+
+You can also set the type by calling type with a type argument
+
+```
+({
+   self = Dataseries  -- 
+   type = string      -- The type of column that you want to convert to
+})
+```
+
+_Return value_: self
 <a name="Dataseries.get_variable_type">
 ### Dataseries.get_variable_type(self)
 

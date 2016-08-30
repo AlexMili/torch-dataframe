@@ -146,8 +146,11 @@ Creates a new Dataseries and with a copy/clone of the current data
 _Return value_: Dataseries
 ]],
 	{name="self", type="Dataseries"},
-	call=function(self)
-	local ret = Dataseries.new(#self, self:get_variable_type())
+	{name="type", type="string", opt=true,
+	 doc="Specify type if you  want other type than the current"},
+	call=function(self, type)
+	type = type or self:get_variable_type()
+	local ret = Dataseries.new(#self, type)
 	for i=1,#self do
 		ret:set(i, self:get(i))
 	end
@@ -334,6 +337,26 @@ _Return value_: string
 	{name="self", type="Dataseries"},
 	call=function(self)
 	return torch.typename(self.data)
+end}
+
+Dataseries.type = argcheck{
+	doc=[[
+
+You can also set the type by calling type with a type argument
+
+@ARGT
+
+_Return value_: self
+]],
+	{name="self", type="Dataseries"},
+	{name="type", type="string", doc="The type of column that you want to convert to"},
+	overload=Dataseries.type,
+	call=function(self, type)
+	local new_data = self:copy(type)
+
+	self:_replace_data(new_data)
+
+	return self
 end}
 
 Dataseries.get_variable_type = argcheck{

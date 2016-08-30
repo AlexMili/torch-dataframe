@@ -21,7 +21,7 @@ add apropriate anchor tags during documentation.
 
 - **[Dataseries](init.md)**
   - [Dataseries.__init(self, size[, type])](init.md#Dataseries.__init)
-  - [Dataseries.copy(self)](init.md#Dataseries.copy)
+  - [Dataseries.copy(self[, type])](init.md#Dataseries.copy)
   - [Dataseries.size(self)](init.md#Dataseries.size)
   - [Dataseries.resize(self, new_size)](init.md#Dataseries.resize)
   - [Dataseries.assert_is_index(self, index[, plus_one])](init.md#Dataseries.assert_is_index)
