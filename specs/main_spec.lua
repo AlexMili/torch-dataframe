@@ -75,7 +75,7 @@ describe("Dataframe class", function()
 			assert.is.equal(df.n_rows,0)
 		end)
 
-		it("Copy all #1 meta variables to a new Dataframe object",function()
+		it("Copy all meta variables to a new Dataframe object",function()
 			local df = Dataframe("./data/simple_short.csv")
 			local df2 = Dataframe()
 

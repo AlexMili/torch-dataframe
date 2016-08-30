@@ -325,7 +325,7 @@ describe("Categorical column", function()
 		assert.is.equal(ret_val:get_column('Col D')[2], 'B')-- "Should retain string value"
 	end)
 
-	it("Counts values frequencies", function()
+	it("Counts values #1 frequencies", function()
 		local a = Dataframe("./data/advanced_short.csv")
 
 		a:as_categorical('Col B')
@@ -340,14 +340,12 @@ describe("Categorical column", function()
 		local ret = a:value_counts('Col C')
 		assert.are.same(ret:get_column('count'), {1,1})
 		local tmp = ret:get_column('values')
-		table.sort(tmp)
 		assert.are.same(tmp, {8,9})
 
 		a:as_categorical('Col C')
 		local ret = a:value_counts('Col C')
 		assert.are.same(ret:get_column('count'), {1,1})
 		local tmp = ret:get_column('values')
-		table.sort(tmp)
 		assert.are.same(tmp, {8,9})
 	end)
 

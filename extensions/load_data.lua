@@ -69,8 +69,8 @@ _Return value_: self
 		}
 	end
 
-	-- Call the init with schema + no_rows
 	self:__init{
+		-- Call the init with schema + no_rows
 		schema = Df_Dict(schema),
 		no_rows = #data_iterator - first_data_row + 1,
 		column_order = Df_Array(column_order),
