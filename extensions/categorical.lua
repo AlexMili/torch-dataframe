@@ -45,7 +45,6 @@ _Return value_: self
 		labels = labels,
 		exclude = exclude
 	}
-	self:_infer_schema()
 
 	return self
 end}
@@ -124,7 +123,6 @@ _Return value_: self
 	self:assert_has_column(column_name)
 
 	self:get_column(column_name):as_string()
-	self:_infer_schema()
 
 	return self
 end}
@@ -226,6 +224,11 @@ _Return value_: table or tensor
 end}
 
 Dataframe.from_categorical = argcheck{
+	doc=[[
+
+@ARGT
+
+]],
 	{name="self", type="Dataframe"},
 	{name='data', type='number|string', doc='The data to be converted'},
 	{name='column_name', type='string', doc='The name of the column'},
@@ -233,4 +236,33 @@ Dataframe.from_categorical = argcheck{
 	call=function(self, data, column_name)
 	self:assert_has_column(column_name)
 	return self:get_column(column_name):from_categorical(data)
+end}
+
+Dataframe.boolean2categorical = argcheck{
+	doc = [[
+<a name="Dataframe.boolean2tensor">
+### Dataframe.boolean2tensor(@ARGP)
+
+Converts a boolean column into a torch.ByteTensor of type integer
+
+@ARGT
+
+_Return value_: self
+]],
+	{name="self", type="Dataframe"},
+	{name="column_name", type="string",
+	 doc="The boolean column that you want to convert"},
+	{name="false_str", type="string", default = "false",
+	 doc="The string value for false"},
+	{name="true_str", type="string", default = "true",
+	 doc="The string value for true"},
+	call=function(self, column_name, false_str, true_str)
+	self:assert_has_column(column_name)
+
+	self:get_column(column_name):boolean2tensor{
+		false_str = false_str,
+		true_str = true_str
+	}
+
+	return self
 end}
