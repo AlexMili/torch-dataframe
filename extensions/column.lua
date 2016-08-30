@@ -609,7 +609,6 @@ _Return value_: self
 		false_value = false_value,
 		true_value = true_value
 	}
-	self:_infer_schema()
 
 	return self
 end}
