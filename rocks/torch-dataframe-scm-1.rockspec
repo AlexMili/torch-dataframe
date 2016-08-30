@@ -53,16 +53,11 @@ build = {
 			["Dataframe.sub_classes.subset_extensions.samplers"] = 'sub_classes/subset_extensions/samplers.lua',
 
 			["Dataframe.dataseries.init"] = 'dataseries/init.lua',
-			["Dataframe.dataseries.extensions.categorical"] =
-				'dataseries/extensions/categorical.lua',
-			["Dataframe.dataseries.extensions.export"] =
-				'dataseries/extensions/export.lua',
-			["Dataframe.dataseries.extensions.metatable"] =
-				'dataseries/extensions/metatable.lua',
-			["Dataframe.dataseries.extensions.sngl_elmnt_ops"] =
-				'dataseries/extensions/sngl_elmnt_ops.lua',
-			["Dataframe.dataseries.extensions.statistics"] =
-				'dataseries/extensions/statistics.lua',
+			["Dataframe.dataseries.categorical"] = 'dataseries/categorical.lua',
+			["Dataframe.dataseries.export"] = 'dataseries/export.lua',
+			["Dataframe.dataseries.metatable"] = 'dataseries/metatable.lua',
+			["Dataframe.dataseries.sngl_elmnt_ops"] = 'dataseries/sngl_elmnt_ops.lua',
+			["Dataframe.dataseries.statistics"] = 'dataseries/statistics.lua',
 
 			["Dataframe.helper_classes.10_iterator"] = 'helper_classes/10_iterator.lua',
 			["Dataframe.helper_classes.11_paralleliterator"] = 'helper_classes/11_paralleliterator.lua',
