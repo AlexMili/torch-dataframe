@@ -15,10 +15,9 @@ Dataframe.as_categorical = argcheck{
 <a name="Dataframe.as_categorical">
 ### Dataframe.as_categorical(@ARGP)
 
-@ARGT
+Set a column to categorical type.
 
-Set a column to categorical type. Adds the column to self.categorical table with
-the keuys retrieved from Dataframe.unique.
+@ARGT
 
 _Return value_: self
 ]],

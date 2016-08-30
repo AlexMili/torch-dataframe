@@ -20,7 +20,6 @@ describe("Dataframe class", function()
 
 			assert.are.same(df.dataset,{})
 			assert.are.same(df.column_order,{})
-			assert.are.same(df.categorical,{})
 			assert.are.same(df.tostring_defaults,
 			               {no_rows = 10,
 			                min_col_width = 7,
@@ -69,7 +68,6 @@ describe("Dataframe class", function()
 
 			assert.are.same(df.dataset,{})
 			assert.are.same(df.column_order,{})
-			assert.are.same(df.categorical,{})
 			assert.are.same(df.tostring_defaults,
 			               {no_rows = 10,
 			                min_col_width = 7,
@@ -87,7 +85,6 @@ describe("Dataframe class", function()
 			assert.is.equal(df2.n_rows,0)
 
 			assert.are.same(df.column_order,df2.column_order)
-			assert.are.same(df.categorical,df2.categorical)
 			assert.are.same(df.tostring_defaults,df2.tostring_defaults)
 		end)
 	end)

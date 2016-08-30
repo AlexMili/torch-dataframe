@@ -145,7 +145,6 @@ Dataframe._clean = argcheck{
 	self.dataset = {}
 	self.column_order = {}
 	self.n_rows = 0
-	self.categorical = {}
 	self:set_version()
 	return self
 end}
@@ -157,7 +156,6 @@ Dataframe._copy_meta = argcheck{
 	call=function(self, to)
 	to.column_order = clone(self.column_order)
 	to.tostring_defaults = clone(self.tostring_defaults)
-	to.categorical = clone(self.categorical)
 
 	return to
 end}

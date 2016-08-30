@@ -260,20 +260,6 @@ describe("Categorical column", function()
 		assert.are.same(a:get_cat_keys('Col B'), {B=1})
 	end)
 
-	it("Drops ans redresh meta", function()
-		local a = Dataframe()
-		a:load_csv{path = "./data/advanced_short.csv"}
-		a:as_categorical('Col B')
-		a:drop('Col B')
-		assert.is.equal(a.categorical['Col B'], nil)
-
-		local a = Dataframe()
-		a:load_csv{path = "./data/advanced_short.csv"}
-		a:as_categorical('Col B')
-		a:drop('Col A')
-		assert.is_true(a:is_categorical('Col B'))
-	end)
-
 	it("Loads from a CSV or a table",function()
 		local a = Dataframe()
 		a:load_csv{path = "./data/advanced_short.csv"}
