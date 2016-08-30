@@ -25,7 +25,6 @@ describe("Dataframe class", function()
 			               {no_rows = 10,
 			                min_col_width = 7,
 			                max_table_width = 80})
-			assert.are.same(df.schema,{})
 			assert.is.equal(df.n_rows,0)
 		end)
 
@@ -45,10 +44,13 @@ describe("Dataframe class", function()
 		end)
 
 		it("Loads a table if passed in argument with column_order",function()
-			local df = Dataframe(Df_Dict({
-				['first']={3,4,5},
-				['second']={10,11,12}
-			}), Df_Array("second", "first"))
+			local df = Dataframe{
+				data =Df_Dict{
+					['first']={3,4,5},
+					['second']={10,11,12}
+				},
+				column_order = Df_Array("second", "first")
+			}
 
 			assert.are.same(df.column_order, {"second", "first"})
 		end)
@@ -72,11 +74,10 @@ describe("Dataframe class", function()
 			               {no_rows = 10,
 			                min_col_width = 7,
 			                max_table_width = 80})
-			assert.are.same(df.schema,{})
 			assert.is.equal(df.n_rows,0)
 		end)
 
-		it("Copy all meta variables to a new Dataframe object",function()
+		it("Copy all #1 meta variables to a new Dataframe object",function()
 			local df = Dataframe("./data/simple_short.csv")
 			local df2 = Dataframe()
 
@@ -88,7 +89,6 @@ describe("Dataframe class", function()
 			assert.are.same(df.column_order,df2.column_order)
 			assert.are.same(df.categorical,df2.categorical)
 			assert.are.same(df.tostring_defaults,df2.tostring_defaults)
-			assert.are.same(df.schema,df2.schema)
 		end)
 	end)
 
@@ -104,9 +104,9 @@ describe("Dataframe class", function()
 
 		a:load_table{data=Df_Dict(data)}
 
-		assert.is.equal(a.schema["firstColumn"], 'integer')
-		assert.is.equal(a.schema["secondColumn"], 'integer')
-		assert.is.equal(a.schema["thirdColumn"], 'string')
+		assert.is.equal(a["$firstColumn"]:get_variable_type(), 'integer')
+		assert.is.equal(a["$secondColumn"]:get_variable_type(), 'integer')
+		assert.is.equal(a["$thirdColumn"]:get_variable_type(), 'string')
 	end)
 
 	it("Returns the shape of the Dataframe",function()
@@ -173,7 +173,7 @@ describe("Dataframe class", function()
 		assert.is.equal(tail.n_rows, a.n_rows)-- "Default selection is bigger than the simple_short, you got " .. tail.n_rows .. " instead of " .. a.n_rows
 	end)
 
-	it("Returns all unique values in a column", function()
+	it("Returns all unique #1 values in a column", function()
 		local a = Dataframe("./data/advanced_short.csv")
 
 		assert.are.same(a:unique('Col A'), {1,2,3})-- "Failed to match Col A"

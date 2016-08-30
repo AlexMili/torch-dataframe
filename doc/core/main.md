@@ -2,6 +2,7 @@
 
 - [Core functions](#__Core functions__)
 - [Dataframe.__init(self)](#Dataframe.__init)
+- [Dataframe.get_schema(self, column_name)](#Dataframe.get_schema)
 - [Dataframe.shape(self)](#Dataframe.shape)
 - [Dataframe.version(self)](#Dataframe.version)
 - [Dataframe.set_version(self)](#Dataframe.set_version)
@@ -41,6 +42,49 @@ Directly input a table
 })
 ```
 
+If you enter column schema* and number of rows a table will be initialized. Note
+that you can optionally set all non-set values to `nan` values but this may be
+time-consuming for big datasets.
+
+* A schema is a hash table with the column names as keys and the column types
+as values. The column types are:
+- `boolean`
+- `integer`
+- `long`
+- `double`
+- `string` (this is stored as a `tds.Vec` and can be any value)
+
+```
+({
+   self         = Dataframe  -- 
+   schema       = Df_Dict    -- The schema to use for initializaiton
+   no_rows      = number     -- The number of rows
+  [column_order = Df_Array]  -- The column order
+  [set_missing  = boolean]   -- Whether all elements should be set to missing from start [default=false]
+})
+```
+
+<a name="Dataframe.get_schema">
+### Dataframe.get_schema(self, column_name)
+
+Returns the schema, i.e. column types
+
+```
+({
+   self        = Dataframe  -- 
+   column_name = string     -- The column to get schema for
+})
+```
+
+_Return value_: string
+```
+({
+   self    = Dataframe  -- 
+  [columns = Df_Array]  -- The columns to get schema for
+})
+```
+
+_Return value_: table
 <a name="Dataframe.shape">
 ### Dataframe.shape(self)
 

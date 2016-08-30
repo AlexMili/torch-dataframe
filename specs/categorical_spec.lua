@@ -98,7 +98,7 @@ describe("Categorical column", function()
 		end)
 	end)
 
-	it("Get column #1",function()
+	it("Get #11 column",function()
 		local a = Dataframe("./data/advanced_short.csv")
 
 		a:as_categorical('Col B')
@@ -107,9 +107,12 @@ describe("Categorical column", function()
 		assert.are.same(a:get_column{column_name = 'Col B', as_raw = true}, {1, 2, 2})-- "Failed to return numbers instead of strings for categorical column"
 
 		true_vals = {"TRUE", "FALSE", "TRUE"}
-		a:load_table{data=Df_Dict({['Col A']=true_vals,['Col B']={10,11,12}})}
+		a:load_table{data=Df_Dict{
+			['Col A']=true_vals,
+			['Col B']={10,11,12}
+		}}
 		a:as_categorical('Col A')
-		assert.are.same(a:get_column('Col A'), true_vals)
+		assert.are.same(a:get_column('Col A'), {"true", "false", "true"})
 	end)
 
 	it("Returns unique values",function()

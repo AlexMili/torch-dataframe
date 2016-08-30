@@ -12,6 +12,7 @@
 - [Dataseries.type(self)](#Dataseries.type)
 - [Dataseries.get_variable_type(self)](#Dataseries.get_variable_type)
 - [Dataseries.boolean2tensor(self, false_value, true_value)](#Dataseries.boolean2tensor)
+- [Dataseries.boolean2categorical(self[, false_str][, true_str])](#Dataseries.boolean2categorical)
 - [Dataseries.fill(self, default_value)](#Dataseries.fill)
 - [Dataseries.fill_na(self[, default_value])](#Dataseries.fill_na)
 - [Dataseries.tostring(self[, max_elmnts])](#Dataseries.tostring)
@@ -201,6 +202,20 @@ Converts a boolean Dataseries into a torch.ByteTensor
    self        = Dataseries  -- 
    false_value = number      -- The numeric value for false
    true_value  = number      -- The numeric value for true
+})
+```
+
+_Return value_: self, boolean indicating successful conversion
+<a name="Dataseries.boolean2categorical">
+### Dataseries.boolean2categorical(self[, false_str][, true_str])
+
+Converts a boolean Dataseries into a categorical tensor
+
+```
+({
+   self      = Dataseries  -- 
+  [false_str = string]     -- The string value for false [default=false]
+  [true_str  = string]     -- The string value for true [default=true]
 })
 ```
 

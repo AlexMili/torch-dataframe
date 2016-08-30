@@ -517,9 +517,10 @@ _Return value_: string
 	{name="max_elmnts", type="number", default=20},
 	call=function(self, max_elmnts)
 	max_elmnts = math.min(self:size(), max_elmnts)
-	ret = ("Type: %s\nLength: %d\n-----"):format(self:type(), self:size())
+	ret = ("Type: %s (%s)\nLength: %d\n-----"):
+		format(self:get_variable_type(), self:type(), self:size())
 	for i=1,max_elmnts do
-		ret = ret .. "\n" .. self:get(i)
+		ret = ret .. "\n" .. tostring(self:get(i))
 	end
 	if (max_elmnts < self:size()) then
 		ret = ret .. "\n..."
