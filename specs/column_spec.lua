@@ -289,7 +289,7 @@ describe("Column operations", function()
 		end)
 
 		it("Verify that boolean2tensor conversion works", function()
-			a:as_categorical("bool")
+			a:boolean2categorical("bool")
 
 			assert.is_false(a:is_boolean("bool"))
 			assert.is_true(a:is_numerical("bool"))
