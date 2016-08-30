@@ -187,11 +187,15 @@ _Return value_: self
 	{name="rows", type="Df_Dict", doc="Values to append to the Dataframe"},
 	{name="column_order", type="Df_Array", opt=true,
 	 doc="The order of the column (has to be array and _not_ a dictionary). Only used when the Dataframe is empty"},
-	{name="schema", type="Df_Array", opt=true,
+	{name="schema", type="Df_Dict", opt=true,
 	 doc="The schema for the data - used in case the table is new"},
-	call=function(self, rows, column_order)
+	call=function(self, rows, column_order, schema)
 	if (self:size(1) == 0) then
-		return self:load_table{data = rows, column_order = column_order, schema=schema}
+		return self:load_table{
+			data = rows,
+			column_order = column_order,
+			schema = schema
+		}
 	end
 
 	rows, no_rows_2_insert =

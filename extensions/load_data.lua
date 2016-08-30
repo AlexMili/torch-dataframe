@@ -18,20 +18,24 @@ Dataframe.load_csv = argcheck{
 <a name="Dataframe.load_csv">
 ### Dataframe.load_csv(@ARGP)
 
-@ARGT
-
 Loads a CSV file into Dataframe using csvigo as backend
+
+@ARGT
 
 _Return value_: self
 	]],
 	{name="self", type="Dataframe"},
 	{name="path", type="string", doc="path to file"},
-	{name="header", type="boolean", doc="if has header on first line", default=true},
-	{name="schema", type="Df_Array", help="The column types if known",
-		default=Df_Array()},
-	{name="separator", type="string", help="separator (one character)", default=","},
-	{name="skip", type="number", help="skip this many lines at start of file", default=0},
-	{name="verbose", type="boolean", help="verbose load", default=false},
+	{name="header", type="boolean", default=true,
+	 doc="if has header on first line"},
+	{name="schema", type="Df_Dict", opt=true,
+	 doc="The column schema types with column names as keys"},
+	{name="separator", type="string", default=",",
+	 doc="separator (one character)"},
+	{name="skip", type="number", default=0,
+	 doc="skip this many lines at start of file"},
+	{name="verbose", type="boolean", default=false,
+	 doc="verbose load"},
 	call=function(self, path, header, schema, separator, skip, verbose)
 	-- Remove previous data
 	self:_clean()
@@ -46,30 +50,32 @@ _Return value_: self
 
 	local first_data_row = 2
 	if (header) then
-		self.column_order = data_iterator[1]
+		column_order = data_iterator[1]
 	else
 		first_data_row = 1
-		self.column_order = {}
+		column_order = {}
 		for i in 1,len(data_iterator[1]) do
-			self.column_order[i] = "Column no. " .. i
+			column_order[i] = "Column no. " .. i
 		end
 	end
 
-	self.schema = schema.data
-	if (table.exact_length(self.schema) > 0) then
-		assert(table.exact_length(self.schema) ==
-		       table.exact_length(self.column_order),
-		       "The column types must be of the same length as the columns")
+	if (schema) then
+		schema = schema.data
 	else
-		self:_infer_csvigo_schema{
+		schema = self:_infer_csvigo_schema{
 			iterator = data_iterator,
-			first_data_row = first_data_row
+			first_data_row = first_data_row,
+			column_order = Df_Array(column_order)
 		}
 	end
 
-	self.n_rows = #data_iterator - first_data_row + 1
-	self:_init_dataset()
-
+	-- Call the init with schema + no_rows
+	self:__init{
+		schema = Df_Dict(schema),
+		no_rows = #data_iterator - first_data_row + 1,
+		column_order = Df_Array(column_order),
+		set_missing = false
+	}
 	local data_rowno = 0
 	for csv_rowno=first_data_row,#data_iterator do
 		data_rowno = data_rowno + 1
@@ -79,51 +85,48 @@ _Return value_: self
 			local val = row[col_idx]
 			if (val == "") then
 				val = 0/0
-			elseif(self.schema[col_idx] == "integer" or
-			       self.schema[col_idx] == "long" or
-			       self.schema[col_idx] == "double") then
-				val = tonumber(val)
-			elseif(self.schema[col_idx] == "boolean") then
-				local lwr_txt = val:lower()
-				if (lwr_txt:match("^true$")) then
-					val = true
-				elseif(lwr_txt:match("^false$")) then
-					val = false
-				else
-					print(("Invalid boolean value '%s' for row no. %d at column %s"):
-				         format(val, csv_rowno, self.column_order[col_idx]))
-				end
+			else
+				val = self._convert_val2_schema{
+					schema_type = schema[self.column_order[col_idx]],
+					val = val
+				}
 			end
 
 			self.dataset[self.column_order[col_idx]]:set(data_rowno, val)
 		end
 	end
 
-	self.dataset, self.column_order, self.schema =
+	self.dataset, self.column_order =
 		self:_clean_columns{data = self.dataset,
-		                    column_order = self.column_order,
-		                    schema = self.schema}
+		                    column_order = self.column_order}
 
 	return self
 end}
 
-Dataframe._init_dataset = argcheck{
-	{name="self", type="Dataframe"},
-	call=function(self)
-	assert(self.n_rows ~= nil and self.n_rows > 0,
-	       "The self.n_rows hasn't been initialized")
-	assert(table.exact_length(self.schema) > 0, "The schema hasn't been deduced yet")
-	assert(#self.column_order == table.exact_length(self.schema),
-	       ("The schema (%d entries) doesn't match the number of columns (%d)"):
-	       format(#self.column_order, table.exact_length(self.schema)))
-
-	self.dataset = {}
-	for i=1,#self.column_order do
-		local cn = self.column_order[i]
-		self.dataset[cn] = Dataseries(self.n_rows, self.schema[cn])
+Dataframe._convert_val2_schema = argcheck{
+	{name="schema_type", type="string"},
+	{name="val", type="*", opt=true},
+	call = function(schema_type, val)
+	if (val == nil or torch.type(val) ~= "string") then
+		return val
 	end
 
-	return self
+	if(schema_type == "integer" or
+		 schema_type == "long" or
+		 schema_type == "double") then
+		val = tonumber(val)
+	elseif(schema_type == "boolean") then
+		local lwr_txt = val:lower()
+		if (lwr_txt:match("^true$")) then
+			val = true
+		elseif(lwr_txt:match("^false$")) then
+			val = false
+		else
+			print(("Invalid boolean value '%s' for row no. %d at column %s"):
+						 format(val, csv_rowno, self.column_order[col_idx]))
+		end
+	end
+	return val
 end}
 
 Dataframe.load_table = argcheck{
@@ -161,65 +164,49 @@ _Return value_: self
 		                    column_order = column_order,
 		                    schema = schema}
 
-	-- Check that all columns with a length > 1 has the same number of rows (length)
-	local length = -1
+	-- Check that all columns with a no_rows > 1 has the same number of rows (no_rows)
+	local no_rows = -1
 	for k,v in pairs(data) do
 		if (torch.type(v) == 'table') then
-			if (length > 1) then
-				assert(length == table.maxn(v),
-				       "The length of the provided tables do not match")
+			if (no_rows > 1) then
+				assert(no_rows == table.maxn(v),
+				       "The number of rows of the provided tables do not match")
 			else
-				length = math.max(length, table.maxn(v))
+				no_rows = math.max(no_rows, table.maxn(v))
 			end
 		elseif (torch.type(v):match("Dataseries")) then
-			if (length > 1) then
-				assert(length == #v,
-				       "The length of the provided tables do not match")
+			if (no_rows > 1) then
+				assert(no_rows == #v,
+				       "The number of rows of the provided tables do not match")
 			else
-				length = math.max(length, #v)
+				no_rows = math.max(no_rows, #v)
 			end
 		else
-			length = math.max(1, length)
+			no_rows = math.max(1, no_rows)
 		end
 	end
-	assert(length > 0, "Could not find any valid elements")
-	self.n_rows = length
+	assert(no_rows > 0, "Could not find any valid elements")
 
-	-- Get the column order set-up
-	local co = {}
-	for cn,_ in pairs(data) do
-		co[#co + 1] = cn
-	end
-	if (column_order) then
-		if (not tables_equals(co, column_order, false, true)) then
-			assert(false, "The column order and names in the provided data don't match")
-		end
-		self.column_order = column_order
-	else
-		self.column_order = co
-	end
-
-	if (schema) then
-		-- Some sanity checks
-		for _,cn in ipairs(self.column_order) do
-			assert(schema[cn], "Schema not defined for column: " .. cn)
-		end
-
-		for cn,_ in pairs(self.schema) do
-			assert(data[cn], "There is no data for schema column: " .. cn)
-		end
-
-		self.schema = schema
-	else
+	if (not schema) then
 		-- Get the data types from the data
-		self:_infer_data_schema{data = Df_Dict(data)}
+		schema = self:_infer_data_schema{data = Df_Dict(data)}
 	end
 
-	-- Init the columns in the column order according to types
-	self:_init_dataset()
+	if (column_order) then
+		column_order = Df_Array(column_order)
+	end
+
+	-- Call the init with schema + no_rows
+	self:__init{
+		schema = Df_Dict(schema),
+		no_rows = no_rows,
+		column_order = column_order,
+		set_missing = false
+	}
 
 	-- Copy the data into the columns
 	for cn,col_vals in pairs(data) do
+		local col_data = self:get_column(cn)
 		for i=1,self.n_rows do
 			local value
 			if (type(col_vals) == "number" or
@@ -229,10 +216,17 @@ _Return value_: self
 			else
 				value = col_vals[i]
 			end
+
+			value = self._convert_val2_schema{
+				schema_type = schema[cn],
+				val = value
+			}
+
 			if (value == nil) then
 				value = 0/0
 			end
-			self.dataset[cn]:set(i, value)
+
+			col_data:set(i, value)
 		end
 	end
 
