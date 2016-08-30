@@ -7,6 +7,7 @@ Version: development
 * The self.columns has been dropped and there is now only self.column_order that keeps track of column order.
 * Most functions now use either tds.Hash or tds.Vec for returning values instead of regular tables.
 * The data types are now more sophisticate with boolean, integer, long, double, and string. The first and the last are internally stored as `tds.Vec` while the remaining are in the form of torch tensors.
+* Since conversions are more restricted with the new column types the is a boolean2tensor and boolean2categorical that help converting boolean columns into numerical.
 * There is now a custom busted assertion that can compare tensors, tds, and Dataseries.
 * The csv data is entered using csvigo's `large` mode thus circumventing the memory limit for large csv's.
 * The to_/from_categorical now always return a single value when a single value is entered.
