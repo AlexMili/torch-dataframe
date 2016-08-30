@@ -116,6 +116,15 @@ describe("Usual statistics functions", function()
 			                {A ={[3] = 2/3},
 			                 B ={[10] = 1/3, [11] = 1/3, [12] = 1/3}})
 		end)
+
+		it("Get mode for categorical #1 columns",function()
+			df:load_table{data=Df_Dict({['A']={3,3,2},['B']={10,11,12}, ['C'] = {"a","a","a"}})}
+			df:as_categorical('A')
+			df:as_categorical('C')
+			local mode = df:get_mode{normalize = true, as_dataframe = true}
+			assert.are.same(mode:shape(), {rows=5, cols=3})
+			assert.are.same(mode:where('Column', 'C')["$key"], {"a"})
+		end)
 	end)
 
 	describe("Max value",function()

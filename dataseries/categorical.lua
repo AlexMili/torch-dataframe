@@ -47,6 +47,8 @@ _Return value_: self
 
 	if (levels) then
 		levels = table.array2hash(levels.data)
+	elseif (self:is_boolean()) then
+		return self:boolean2categorical()
 	else
 		levels = self:unique{as_keys = true}
 	end

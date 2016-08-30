@@ -58,6 +58,7 @@ add apropriate anchor tags during documentation.
 
 - **[Core functions](core/main.md)**
   - [Dataframe.__init(self)](core/main.md#Dataframe.__init)
+  - [Dataframe.get_schema(self, column_name)](core/main.md#Dataframe.get_schema)
   - [Dataframe.shape(self)](core/main.md#Dataframe.shape)
   - [Dataframe.version(self)](core/main.md#Dataframe.version)
   - [Dataframe.set_version(self)](core/main.md#Dataframe.set_version)
@@ -148,7 +149,7 @@ add apropriate anchor tags during documentation.
 
 - **[Dataseries](dataseries/init.md)**
   - [Dataseries.__init(self, size[, type])](dataseries/init.md#Dataseries.__init)
-  - [Dataseries.copy(self)](dataseries/init.md#Dataseries.copy)
+  - [Dataseries.copy(self[, type])](dataseries/init.md#Dataseries.copy)
   - [Dataseries.size(self)](dataseries/init.md#Dataseries.size)
   - [Dataseries.resize(self, new_size)](dataseries/init.md#Dataseries.resize)
   - [Dataseries.assert_is_index(self, index[, plus_one])](dataseries/init.md#Dataseries.assert_is_index)
@@ -158,6 +159,7 @@ add apropriate anchor tags during documentation.
   - [Dataseries.type(self)](dataseries/init.md#Dataseries.type)
   - [Dataseries.get_variable_type(self)](dataseries/init.md#Dataseries.get_variable_type)
   - [Dataseries.boolean2tensor(self, false_value, true_value)](dataseries/init.md#Dataseries.boolean2tensor)
+  - [Dataseries.boolean2categorical(self[, false_str][, true_str])](dataseries/init.md#Dataseries.boolean2categorical)
   - [Dataseries.fill(self, default_value)](dataseries/init.md#Dataseries.fill)
   - [Dataseries.fill_na(self[, default_value])](dataseries/init.md#Dataseries.fill_na)
   - [Dataseries.tostring(self[, max_elmnts])](dataseries/init.md#Dataseries.tostring)

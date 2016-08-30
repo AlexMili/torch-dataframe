@@ -68,7 +68,7 @@ describe("Loading data process", function()
 		end)
 
 		it("Infers data schema",function()
-			assert.are.same(df.schema,
+			assert.are.same(df:get_schema(),
 				{['Col A']='integer',
 				['Col B']='double',
 				['Col C']='double',
@@ -140,11 +140,11 @@ describe("Loading data process", function()
 			assert.is.equal(df.n_rows,3)
 		end)
 
-		it("Fills numerical missing values with NaN values",function()
-			df:load_table{data=Df_Dict({
+		it("Fills numerical missing #1 values with NaN values",function()
+			df:load_table{data=Df_Dict{
 				['first_column']={3,nil,8},
 				['second_column']={10,11,12}
-			})}
+			}}
 
 			local _, tot_na = df:count_na()
 			assert.is.equal(tot_na,0)
@@ -156,7 +156,7 @@ describe("Loading data process", function()
 				['second_column']={10,11,12},
 				['third_column']={'first','second','third'}
 			})}
-			assert.are.same(df.schema,
+			assert.are.same(df:get_schema(),
 				{['first_column']='integer',
 				 ['second_column']='integer',
 				 ['third_column']='string'})

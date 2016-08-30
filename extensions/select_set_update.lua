@@ -155,10 +155,6 @@ _Return value_: Dataframe or Batchframe
 		self:assert_is_index(val)
 	end
 
-	-- TODO: for some reason the categorical causes errors in the loop, this strange copy fixes it
-	-- The above is most likely to global variables beeing overwritten due to lack of local definintions
-	local tmp = clone(self.categorical)
-	self.categorical = {}
 	local ret
 	if (frame_type == "Dataframe") then
 		if (class_args) then
@@ -200,7 +196,6 @@ _Return value_: Dataframe or Batchframe
 	end
 	ret.n_rows = #index_items
 
-	self.categorical = tmp
 	ret = self:_copy_meta(ret)
 	return ret
 end}

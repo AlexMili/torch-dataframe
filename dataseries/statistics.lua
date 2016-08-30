@@ -67,11 +67,11 @@ _Return value_: tds.Vec with unique values or
 	end
 
 	-- Extract an array with values
-	local unique_values = tds.Vec()
+	local unique_values = {}
 	for k,_ in pairs(unique) do
 		unique_values[#unique_values + 1] = k
 	end
-	unique_values:sort(function(a,b) return string.lower(a) < string.lower(b) end)
+	table.sort(unique_values)
 
 	if as_keys == false then
 		return unique_values

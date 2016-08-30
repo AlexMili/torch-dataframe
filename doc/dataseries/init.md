@@ -2,7 +2,7 @@
 
 - [Dataseries](#__Dataseries__)
 - [Dataseries.__init(self, size[, type])](#Dataseries.__init)
-- [Dataseries.copy(self)](#Dataseries.copy)
+- [Dataseries.copy(self[, type])](#Dataseries.copy)
 - [Dataseries.size(self)](#Dataseries.size)
 - [Dataseries.resize(self, new_size)](#Dataseries.resize)
 - [Dataseries.assert_is_index(self, index[, plus_one])](#Dataseries.assert_is_index)
@@ -12,6 +12,7 @@
 - [Dataseries.type(self)](#Dataseries.type)
 - [Dataseries.get_variable_type(self)](#Dataseries.get_variable_type)
 - [Dataseries.boolean2tensor(self, false_value, true_value)](#Dataseries.boolean2tensor)
+- [Dataseries.boolean2categorical(self[, false_str][, true_str])](#Dataseries.boolean2categorical)
 - [Dataseries.fill(self, default_value)](#Dataseries.fill)
 - [Dataseries.fill_na(self[, default_value])](#Dataseries.fill_na)
 - [Dataseries.tostring(self[, max_elmnts])](#Dataseries.tostring)
@@ -67,13 +68,14 @@ The type can be:
 ```
 
 <a name="Dataseries.copy">
-### Dataseries.copy(self)
+### Dataseries.copy(self[, type])
 
 Creates a new Dataseries and with a copy/clone of the current data
 
 ```
 ({
    self = Dataseries  -- 
+  [type = string]     -- Specify type if you  want other type than the current
 })
 ```
 
@@ -167,6 +169,17 @@ Gets the torch.typename of the storage
 ```
 
 _Return value_: string
+
+You can also set the type by calling type with a type argument
+
+```
+({
+   self = Dataseries  -- 
+   type = string      -- The type of column that you want to convert to
+})
+```
+
+_Return value_: self
 <a name="Dataseries.get_variable_type">
 ### Dataseries.get_variable_type(self)
 
@@ -189,6 +202,20 @@ Converts a boolean Dataseries into a torch.ByteTensor
    self        = Dataseries  -- 
    false_value = number      -- The numeric value for false
    true_value  = number      -- The numeric value for true
+})
+```
+
+_Return value_: self, boolean indicating successful conversion
+<a name="Dataseries.boolean2categorical">
+### Dataseries.boolean2categorical(self[, false_str][, true_str])
+
+Converts a boolean Dataseries into a categorical tensor
+
+```
+({
+   self      = Dataseries  -- 
+  [false_str = string]     -- The string value for false [default=false]
+  [true_str  = string]     -- The string value for true [default=true]
 })
 ```
 

@@ -180,10 +180,7 @@ _Return value_: self
 
 	self.column_order = col_ordr
 
-	if (table.exact_length(self.dataset) > 0) then
-		self.categorical[column_name] = nil
-		self.schema[column_name] = nil
-	else
+	if (table.exact_length(self.dataset) == 0) then
 		self:__init()
 	end
 
@@ -282,8 +279,6 @@ If you have a column with values to add then directly input a tds.Vec
 		table.insert(self.column_order, column_name)
 	end
 
-	self.schema[column_name] = column_data:get_variable_type()
-
 	return self
 end}
 
@@ -343,20 +338,20 @@ _Return value_: table or tensor
 	{name='as_tensor', type='boolean', doc='Convert to tensor', default=false},
 	call=function(self, column_name, as_raw, as_tensor)
 	self:assert_has_column(column_name)
-	assert(not as_tensor or
-	       self:is_numerical(column_name),
-	       "Converting to tensor requires a numerical/categorical variable." ..
-	       " The column " .. tostring(column_name) ..
-	       " is of type " .. tostring(self.schema[column_name]))
 
 	column_data = self.dataset[column_name]
+	assert(column_data, "Data column " .. column_name .. " not present!")
+
+	assert(not as_tensor or
+	       column_data:is_numerical(),
+	       "Converting to tensor requires a numerical/categorical variable." ..
+	       " The column " .. column_name ..
+	       " is of type " .. column_data:type(	))
 
 	if (as_raw and column_data:is_categorical()) then
 		return column_data:from_categorical(Df_Array(column_data:to_table()))
-
 	elseif (as_tensor) then
 		return column_data:to_tensor()
-
 	else
 		return column_data
 	end
@@ -432,9 +427,6 @@ _Return value_: self
 			self.column_order[k] = new_column_name
 		end
 	end
-
-	self.schema[new_column_name] = self.schema[old_column_name]
-	self.schema[old_column_name] = nil
 
 	return self
 end}

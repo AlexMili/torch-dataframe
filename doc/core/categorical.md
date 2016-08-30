@@ -16,6 +16,8 @@
 <a name="Dataframe.as_categorical">
 ### Dataframe.as_categorical(self, column_name[, levels][, labels][, exclude])
 
+Set a column to categorical type.
+
 ```
 ({
    self        = Dataframe          -- 
@@ -31,9 +33,6 @@
 	 of the same type as column, and will be coerced if necessary. [default=false]
 })
 ```
-
-Set a column to categorical type. Adds the column to self.categorical table with
-the keuys retrieved from Dataframe.unique.
 
 _Return value_: self
 

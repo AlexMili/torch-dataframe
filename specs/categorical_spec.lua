@@ -98,7 +98,7 @@ describe("Categorical column", function()
 		end)
 	end)
 
-	it("Get column #1",function()
+	it("Get #11 column",function()
 		local a = Dataframe("./data/advanced_short.csv")
 
 		a:as_categorical('Col B')
@@ -107,9 +107,12 @@ describe("Categorical column", function()
 		assert.are.same(a:get_column{column_name = 'Col B', as_raw = true}, {1, 2, 2})-- "Failed to return numbers instead of strings for categorical column"
 
 		true_vals = {"TRUE", "FALSE", "TRUE"}
-		a:load_table{data=Df_Dict({['Col A']=true_vals,['Col B']={10,11,12}})}
+		a:load_table{data=Df_Dict{
+			['Col A']=true_vals,
+			['Col B']={10,11,12}
+		}}
 		a:as_categorical('Col A')
-		assert.are.same(a:get_column('Col A'), true_vals)
+		assert.are.same(a:get_column('Col A'), {"true", "false", "true"})
 	end)
 
 	it("Returns unique values",function()
@@ -257,20 +260,6 @@ describe("Categorical column", function()
 		assert.are.same(a:get_cat_keys('Col B'), {B=1})
 	end)
 
-	it("Drops ans redresh meta", function()
-		local a = Dataframe()
-		a:load_csv{path = "./data/advanced_short.csv"}
-		a:as_categorical('Col B')
-		a:drop('Col B')
-		assert.is.equal(a.categorical['Col B'], nil)
-
-		local a = Dataframe()
-		a:load_csv{path = "./data/advanced_short.csv"}
-		a:as_categorical('Col B')
-		a:drop('Col A')
-		assert.is_true(a:is_categorical('Col B'))
-	end)
-
 	it("Loads from a CSV or a table",function()
 		local a = Dataframe()
 		a:load_csv{path = "./data/advanced_short.csv"}
@@ -336,7 +325,7 @@ describe("Categorical column", function()
 		assert.is.equal(ret_val:get_column('Col D')[2], 'B')-- "Should retain string value"
 	end)
 
-	it("Counts values frequencies", function()
+	it("Counts values #1 frequencies", function()
 		local a = Dataframe("./data/advanced_short.csv")
 
 		a:as_categorical('Col B')
@@ -351,14 +340,12 @@ describe("Categorical column", function()
 		local ret = a:value_counts('Col C')
 		assert.are.same(ret:get_column('count'), {1,1})
 		local tmp = ret:get_column('values')
-		table.sort(tmp)
 		assert.are.same(tmp, {8,9})
 
 		a:as_categorical('Col C')
 		local ret = a:value_counts('Col C')
 		assert.are.same(ret:get_column('count'), {1,1})
 		local tmp = ret:get_column('values')
-		table.sort(tmp)
 		assert.are.same(tmp, {8,9})
 	end)
 
