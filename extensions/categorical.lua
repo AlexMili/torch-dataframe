@@ -259,7 +259,7 @@ _Return value_: self
 	call=function(self, column_name, false_str, true_str)
 	self:assert_has_column(column_name)
 
-	self:get_column(column_name):boolean2tensor{
+	self:get_column(column_name):boolean2categorical{
 		false_str = false_str,
 		true_str = true_str
 	}
