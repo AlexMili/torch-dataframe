@@ -54,7 +54,6 @@ describe("Column operations", function()
 			a:drop('Col C')
 			assert.are.same(a.dataset, {})-- "All columns are dropped"
 			assert.are.same(a.column_order,{})
-			assert.are.same(a.categorical,{})
 			assert.are.same(a.tostring_defaults,
 			                {no_rows = 10,
 			                min_col_width = 7,

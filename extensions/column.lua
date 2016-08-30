@@ -180,9 +180,7 @@ _Return value_: self
 
 	self.column_order = col_ordr
 
-	if (table.exact_length(self.dataset) > 0) then
-		self.categorical[column_name] = nil
-	else
+	if (table.exact_length(self.dataset) == 0) then
 		self:__init()
 	end
 
