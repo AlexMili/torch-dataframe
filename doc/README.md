@@ -148,7 +148,7 @@ add apropriate anchor tags during documentation.
 
 - **[Dataseries](dataseries/init.md)**
   - [Dataseries.__init(self, size[, type])](dataseries/init.md#Dataseries.__init)
-  - [Dataseries.copy(self)](dataseries/init.md#Dataseries.copy)
+  - [Dataseries.copy(self[, type])](dataseries/init.md#Dataseries.copy)
   - [Dataseries.size(self)](dataseries/init.md#Dataseries.size)
   - [Dataseries.resize(self, new_size)](dataseries/init.md#Dataseries.resize)
   - [Dataseries.assert_is_index(self, index[, plus_one])](dataseries/init.md#Dataseries.assert_is_index)
