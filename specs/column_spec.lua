@@ -296,5 +296,17 @@ describe("Column operations", function()
 			assert.are.same(a:get_column("bool"),
 			                {"true","false","true",0/0})
 		end)
+
+		it("Verify that boolean2tensor with custom strins work", function()
+			a:boolean2categorical("bool", "no", "yes")
+
+			assert.is_false(a:is_boolean("bool"))
+			assert.is_true(a:is_numerical("bool"))
+			assert.are.same(a:get_column("bool"),
+			                {"yes", "no", "yes",0/0})
+			a:fill_all_na()
+			assert.are.same(a:get_column("bool"),
+			                {"yes", "no", "yes","__nan__"})
+		end)
 	end)
 end)
