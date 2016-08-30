@@ -146,8 +146,11 @@ Creates a new Dataseries and with a copy/clone of the current data
 _Return value_: Dataseries
 ]],
 	{name="self", type="Dataseries"},
-	call=function(self)
-	local ret = Dataseries.new(#self, self:get_variable_type())
+	{name="type", type="string", opt=true,
+	 doc="Specify type if you  want other type than the current"},
+	call=function(self, type)
+	type = type or self:get_variable_type()
+	local ret = Dataseries.new(#self, type)
 	for i=1,#self do
 		ret:set(i, self:get(i))
 	end
@@ -336,6 +339,26 @@ _Return value_: string
 	return torch.typename(self.data)
 end}
 
+Dataseries.type = argcheck{
+	doc=[[
+
+You can also set the type by calling type with a type argument
+
+@ARGT
+
+_Return value_: self
+]],
+	{name="self", type="Dataseries"},
+	{name="type", type="string", doc="The type of column that you want to convert to"},
+	overload=Dataseries.type,
+	call=function(self, type)
+	local new_data = self:copy(type)
+
+	self:_replace_data(new_data)
+
+	return self
+end}
+
 Dataseries.get_variable_type = argcheck{
 	doc=[[
 <a name="Dataseries.get_variable_type">
@@ -387,6 +410,39 @@ _Return value_: self, boolean indicating successful conversion
 	end
 	self.data = data
 	self._variable_type = "integer"
+
+	return self, true
+end}
+
+Dataseries.boolean2categorical = argcheck{
+	doc = [[
+<a name="Dataseries.boolean2categorical">
+### Dataseries.boolean2categorical(@ARGP)
+
+Converts a boolean Dataseries into a categorical tensor
+
+@ARGT
+
+_Return value_: self, boolean indicating successful conversion
+]],
+	{name="self", type="Dataseries"},
+	{name="false_str", type="string", default = "false",
+	 doc="The string value for false"},
+	{name="true_str", type="string", default = "true",
+	 doc="The string value for true"},
+	call=function(self, false_str, true_str)
+	local _, success = self:boolean2tensor{
+		false_value = 1,
+		true_value = 2
+	}
+	if (success) then
+		self.categorical = {
+			[false_str]=1,
+			[true_str]=2
+		}
+	else
+		warning("Failed to convert boolean column to categorical")
+	end
 
 	return self, true
 end}
@@ -461,9 +517,10 @@ _Return value_: string
 	{name="max_elmnts", type="number", default=20},
 	call=function(self, max_elmnts)
 	max_elmnts = math.min(self:size(), max_elmnts)
-	ret = ("Type: %s\nLength: %d\n-----"):format(self:type(), self:size())
+	ret = ("Type: %s (%s)\nLength: %d\n-----"):
+		format(self:get_variable_type(), self:type(), self:size())
 	for i=1,max_elmnts do
-		ret = ret .. "\n" .. self:get(i)
+		ret = ret .. "\n" .. tostring(self:get(i))
 	end
 	if (max_elmnts < self:size()) then
 		ret = ret .. "\n..."

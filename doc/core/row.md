@@ -58,7 +58,7 @@ Appends the row(s) to the Dataframe.
    self         = Dataframe  -- 
    rows         = Df_Dict    -- Values to append to the Dataframe
   [column_order = Df_Array]  -- The order of the column (has to be array and _not_ a dictionary). Only used when the Dataframe is empty
-  [schema       = Df_Array]  -- The schema for the data - used in case the table is new
+  [schema       = Df_Dict]   -- The schema for the data - used in case the table is new
 })
 ```
 

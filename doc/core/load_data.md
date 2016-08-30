@@ -11,19 +11,19 @@
 <a name="Dataframe.load_csv">
 ### Dataframe.load_csv(self, path[, header][, schema][, separator][, skip][, verbose])
 
+Loads a CSV file into Dataframe using csvigo as backend
+
 ```
 ({
    self      = Dataframe  -- 
    path      = string     -- path to file
   [header    = boolean]   -- if has header on first line [default=true]
-  [schema    = Df_Array]  -- The column types if known [has default value]
+  [schema    = Df_Dict]   -- The column schema types with column names as keys
   [separator = string]    -- separator (one character) [default=,]
   [skip      = number]    -- skip this many lines at start of file [default=0]
   [verbose   = boolean]   -- verbose load [default=false]
 })
 ```
-
-Loads a CSV file into Dataframe using csvigo as backend
 
 _Return value_: self
 	<a name="Dataframe.load_table">

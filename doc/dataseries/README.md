@@ -21,7 +21,7 @@ add apropriate anchor tags during documentation.
 
 - **[Dataseries](init.md)**
   - [Dataseries.__init(self, size[, type])](init.md#Dataseries.__init)
-  - [Dataseries.copy(self)](init.md#Dataseries.copy)
+  - [Dataseries.copy(self[, type])](init.md#Dataseries.copy)
   - [Dataseries.size(self)](init.md#Dataseries.size)
   - [Dataseries.resize(self, new_size)](init.md#Dataseries.resize)
   - [Dataseries.assert_is_index(self, index[, plus_one])](init.md#Dataseries.assert_is_index)
@@ -31,6 +31,7 @@ add apropriate anchor tags during documentation.
   - [Dataseries.type(self)](init.md#Dataseries.type)
   - [Dataseries.get_variable_type(self)](init.md#Dataseries.get_variable_type)
   - [Dataseries.boolean2tensor(self, false_value, true_value)](init.md#Dataseries.boolean2tensor)
+  - [Dataseries.boolean2categorical(self[, false_str][, true_str])](init.md#Dataseries.boolean2categorical)
   - [Dataseries.fill(self, default_value)](init.md#Dataseries.fill)
   - [Dataseries.fill_na(self[, default_value])](init.md#Dataseries.fill_na)
   - [Dataseries.tostring(self[, max_elmnts])](init.md#Dataseries.tostring)

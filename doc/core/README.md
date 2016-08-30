@@ -27,6 +27,7 @@ add apropriate anchor tags during documentation.
 
 - **[Core functions](main.md)**
   - [Dataframe.__init(self)](main.md#Dataframe.__init)
+  - [Dataframe.get_schema(self, column_name)](main.md#Dataframe.get_schema)
   - [Dataframe.shape(self)](main.md#Dataframe.shape)
   - [Dataframe.version(self)](main.md#Dataframe.version)
   - [Dataframe.set_version(self)](main.md#Dataframe.set_version)

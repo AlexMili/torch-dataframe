@@ -74,6 +74,70 @@ Directly input a table
 	self:load_table{data=data, column_order=column_order}
 end}
 
+Dataframe.__init = argcheck{
+	doc =  [[
+If you enter column schema* and number of rows a table will be initialized. Note
+that you can optionally set all non-set values to `nan` values but this may be
+time-consuming for big datasets.
+
+* A schema is a hash table with the column names as keys and the column types
+as values. The column types are:
+- `boolean`
+- `integer`
+- `long`
+- `double`
+- `string` (this is stored as a `tds.Vec` and can be any value)
+
+@ARGT
+
+]],
+	overload=Dataframe.__init,
+	{name="self", type="Dataframe"},
+	{name="schema", type="Df_Dict",
+	 doc="The schema to use for initializaiton"},
+	{name="no_rows", type="number",
+	 doc="The number of rows"},
+	{name="column_order", type="Df_Array", opt=true,
+	 doc="The column order"},
+	{name="set_missing", type="boolean", default=false,
+	 doc="Whether all elements should be set to missing from start"},
+	call=function(self, schema, no_rows, column_order)
+	schema = schema.data
+	assert(no_rows > 0 and isint(no_rows),
+	       "The no_rows has to be a positive integer")
+
+	if (column_order) then
+		column_order = column_order.data
+		assert(#column_order == table.exact_length(schema),
+		       ("The schema (%d entries) doesn't match the number of columns (%d)"):
+		       format(#column_order, table.exact_length(schema)))
+		for _,cn in ipairs(column_order) do
+			assert(schema[cn], "The schema doesn't have the column: " .. cn)
+		end
+	else
+		column_order = {}
+		for cn,_ in pairs(schema) do
+			column_order[#column_order + 1] = cn
+		end
+	end
+
+	self.dataset = {}
+	for _,cn in ipairs(column_order) do
+		self.dataset[cn] = Dataseries{
+			size = no_rows,
+			type = schema[cn]
+		}
+		if (set_missing) then
+			self.dataset[cn]:fill(0/0)
+		end
+	end
+	self.n_rows = no_rows
+	self.column_order = column_order
+
+	return self
+end}
+
+
 -- Private function for cleaning and reseting all data and meta data
 Dataframe._clean = argcheck{
 	{name="self", type="Dataframe"},
@@ -81,8 +145,6 @@ Dataframe._clean = argcheck{
 	self.dataset = {}
 	self.column_order = {}
 	self.n_rows = 0
-	self.categorical = {}
-	self.schema = {}
 	self:set_version()
 	return self
 end}
@@ -93,9 +155,7 @@ Dataframe._copy_meta = argcheck{
 	{name="to", type="Dataframe", doc="The Dataframe to copy to"},
 	call=function(self, to)
 	to.column_order = clone(self.column_order)
-	to.schema = clone(self.schema)
 	to.tostring_defaults = clone(self.tostring_defaults)
-	to.categorical = clone(self.categorical)
 
 	return to
 end}
@@ -105,27 +165,30 @@ Dataframe._infer_csvigo_schema = argcheck{
 	{name="self", type="Dataframe"},
 	{name="iterator", type="table", -- TODO: ask csvigo to add a class name
 	 doc="Data iterator where [i] returns the i:th row."},
+	{name="column_order", type="Df_Array",
+	 doc="The column order"},
 	{name="rows2explore", type="number",
 	 doc="The maximum number of rows to traverse",
 	 default=1e3},
 	{name="first_data_row", type="number",
 	 doc="The first number in the iterator to use (i.e. skip header == 2)",
 	 default=1},
-	call=function(self, iterator, rows2explore, first_data_row)
+	call=function(self, iterator, column_order, rows2explore, first_data_row)
 	rows2explore = math.min(rows2explore, #iterator)
+	column_order = column_order.data
 
- 	self.schema = {}
+ 	local schema = {}
  	for i = first_data_row,rows2explore do
  		local row = iterator[i]
  		for idx,val in ipairs(row) do
-			local cn = self.column_order[idx]
- 			self.schema[cn] =
+			local cn = column_order[idx]
+ 			schema[cn] =
  				get_variable_type{value = val,
- 				                  prev_type = self.schema[cn]}
+ 				                  prev_type = schema[cn]}
  		end
  	end
 
- 	return self
+ 	return schema
  end}
 
 -- Internal function to detect columns types
@@ -148,6 +211,7 @@ Dataframe._infer_data_schema = argcheck{
 		if (type(column) == "table") then
 			len = table.maxn(column)
 		end
+
 		if (collength ~= nil) then
 			assert(collength == len or
 			       len == 1 or
@@ -162,40 +226,82 @@ Dataframe._infer_data_schema = argcheck{
 	end
 	rows2explore = math.min(rows2explore, collength)
 
-	self.schema = {}
+	local schema = {}
 	for cn,col_vals in pairs(data) do
 		if (torch.isTypeOf(col_vals, "Dataseries")) then
-			self.schema[cn] = col_vals:get_variable_type()
+			schema[cn] = col_vals:get_variable_type()
 		else
 			for i=first_data_row,rows2explore do
 				if (type(col_vals) == "number" or
 				    type(col_vals) == "boolean" or
 				    type(col_vals) == "string") then
-					self.schema[cn] =
+					schema[cn] =
 						get_variable_type{value = col_vals,
-						                  prev_type = self.schema[cn]}
+						                  prev_type = schema[cn]}
 				elseif(col_vals[i]) then
-					self.schema[cn] =
+					schema[cn] =
 						get_variable_type{value = col_vals[i],
-						                  prev_type = self.schema[cn]}
+						                  prev_type = schema[cn]}
 				end
 			end
 		end
 	end
 
-	return self
+	return schema
 end}
 
 Dataframe._infer_schema = argcheck{
 	{name="self", type="Dataframe"},
 	call=function(self)
 
-	self.schema = {}
-	for _,cn in ipairs(self.column_order) do
-		self.schema[cn] = self.dataset[cn]:get_variable_type()
+	return self:get_schema()
+end}
+
+Dataframe.get_schema = argcheck{
+	doc =  [[
+<a name="Dataframe.get_schema">
+### Dataframe.get_schema(@ARGP)
+
+Returns the schema, i.e. column types
+
+@ARGT
+
+_Return value_: string
+]],
+	{name="self", type="Dataframe"},
+	{name="column_name", type="string",
+	 doc="The column to get schema for"},
+	call=function(self, column_name)
+	self:assert_has_column(column_name)
+
+	return self:get_column(column_name):get_variable_type()
+end}
+
+Dataframe.get_schema = argcheck{
+	doc=[[
+@ARGT
+
+_Return value_: table
+]],
+	{name="self", type="Dataframe"},
+	{name="columns", type="Df_Array", opt=true,
+	 doc="The columns to get schema for"},
+	overload=Dataframe.get_schema,
+	call=function(self, columns)
+	if (columns) then
+		columns = columns.data
+	else
+		columns = self.column_order
 	end
 
-	return self
+	local schema = {}
+	for _,cn in ipairs(columns) do
+		if (self.dataset[cn]) then
+			schema[cn] = self:get_column(cn):get_variable_type()
+		end
+	end
+
+	return schema
 end}
 
 --
@@ -325,8 +431,8 @@ _Return value_: Dataframe
 		self.columns = nil
 		for _,cn in ipairs(self.column_order) do
 			self.dataset[cn] = Dataseries(Df_Array(cn))
-			self.schema[cn] = self.dataset[cn]:get_variable_type()
 		end
+		self.schema = nil
 	end
 
 	return self
