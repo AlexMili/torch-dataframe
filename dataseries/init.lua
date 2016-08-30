@@ -414,39 +414,6 @@ _Return value_: self, boolean indicating successful conversion
 	return self, true
 end}
 
-Dataseries.boolean2categorical = argcheck{
-	doc = [[
-<a name="Dataseries.boolean2categorical">
-### Dataseries.boolean2categorical(@ARGP)
-
-Converts a boolean Dataseries into a categorical tensor
-
-@ARGT
-
-_Return value_: self, boolean indicating successful conversion
-]],
-	{name="self", type="Dataseries"},
-	{name="false_str", type="string", default = "false",
-	 doc="The string value for false"},
-	{name="true_str", type="string", default = "true",
-	 doc="The string value for true"},
-	call=function(self, false_str, true_str)
-	local _, success = self:boolean2tensor{
-		false_value = 1,
-		true_value = 2
-	}
-	if (success) then
-		self.categorical = {
-			[false_str]=1,
-			[true_str]=2
-		}
-	else
-		warning("Failed to convert boolean column to categorical")
-	end
-
-	return self, true
-end}
-
 Dataseries.fill = argcheck{
 	doc = [[
 <a name="Dataseries.fill">
