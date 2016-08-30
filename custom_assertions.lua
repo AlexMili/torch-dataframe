@@ -52,6 +52,10 @@ local function format(val)
   return astate.format_argument(val) or tostring(val)
 end
 
+local isnan = function(val)
+	return val ~= val
+end
+
 local function deepcompare(t1,t2,ignore_mt,cycles,thresh1,thresh2)
 	local ty1 = torch.type(t1)
 	local ty2 = torch.type(t2)
@@ -61,6 +65,9 @@ local function deepcompare(t1,t2,ignore_mt,cycles,thresh1,thresh2)
 	elseif (ty1:match("^torch.*Tensor") and ty1:match("^torch.*Tensor")) then
 		return tensor_comp(t1, t2)
 	elseif (ty1 ~= 'table' or ty2 ~= 'table') then
+		if (isnan(t1)) then
+			return isnan(t2)
+		end
 		return t1 == t2
 	end
 
@@ -70,8 +77,10 @@ local function deepcompare(t1,t2,ignore_mt,cycles,thresh1,thresh2)
 	if mt1 and mt1 == mt2 and mt1.__eq then
 
 	 -- then use that unless asked not to
-	if not ignore_mt then return t1 == t2 end
+	if not ignore_mt then
+		return t1 == t2 end
 	else -- we can skip the deep comparison below if t1 and t2 share identity
+
 	 if rawequal(t1, t2) then return true end
 	end
 
