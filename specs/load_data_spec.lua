@@ -64,7 +64,7 @@ describe("Loading data process", function()
 
 		it("Fills numerical missing values with NaN values",function()
 			local _,tot_na = df:count_na()
-			assert.is.equal(tot_na,0)
+			assert.is.equal(tot_na,2,"There are two missing vales in full.csv")
 		end)
 
 		it("Infers data schema",function()
@@ -116,8 +116,8 @@ describe("Loading data process", function()
 				['second_column']={10,11,12}
 			})}
 
-			assert.are.same(df:get_column("first_column"):to_table(), {3,3,3})
-			assert.are.same(df:get_column("second_column"):to_table(), {10,11,12})
+			assert.are.same(df:get_column("first_column"), {3,3,3})
+			assert.are.same(df:get_column("second_column"), {10,11,12})
 		end)
 
 		it("Updates the columns names and escapes blank spaces",function()
@@ -140,14 +140,15 @@ describe("Loading data process", function()
 			assert.is.equal(df.n_rows,3)
 		end)
 
-		it("Fills numerical missing #1 values with NaN values",function()
+		it("Fills numerical missing values with NaN values",function()
 			df:load_table{data=Df_Dict{
 				['first_column']={3,nil,8},
 				['second_column']={10,11,12}
 			}}
 
 			local _, tot_na = df:count_na()
-			assert.is.equal(tot_na,0)
+			assert.is.equal(tot_na, 1)
+			assert.is.nan(df["$first_column"][2])
 		end)
 
 		it("Infers data schema",function()
