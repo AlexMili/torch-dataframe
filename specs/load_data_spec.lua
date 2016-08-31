@@ -33,19 +33,12 @@ describe("Loading data process", function()
 		end)
 
 		it("Loads string-only columns in string column",function()
-			for idx, val in ipairs({'A','B',0/0,'D'}) do
-				local test_val = df:get_column('Col D'):get(idx)
-				if (isnan(val)) then
-					assert.is_true(isnan(test_val))
-				else
-					assert.are.same(test_val, val)
-				end
-			end
+			assert.are.same(df:get_column('Col D'), {'A','B',0/0,'D'})
 		end)
 
 		it("Loads mixed numerical columns in mixed column",function()
 			assert.is.equal(df:get_column('Col C')[1], 0.1)
-			assert.is_true(isnan(df:get_column('Col C')[2]))
+			assert.is.nan(df:get_column('Col C')[2])
 			assert.is.equal(df:get_column('Col C')[3], 9999999999)
 			assert.is.equal(df:get_column('Col C')[4], -222)
 		end)
