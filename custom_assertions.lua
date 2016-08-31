@@ -125,6 +125,15 @@ local function deepcompare(t1,t2,ignore_mt,cycles,thresh1,thresh2)
 	return true
 end
 
+local function check_if_nan(state, arguments, level)
+	local level = (level or 1) + 1
+	local argcnt = arguments.n
+	assert(argcnt > 0, s("assertion.internal.argtolittle", { "same", 1, tostring(argcnt) }), level)
+
+	set_failure_message(state, arguments[2])
+	return arguments[1] ~= arguments[1]
+end
+
 -- Adapation of the original same function for torch and Dataframe compatibility
 local function torch_same(state, arguments, level)
 	local level = (level or 1) + 1
@@ -244,3 +253,7 @@ assert:register("assertion", "same_keys",
 assert:register("assertion", "same_elements",
                 torch_same_elements,
                "assertion.same.positive", "assertion.same.negative")
+
+assert:register("assertion", "nan",
+               check_if_nan,
+              "assertion.same.positive", "assertion.same.negative")
