@@ -71,7 +71,7 @@ describe("Column order functionality", function()
 		a:load_csv{path = "tricky_csv.csv", verbose = false}
 
 		for cn,cols in pairs(a.dataset) do
-			assert.are.same(cols:to_table(), data[cn])
+			assert.are.same(cols, data[cn])
 		end
 		assert.are.same(a.column_order, c_order)
 
