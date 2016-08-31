@@ -40,7 +40,7 @@ describe("Categorical column", function()
 
 		assert.is_false(a:is_categorical('Col C'))
 		assert.are.same(a:get_column('Col C')[1], 8)
-		assert.is_true(isnan(a:get_column{column_name='Col C'}[2]))
+		assert.is.nan(a:get_column{column_name='Col C'}[2])
 		assert.are.same(a:get_column{column_name='Col C'}[3], 9)
 	end)
 
@@ -52,7 +52,7 @@ describe("Categorical column", function()
 		it("Should handle integers and nan #1 input",function()
 			assert.is.equal(a:to_categorical{data=1, column_name='Col B'}, 'A')
 			assert.is.equal(a:to_categorical(2, 'Col B'), 'B')
-			assert.is_true(isnan(a:to_categorical(0/0, 'Col B')))
+			assert.is.nan(a:to_categorical(0/0, 'Col B'))
 		end)
 
 		it("Should handle table input",function()
@@ -90,7 +90,7 @@ describe("Categorical column", function()
 		end)
 
 		it("Should handle nan values",function()
-			assert.is_true(isnan(a:from_categorical('C', 'Col B')))
+			assert.is.nan(a:from_categorical('C', 'Col B'))
 		end)
 
 		it("Should fails on non-categorical column",function()
@@ -154,7 +154,7 @@ describe("Categorical column", function()
 
 		assert.are.same(b:get_column('a', true)[1], 2)
 		assert.are.same(b:get_column('a', true)[2], 1)
-		assert.is_true(isnan(b:get_column('a', true)[3]))
+		assert.is.nan(b:get_column('a', true)[3])
 	end)
 
 	it("Specify labels", function()
@@ -163,7 +163,7 @@ describe("Categorical column", function()
 
 		assert.are.same(b:get_column('a')[1], "B")
 		assert.are.same(b:get_column('a')[2], "A")
-		assert.is_true(isnan(b:get_column('a', true)[3]))
+		assert.is.nan(b:get_column('a', true)[3])
 	end)
 
 	it("Specify levels in a different order than sorted", function()
@@ -173,7 +173,7 @@ describe("Categorical column", function()
 
 		assert.are.same(b:get_column('a')[1], "b")
 		assert.are.same(b:get_column('a')[3], "c")
-		assert.is_true(isnan(b:get_column('a', true)[2]))
+		assert.is.nan(b:get_column('a', true)[2])
 		assert.are.same(b:from_categorical(Df_Array("b", "c"), 'a'),
 		                {1,2})
 	end)
@@ -238,8 +238,8 @@ describe("Categorical column", function()
 			function(row) row['Col B'] = 0/0 return row end
 		)
 
-		assert.is_true(isnan(a:get_column('Col B')[3]))-- "The nan should be saved as such"
-		assert.is_true(isnan(a:get_column('Col C')[2]))-- "The nan should be untouched"
+		assert.is.nan(a:get_column('Col B')[3])-- "The nan should be saved as such"
+		assert.is.nan(a:get_column('Col C')[2])-- "The nan should be untouched"
 	end
 	end)
 
@@ -321,7 +321,7 @@ describe("Categorical column", function()
 
 		a:add_column("Col D", Dataseries(Df_Array({0/0, "B", "C"})))
 		ret_val = a:sub(1,2)
-		assert.is_true(isnan(ret_val:get_column('Col D')[1]))-- "Should retain nan value"
+		assert.is.nan(ret_val:get_column('Col D')[1])-- "Should retain nan value"
 		assert.is.equal(ret_val:get_column('Col D')[2], 'B')-- "Should retain string value"
 	end)
 
