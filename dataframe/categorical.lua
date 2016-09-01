@@ -240,8 +240,8 @@ end}
 
 Dataframe.boolean2categorical = argcheck{
 	doc = [[
-<a name="Dataframe.boolean2tensor">
-### Dataframe.boolean2tensor(@ARGP)
+<a name="Dataframe.boolean2categorical">
+### Dataframe.boolean2categorical(@ARGP)
 
 Converts a boolean column into a torch.ByteTensor of type integer
 

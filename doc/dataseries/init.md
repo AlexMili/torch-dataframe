@@ -1,23 +1,20 @@
-# API documentation
-
-- [Dataseries](#__Dataseries__)
-- [Dataseries.__init(self, size[, type])](#Dataseries.__init)
-- [Dataseries.copy(self[, type])](#Dataseries.copy)
-- [Dataseries.size(self)](#Dataseries.size)
-- [Dataseries.resize(self, new_size)](#Dataseries.resize)
-- [Dataseries.assert_is_index(self, index[, plus_one])](#Dataseries.assert_is_index)
-- [Dataseries.is_numerical(self)](#Dataseries.is_numerical)
-- [Dataseries.is_boolean(self)](#Dataseries.is_boolean)
-- [Dataseries.is_string(self)](#Dataseries.is_string)
-- [Dataseries.type(self)](#Dataseries.type)
-- [Dataseries.get_variable_type(self)](#Dataseries.get_variable_type)
-- [Dataseries.boolean2tensor(self, false_value, true_value)](#Dataseries.boolean2tensor)
-- [Dataseries.boolean2categorical(self[, false_str][, true_str])](#Dataseries.boolean2categorical)
-- [Dataseries.fill(self, default_value)](#Dataseries.fill)
-- [Dataseries.fill_na(self[, default_value])](#Dataseries.fill_na)
-- [Dataseries.tostring(self[, max_elmnts])](#Dataseries.tostring)
-- [Dataseries.sub(self[, start][, stop])](#Dataseries.sub)
-- [Dataseries.eq(self, other)](#Dataseries.eq)
+# API documentation for [Dataseries](#__Dataseries__)
+- [Dataseries.__init](#Dataseries.__init)
+- [Dataseries.copy](#Dataseries.copy)
+- [Dataseries.size](#Dataseries.size)
+- [Dataseries.resize](#Dataseries.resize)
+- [Dataseries.assert_is_index](#Dataseries.assert_is_index)
+- [Dataseries.is_numerical](#Dataseries.is_numerical)
+- [Dataseries.is_boolean](#Dataseries.is_boolean)
+- [Dataseries.is_string](#Dataseries.is_string)
+- [Dataseries.type](#Dataseries.type)
+- [Dataseries.get_variable_type](#Dataseries.get_variable_type)
+- [Dataseries.boolean2tensor](#Dataseries.boolean2tensor)
+- [Dataseries.fill](#Dataseries.fill)
+- [Dataseries.fill_na](#Dataseries.fill_na)
+- [Dataseries.tostring](#Dataseries.tostring)
+- [Dataseries.sub](#Dataseries.sub)
+- [Dataseries.eq](#Dataseries.eq)
 
 <a name="__Dataseries__">
 ## Dataseries
@@ -202,20 +199,6 @@ Converts a boolean Dataseries into a torch.ByteTensor
    self        = Dataseries  -- 
    false_value = number      -- The numeric value for false
    true_value  = number      -- The numeric value for true
-})
-```
-
-_Return value_: self, boolean indicating successful conversion
-<a name="Dataseries.boolean2categorical">
-### Dataseries.boolean2categorical(self[, false_str][, true_str])
-
-Converts a boolean Dataseries into a categorical tensor
-
-```
-({
-   self      = Dataseries  -- 
-  [false_str = string]     -- The string value for false [default=false]
-  [true_str  = string]     -- The string value for true [default=true]
 })
 ```
 

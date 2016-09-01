@@ -1,13 +1,11 @@
-# API documentation
-
-- [Batchframe](#__Batchframe__)
-- [Batchframe.__init(self[, data][, label][, label_shape])](#Batchframe.__init)
-- [Batchframe.set_data_retriever(self[, data])](#Batchframe.set_data_retriever)
-- [Batchframe.get_data_retriever(self)](#Batchframe.get_data_retriever)
-- [Batchframe.set_label_retriever(self[, label])](#Batchframe.set_label_retriever)
-- [Batchframe.get_label_retriever(self)](#Batchframe.get_label_retriever)
-- [Batchframe.set_label_shape(self[, label_shape])](#Batchframe.set_label_shape)
-- [Batchframe.to_tensor(self, data_columns, label_columns[, label_shape])](#Batchframe.to_tensor)
+# API documentation for [Batchframe](#__Batchframe__)
+- [Batchframe.__init](#Batchframe.__init)
+- [Batchframe.set_data_retriever](#Batchframe.set_data_retriever)
+- [Batchframe.get_data_retriever](#Batchframe.get_data_retriever)
+- [Batchframe.set_label_retriever](#Batchframe.set_label_retriever)
+- [Batchframe.get_label_retriever](#Batchframe.get_label_retriever)
+- [Batchframe.set_label_shape](#Batchframe.set_label_shape)
+- [Batchframe.to_tensor](#Batchframe.to_tensor)
 
 <a name="__Batchframe__">
 ## Batchframe

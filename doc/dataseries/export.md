@@ -1,8 +1,6 @@
-# API documentation
-
-- [Export functions](#__Export functions__)
-- [Dataseries.to_tensor(self[, missing_value][, copy])](#Dataseries.to_tensor)
-- [Dataseries.to_table(self)](#Dataseries.to_table)
+# API documentation for [export functions](#__Export functions__)
+- [Dataseries.to_tensor](#Dataseries.to_tensor)
+- [Dataseries.to_table](#Dataseries.to_table)
 
 <a name="__Export functions__">
 ## Export functions
@@ -29,7 +27,7 @@ function for details or run the `boolean2tensor`.
 })
 ```
 
-_Return value_: torch.*Tensor of the current type
+_Return value_: `torch.*Tensor` of the current type
 <a name="Dataseries.to_table">
 ### Dataseries.to_table(self)
 

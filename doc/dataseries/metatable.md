@@ -1,8 +1,6 @@
-# API documentation
-
-- [Metatable functions](#__Metatable functions__)
+# API documentation for [metatable functions](#__Metatable functions__)
 - [Dataseries.#](#Dataseries.#)
-- [Dataseries.__tostring__(self)](#	Dataseries.__tostring__)
+- [Dataseries.__tostring__](#	Dataseries.__tostring__)
 
 <a name="__Metatable functions__">
 ## Metatable functions

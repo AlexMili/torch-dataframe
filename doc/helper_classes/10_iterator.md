@@ -1,7 +1,5 @@
-# API documentation
-
-- [Df_Iterator and general about Dataframe's iterators](#__Df_Iterator and general about Dataframe's iterators__)
-- [Df_Iterator(self, dataset, batch_size[, filter][, transform][, input_transform][, target_transform])](#Df_Iterator)
+# API documentation for [Df_Iterator and general about Dataframe's iterators](#__Df_Iterator and general about Dataframe's iterators__)
+- [Df_Iterator](#Df_Iterator)
 
 <a name="__Df_Iterator and general about Dataframe's iterators__">
 ## Df_Iterator and general about Dataframe's iterators

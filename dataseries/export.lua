@@ -28,7 +28,7 @@ function for details or run the `boolean2tensor`.
 
 @ARGT
 
-_Return value_: torch.*Tensor of the current type
+_Return value_: `torch.*Tensor` of the current type
 ]],
 	{name="self", type="Dataseries"},
 	{name="missing_value", type="number",

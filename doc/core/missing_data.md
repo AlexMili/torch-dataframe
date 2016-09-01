@@ -1,9 +1,7 @@
-# API documentation
-
-- [Missing data functions](#__Missing data functions__)
-- [Dataframe.count_na(self[, columns][, as_dataframe])](#Dataframe.count_na)
-- [Dataframe.fill_na(self, column_name[, default_value])](#	Dataframe.fill_na)
-- [Dataframe.fill_na(self[, default_value])](#Dataframe.fill_na)
+# API documentation for [missing data functions](#__Missing data functions__)
+- [Dataframe.count_na](#Dataframe.count_na)
+- [Dataframe.fill_na](#	Dataframe.fill_na)
+- [Dataframe.fill_na](#Dataframe.fill_na)
 
 <a name="__Missing data functions__">
 ## Missing data functions
