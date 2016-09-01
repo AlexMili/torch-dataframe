@@ -1,4 +1,4 @@
-# Documentation for helper classes\n
+# Documentation for helper classes
 
 This documentation ha been auto-generated from code using the `argcheck` system.
 

@@ -1,4 +1,4 @@
-# Documentation for core\n
+# Documentation for core
 
 This documentation ha been auto-generated from code using the `argcheck` system.
 
