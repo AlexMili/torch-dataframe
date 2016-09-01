@@ -17,7 +17,7 @@ add apropriate anchor tags during documentation.
 
 - **[Df_Subset](01_subset.md)**
   - [Df_Subset.`__init`](01_subset.md#Df_Subset.__init)
-  - [Df_Subset._clean](01_subset.md#Df_Subset._clean)
+  - [Df_Subset.`_clean`](01_subset.md#Df_Subset._clean)
   - [Df_Subset.set_idxs](01_subset.md#Df_Subset.set_idxs)
   - [Df_Subset.get_idx](01_subset.md#Df_Subset.get_idx)
   - [Df_Subset.set_labels](01_subset.md#Df_Subset.set_labels)

@@ -3,7 +3,7 @@
 - [Dataframe.get_random](#Dataframe.get_random)
 - [Dataframe.head](#Dataframe.head)
 - [Dataframe.tail](#Dataframe.tail)
-- [Dataframe._create_subset](#Dataframe._create_subset)
+- [Dataframe.`_create_subset`](#Dataframe._create_subset)
 - [Dataframe.where](#Dataframe.where)
 - [Dataframe.which](#Dataframe.which)
 - [Dataframe.update](#Dataframe.update)

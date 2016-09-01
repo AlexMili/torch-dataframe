@@ -98,7 +98,7 @@ add apropriate anchor tags during documentation.
 - **[Data loader functions](core/load_data.md)**
   - [Dataframe.load_csv](core/load_data.md#Dataframe.load_csv)
   - [Dataframe.load_table](core/load_data.md#Dataframe.load_table)
-  - [Dataframe._clean_columns](core/load_data.md#Dataframe._clean_columns)
+  - [Dataframe.`_clean_columns`](core/load_data.md#Dataframe._clean_columns)
 - **[Metatable functions](core/metatable.md)**
   - [Dataframe.size](core/metatable.md#Dataframe.size)
   - [Dataframe.`__tostring__`](core/metatable.md#Dataframe.__tostring__)
@@ -113,7 +113,7 @@ add apropriate anchor tags during documentation.
   - [Dataframe.output](core/output.md#Dataframe.output)
   - [Dataframe.show](core/output.md#Dataframe.show)
   - [Dataframe.tostring](core/output.md#Dataframe.tostring)
-  - [Dataframe._to_html](core/output.md#Dataframe._to_html)
+  - [Dataframe.`_to_html`](core/output.md#Dataframe._to_html)
 - **[Row functions](core/row.md)**
   - [Dataframe.get_row](core/row.md#Dataframe.get_row)
   - [Dataframe.insert](core/row.md#Dataframe.insert)
@@ -125,7 +125,7 @@ add apropriate anchor tags during documentation.
   - [Dataframe.get_random](core/select_set_update.md#Dataframe.get_random)
   - [Dataframe.head](core/select_set_update.md#Dataframe.head)
   - [Dataframe.tail](core/select_set_update.md#Dataframe.tail)
-  - [Dataframe._create_subset](core/select_set_update.md#Dataframe._create_subset)
+  - [Dataframe.`_create_subset`](core/select_set_update.md#Dataframe._create_subset)
   - [Dataframe.where](core/select_set_update.md#Dataframe.where)
   - [Dataframe.which](core/select_set_update.md#Dataframe.which)
   - [Dataframe.update](core/select_set_update.md#Dataframe.update)
@@ -202,7 +202,7 @@ add apropriate anchor tags during documentation.
 
 - **[Df_Subset](sub_classes/01_subset.md)**
   - [Df_Subset.`__init`](sub_classes/01_subset.md#Df_Subset.__init)
-  - [Df_Subset._clean](sub_classes/01_subset.md#Df_Subset._clean)
+  - [Df_Subset.`_clean`](sub_classes/01_subset.md#Df_Subset._clean)
   - [Df_Subset.set_idxs](sub_classes/01_subset.md#Df_Subset.set_idxs)
   - [Df_Subset.get_idx](sub_classes/01_subset.md#Df_Subset.get_idx)
   - [Df_Subset.set_labels](sub_classes/01_subset.md#Df_Subset.set_labels)

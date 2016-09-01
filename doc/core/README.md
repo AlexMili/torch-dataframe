@@ -67,7 +67,7 @@ add apropriate anchor tags during documentation.
 - **[Data loader functions](load_data.md)**
   - [Dataframe.load_csv](load_data.md#Dataframe.load_csv)
   - [Dataframe.load_table](load_data.md#Dataframe.load_table)
-  - [Dataframe._clean_columns](load_data.md#Dataframe._clean_columns)
+  - [Dataframe.`_clean_columns`](load_data.md#Dataframe._clean_columns)
 - **[Metatable functions](metatable.md)**
   - [Dataframe.size](metatable.md#Dataframe.size)
   - [Dataframe.`__tostring__`](metatable.md#Dataframe.__tostring__)
@@ -82,7 +82,7 @@ add apropriate anchor tags during documentation.
   - [Dataframe.output](output.md#Dataframe.output)
   - [Dataframe.show](output.md#Dataframe.show)
   - [Dataframe.tostring](output.md#Dataframe.tostring)
-  - [Dataframe._to_html](output.md#Dataframe._to_html)
+  - [Dataframe.`_to_html`](output.md#Dataframe._to_html)
 - **[Row functions](row.md)**
   - [Dataframe.get_row](row.md#Dataframe.get_row)
   - [Dataframe.insert](row.md#Dataframe.insert)
@@ -94,7 +94,7 @@ add apropriate anchor tags during documentation.
   - [Dataframe.get_random](select_set_update.md#Dataframe.get_random)
   - [Dataframe.head](select_set_update.md#Dataframe.head)
   - [Dataframe.tail](select_set_update.md#Dataframe.tail)
-  - [Dataframe._create_subset](select_set_update.md#Dataframe._create_subset)
+  - [Dataframe.`_create_subset`](select_set_update.md#Dataframe._create_subset)
   - [Dataframe.where](select_set_update.md#Dataframe.where)
   - [Dataframe.which](select_set_update.md#Dataframe.which)
   - [Dataframe.update](select_set_update.md#Dataframe.update)

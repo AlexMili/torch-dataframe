@@ -1,6 +1,6 @@
 # API documentation for [Df_Subset](#__Df_Subset__)
 - [Df_Subset.`__init`](#Df_Subset.__init)
-- [Df_Subset._clean](#Df_Subset._clean)
+- [Df_Subset.`_clean`](#Df_Subset._clean)
 - [Df_Subset.set_idxs](#Df_Subset.set_idxs)
 - [Df_Subset.get_idx](#Df_Subset.get_idx)
 - [Df_Subset.set_labels](#Df_Subset.set_labels)
