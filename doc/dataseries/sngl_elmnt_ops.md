@@ -1,11 +1,9 @@
-# API documentation
-
-- [Single element functions](#__Single element functions__)
-- [Dataseries.get(self, index[, as_raw])](#Dataseries.get)
-- [Dataseries.set(self, index, value)](#Dataseries.set)
-- [Dataseries.append(self, value)](#Dataseries.append)
-- [Dataseries.remove(self, index)](#Dataseries.remove)
-- [Dataseries.insert(self, index, value)](#Dataseries.insert)
+# API documentation for [single element functions](#__Single element functions__)
+- [Dataseries.get](#Dataseries.get)
+- [Dataseries.set](#Dataseries.set)
+- [Dataseries.append](#Dataseries.append)
+- [Dataseries.remove](#Dataseries.remove)
+- [Dataseries.insert](#Dataseries.insert)
 
 <a name="__Single element functions__">
 ## Single element functions

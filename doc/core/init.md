@@ -1,13 +1,11 @@
-# API documentation
-
-- [Core functions](#__Core functions__)
-- [Dataframe.__init(self)](#Dataframe.__init)
-- [Dataframe.get_schema(self, column_name)](#Dataframe.get_schema)
-- [Dataframe.shape(self)](#Dataframe.shape)
-- [Dataframe.version(self)](#Dataframe.version)
-- [Dataframe.set_version(self)](#Dataframe.set_version)
-- [Dataframe.upgrade_frame(self)](#Dataframe.upgrade_frame)
-- [Dataframe.assert_is_index(self, index[, plus_one])](#Dataframe.assert_is_index)
+# API documentation for [core functions](#__Core functions__)
+- [Dataframe.`__init`](#Dataframe.__init)
+- [Dataframe.get_schema](#Dataframe.get_schema)
+- [Dataframe.shape](#Dataframe.shape)
+- [Dataframe.version](#Dataframe.version)
+- [Dataframe.set_version](#Dataframe.set_version)
+- [Dataframe.upgrade_frame](#Dataframe.upgrade_frame)
+- [Dataframe.assert_is_index](#Dataframe.assert_is_index)
 
 <a name="__Core functions__">
 ## Core functions

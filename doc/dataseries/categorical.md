@@ -1,14 +1,13 @@
-# API documentation
-
-- [Categorical functions](#__Categorical functions__)
-- [Dataseries.as_categorical(self[, levels][, labels][, exclude])](#Dataseries.as_categorical)
-- [Dataseries.add_cat_key(self, key[, key_index])](#Dataseries.add_cat_key)
-- [Dataseries.as_string(self)](#	Dataseries.as_string)
-- [Dataseries.clean_categorical(self[, reset_keys])](#Dataseries.clean_categorical)
-- [Dataseries.is_categorical(self)](#Dataseries.is_categorical)
-- [Dataseries.get_cat_keys(self)](#Dataseries.get_cat_keys)
-- [Dataseries.to_categorical(self, key_index)](#Dataseries.to_categorical)
-- [Dataseries.from_categorical(self, data)](#Dataseries.from_categorical)
+# API documentation for [categorical functions](#__Categorical functions__)
+- [Dataseries.as_categorical](#Dataseries.as_categorical)
+- [Dataseries.add_cat_key](#Dataseries.add_cat_key)
+- [Dataseries.as_string](#Dataseries.as_string)
+- [Dataseries.clean_categorical](#Dataseries.clean_categorical)
+- [Dataseries.is_categorical](#Dataseries.is_categorical)
+- [Dataseries.get_cat_keys](#Dataseries.get_cat_keys)
+- [Dataseries.to_categorical](#Dataseries.to_categorical)
+- [Dataseries.from_categorical](#Dataseries.from_categorical)
+- [Dataseries.boolean2categorical](#Dataseries.boolean2categorical)
 
 <a name="__Categorical functions__">
 ## Categorical functions
@@ -181,3 +180,17 @@ Checks if categorical value exists
 ```
 
 _Return value_: boolean
+<a name="Dataseries.boolean2categorical">
+### Dataseries.boolean2categorical(self[, false_str][, true_str])
+
+Converts a boolean Dataseries into a categorical tensor
+
+```
+({
+   self      = Dataseries  -- 
+  [false_str = string]     -- The string value for false [default=false]
+  [true_str  = string]     -- The string value for true [default=true]
+})
+```
+
+_Return value_: self, boolean indicating successful conversion

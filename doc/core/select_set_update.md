@@ -1,16 +1,14 @@
-# API documentation
-
-- [Subsetting and manipulation functions](#__Subsetting and manipulation functions__)
-- [Dataframe.sub(self[, start][, stop])](#Dataframe.sub)
-- [Dataframe.get_random(self[, n_items])](#Dataframe.get_random)
-- [Dataframe.head(self[, n_items])](#Dataframe.head)
-- [Dataframe.tail(self[, n_items])](#Dataframe.tail)
-- [Dataframe._create_subset(self, index_items[, frame_type][, class_args])](#Dataframe._create_subset)
-- [Dataframe.where(self, column_name, item_to_find)](#Dataframe.where)
-- [Dataframe.which(self, condition_function)](#Dataframe.which)
-- [Dataframe.update(self, condition_function, update_function)](#Dataframe.update)
-- [Dataframe.set(self, item_to_find, column_name, new_value)](#Dataframe.set)
-- [Dataframe.wide2long(self, columns, id_name, value_name)](#Dataframe.wide2long)
+# API documentation for [subsetting and manipulation functions](#__Subsetting and manipulation functions__)
+- [Dataframe.sub](#Dataframe.sub)
+- [Dataframe.get_random](#Dataframe.get_random)
+- [Dataframe.head](#Dataframe.head)
+- [Dataframe.tail](#Dataframe.tail)
+- [Dataframe.`_create_subset`](#Dataframe._create_subset)
+- [Dataframe.where](#Dataframe.where)
+- [Dataframe.which](#Dataframe.which)
+- [Dataframe.update](#Dataframe.update)
+- [Dataframe.set](#Dataframe.set)
+- [Dataframe.wide2long](#Dataframe.wide2long)
 
 <a name="__Subsetting and manipulation functions__">
 ## Subsetting and manipulation functions
