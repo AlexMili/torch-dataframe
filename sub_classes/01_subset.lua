@@ -1,12 +1,17 @@
 local params = {...}
-local Dataframe = params[1]
-local current_file_path = params[2] -- used for loading extensions at the end
 
 require 'torch'
-local tnt = require 'torchnet'
 
 local argcheck = require "argcheck"
 local doc = require "argcheck.doc"
+local tnt
+if (doc.__record) then
+	doc.stop()
+	tnt = require "torchnet"
+	doc.record()
+else
+	v = require "torchnet"
+end
 
 doc[[
 
@@ -84,7 +89,7 @@ _Return value_: self
 ]],
 {name="self", type="Df_Subset"},
 call=function(self)
-	Dataframe._clean(self)
+	parent_class._clean(self)
 
 	self.indexes = {}
 	self.sampler = nil
@@ -122,7 +127,7 @@ _Return value_: self
 		self:drop('indexes')
 	end
 
-	self:add_column('indexes', indexes)
+	self:add_column('indexes', Dataseries(indexes))
 
 	return self
 end}
@@ -180,7 +185,7 @@ _Return value_: self
 
 	-- TODO: an appealing alternative would be to store the label by ref. but this requires quite a few changes...
 	-- Column does not have to be numerical for this to work
-	self:add_column('labels', labels)
+	self:add_column('labels', Dataseries(labels))
 
 	return self
 end}
@@ -212,13 +217,8 @@ _Return value_: self
 end}
 
 -- Load the extensions
-local ext_path = string.gsub(current_file_path, "[^/]+$", "") .. "subset_extensions/"
-local ext_files = paths.get_sorted_files(ext_path)
-for _, extension_file in pairs(ext_files) do
-  local file = ext_path .. extension_file
-  assert(loadfile(file))(subset)
-end
-
+local ext_path = string.gsub(paths.thisfile(), "[^/]+$", "") .. "subset_extensions/"
+load_dir_files(ext_path, {subset})
 
 subset.get_batch = argcheck{
 	doc =  [[
@@ -411,7 +411,7 @@ _Return value_: integer
 		return self.n_rows
 	end
 
-	return #self.parent.columns
+	return #self.parent.column_order
 end}
 
 subset.shape = argcheck{
@@ -427,7 +427,7 @@ _Return value_: table
 ]],
 	{name="self", type="Df_Subset"},
 	call=function(self)
-	return {rows=self.n_rows,cols=#self.parent.columns}
+	return {rows=self.n_rows,cols=#self.parent.column_order}
 end}
 
 

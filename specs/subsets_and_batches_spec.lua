@@ -134,13 +134,13 @@ describe("Test if we can get a batch with data and labels.",function()
 		local a = Dataframe("./data/realistic_29_row_data.csv")
 		a:create_subsets()
 
-		it("Check that we get reasonable formatted data back",function()
+		it("Check that we get reasonable formatted data back #12",function()
 			local data, label =
-			a["/train"]:
-			get_batch{no_lines = 5}:
-			to_tensor{
-				retriever = fake_loader
-			}
+				a["/train"]:
+				get_batch{no_lines = 5}:
+				to_tensor{
+					retriever = fake_loader
+				}
 
 			assert.is.equal(data:size(1), 5)-- "The data has invalid rows"
 			assert.is.equal(data:size(2), 2)-- "The data has invalid columns"
@@ -331,14 +331,14 @@ describe("Test if we can get a batch with data and labels.",function()
 		local a = Dataframe("./data/realistic_29_row_data.csv")
 		a:create_subsets()
 
-		it("Should be a Dataframe", function()
+		it("Should be a Dataframe #11", function()
 			local subset = a:get_subset("train", "Dataframe")
-			assert.are.equal(torch.type(subset), "Dataframe")
+			assert.are.same(torch.type(subset), "Dataframe")
 		end)
 
 		it("Should be a Batchframe", function()
 			local subset = a:get_subset("train", "Batchframe")
-			assert.are.equal(torch.type(subset), "Batchframe")
+			assert.are.same(torch.type(subset), "Batchframe")
 		end)
 	end)
 
