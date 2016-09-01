@@ -202,9 +202,20 @@ _Return value_: self
 		                                add_new_columns = true,
 		                                add_old_columns = true}
 	for _, column_name in pairs(self.column_order) do
+		local col = self:get_column(column_name)
 		for j = 1,no_rows_2_insert do
-			value = rows[column_name][j]
-			self.dataset[column_name]:append(value)
+			local value = rows[column_name][j]
+			-- Check if column type needs conversion to fit the new value
+			-- e.g. an integer column won't fit a double, a double wont fit a string
+			local type = get_variable_type{
+				value = value,
+				prev_type = col:get_variable_type()
+			}
+			if (type ~= col:get_variable_type()) then
+				col:type(type)
+			end
+
+			col:append(value)
 		end
 	end
 	self.n_rows = self.n_rows + no_rows_2_insert
