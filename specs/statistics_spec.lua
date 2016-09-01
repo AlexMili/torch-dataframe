@@ -89,14 +89,15 @@ describe("Usual statistics functions", function()
 
 
 	describe("Mode functionality",function()
-		local df = Dataframe("./data/advanced_short.csv")
 
 		it("Get the mode for a specific column",function()
+			local df = Dataframe("./data/advanced_short.csv")
 			assert.are.same(df:get_mode{column_name ='Col A', normalize = false, as_dataframe = false},
 		                   {[1] = 1, [2] = 1, [3] = 1})
 		end)
 
 		it("Check that mode with dataframe",function()
+			local df = Dataframe("./data/advanced_short.csv")
 			local mode_df = df:get_mode{column_name ='Col A', normalize = false, as_dataframe = true}
 			assert.are.same(mode_df:get_column('key'), {1, 2, 3})
 			assert.are.same(mode_df:get_column('value'), {1, 1, 1})
@@ -104,6 +105,7 @@ describe("Usual statistics functions", function()
 		end)
 
 		it("Get the mode for a specific column with 'normalize' option",function()
+			local df = Dataframe("./data/advanced_short.csv")
 			assert.are.same(df:get_mode{column_name ='Col A', normalize = true, as_dataframe = false},
 			                   {[1] = 1/3, [2] = 1/3, [3] = 1/3})
 			assert.are.same(df:get_mode{column_name ='Col B', normalize = true, as_dataframe = false},
@@ -111,15 +113,25 @@ describe("Usual statistics functions", function()
 		end)
 
 		it("Get mode for multiple columns",function()
-			df:load_table{data=Df_Dict({['A']={3,3,2},['B']={10,11,12}})}
+			local df = Dataframe{
+				data=Df_Dict{
+					['A']={3,3,2},
+					['B']={10,11,12}
+				}
+			}
 			assert.are.same(df:get_mode{normalize = true, as_dataframe = false},
 			                {A ={[3] = 2/3},
 			                 B ={[10] = 1/3, [11] = 1/3, [12] = 1/3}})
 		end)
 
 		it("Get mode for categorical #1 columns",function()
-			df:load_table{data=Df_Dict({['A']={3,3,2},['B']={10,11,12}, ['C'] = {"a","a","a"}})}
-			df:as_categorical('A')
+			local df = Dataframe{
+				data=Df_Dict{
+					['A']={3,3,2},
+					['B']={10,11,12},
+					['C'] = {"a","a","a"}
+				}
+			}
 			df:as_categorical('C')
 			local mode = df:get_mode{normalize = true, as_dataframe = true}
 			assert.are.same(mode:shape(), {rows=5, cols=3})
