@@ -1,4 +1,4 @@
-# Documentation for dataseries\n
+# Documentation for dataseries
 
 This documentation ha been auto-generated from code using the `argcheck` system.
 

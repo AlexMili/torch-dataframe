@@ -1,4 +1,4 @@
-# Documentation for sub classes\n
+# Documentation for sub classes
 
 This documentation ha been auto-generated from code using the `argcheck` system.
 

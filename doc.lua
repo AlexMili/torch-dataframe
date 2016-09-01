@@ -99,7 +99,7 @@ for group_name,group in pairs(docs) do
 	end
 
 	local readmefile = io.open(sub_doc_path .. "README.md", "w")
-	readmefile:write(([[# Documentation for %s\n
+	readmefile:write(([[# Documentation for %s
 
 This documentation ha been auto-generated from code using the `argcheck` system.
 
