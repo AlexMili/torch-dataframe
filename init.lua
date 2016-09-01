@@ -15,15 +15,13 @@ local loader_file = dataframe_dir .. "utils/loader.lua"
 assert(loadfile(loader_file))()
 load_dir_files(dataframe_dir .. "utils/")
 
--- Load all helper classes
+-- Load all the classes
 load_dir_files(dataframe_dir .. "helper_classes/")
 
--- Load all extensions, i.e. .lua files in extensions directory
-load_dir_files(dataframe_dir .. "dataframe/", {Dataframe})
+load_dir_files(dataframe_dir .. "dataseries/")
 
-load_dir_files(dataframe_dir .. "dataseries/", {Dataframe})
+load_dir_files(dataframe_dir .. "dataframe/")
 
--- Load all sub classes
-load_dir_files(dataframe_dir .. "sub_classes/", {Dataframe})
+load_dir_files(dataframe_dir .. "sub_classes/")
 
 return Dataframe

@@ -1,6 +1,4 @@
-# API documentation
-
-- [Df_Tbl](#__Df_Tbl__)
+# API documentation for [Df_Tbl](#__Df_Tbl__)
 
 <a name="__Df_Tbl__">
 ## Df_Tbl

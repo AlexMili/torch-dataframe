@@ -1,14 +1,12 @@
-# API documentation
-
-- [Statistics](#__Statistics__)
-- [Dataseries.count_na(self)](#Dataseries.count_na)
-- [Dataseries.unique(self[, as_keys][, as_raw])](#Dataseries.unique)
-- [Dataseries.value_counts(self[, normalize][, dropna][, as_raw][, as_dataframe])](#Dataseries.value_counts)
-- [Dataseries.which_max(self)](#Dataseries.which_max)
-- [Dataseries.which_min(self)](#Dataseries.which_min)
-- [Dataseries.get_mode(self[, normalize][, dropna][, as_dataframe])](#Dataseries.get_mode)
-- [Dataseries.get_max_value(self)](#Dataseries.get_max_value)
-- [Dataseries.get_min_value(self)](#Dataseries.get_min_value)
+# API documentation for [statistics](#__Statistics__)
+- [Dataseries.count_na](#Dataseries.count_na)
+- [Dataseries.unique](#Dataseries.unique)
+- [Dataseries.value_counts](#Dataseries.value_counts)
+- [Dataseries.which_max](#Dataseries.which_max)
+- [Dataseries.which_min](#Dataseries.which_min)
+- [Dataseries.get_mode](#Dataseries.get_mode)
+- [Dataseries.get_max_value](#Dataseries.get_max_value)
+- [Dataseries.get_min_value](#Dataseries.get_min_value)
 
 <a name="__Statistics__">
 ## Statistics

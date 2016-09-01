@@ -1,7 +1,5 @@
-# API documentation
-
-- [Df_ParallelIterator](#__Df_ParallelIterator__)
-- [Df_ParallelIterator(self, dataset, batch_size[, init], nthread[, filter][, transform][, input_transform][, target_transform][, ordered])](#Df_ParallelIterator)
+# API documentation for [Df_ParallelIterator](#__Df_ParallelIterator__)
+- [Df_ParallelIterator](#Df_ParallelIterator)
 
 <a name="__Df_ParallelIterator__">
 ## Df_ParallelIterator

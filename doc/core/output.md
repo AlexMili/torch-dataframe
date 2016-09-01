@@ -1,10 +1,8 @@
-# API documentation
-
-- [Output functions](#__Output functions__)
-- [Dataframe.output(self[, html][, max_rows][, digits])](#Dataframe.output)
-- [Dataframe.show(self[, digits])](#Dataframe.show)
-- [Dataframe.tostring(self[, digits][, columns2skip][, no_rows][, min_col_width][, max_table_width])](#Dataframe.tostring)
-- [Dataframe._to_html(self[, split_table][, offset][, digits])](#Dataframe._to_html)
+# API documentation for [output functions](#__Output functions__)
+- [Dataframe.output](#Dataframe.output)
+- [Dataframe.show](#Dataframe.show)
+- [Dataframe.tostring](#Dataframe.tostring)
+- [Dataframe._to_html](#Dataframe._to_html)
 
 <a name="__Output functions__">
 ## Output functions

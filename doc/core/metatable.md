@@ -1,9 +1,7 @@
-# API documentation
-
-- [Metatable functions](#__Metatable functions__)
-- [Dataframe.size(self[, dim])](#Dataframe.size)
-- [Dataframe.__tostring__(self)](#	Dataframe.__tostring__)
-- [Dataframe.copy(self)](#Dataframe.copy)
+# API documentation for [metatable functions](#__Metatable functions__)
+- [Dataframe.size](#Dataframe.size)
+- [Dataframe.__tostring__](#	Dataframe.__tostring__)
+- [Dataframe.copy](#Dataframe.copy)
 - [Dataframe.#](#Dataframe.#)
 - [Dataframe.==](#Dataframe.==)
 

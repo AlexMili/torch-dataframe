@@ -1,6 +1,4 @@
 local params = {...}
-local Dataframe = params[1]
-local current_file_path = params[2] -- used for loading extensions at the end
 
 require 'torch'
 
@@ -91,7 +89,7 @@ _Return value_: self
 ]],
 {name="self", type="Df_Subset"},
 call=function(self)
-	Dataframe._clean(self)
+	parent_class._clean(self)
 
 	self.indexes = {}
 	self.sampler = nil
@@ -219,7 +217,7 @@ _Return value_: self
 end}
 
 -- Load the extensions
-local ext_path = string.gsub(current_file_path, "[^/]+$", "") .. "subset_extensions/"
+local ext_path = string.gsub(paths.thisfile(), "[^/]+$", "") .. "subset_extensions/"
 load_dir_files(ext_path, {subset})
 
 subset.get_batch = argcheck{

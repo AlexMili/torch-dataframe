@@ -1,13 +1,11 @@
-# API documentation
-
-- [Statistical functions](#__Statistical functions__)
-- [Dataframe.unique(self, column_name[, as_keys][, as_raw])](#Dataframe.unique)
-- [Dataframe.value_counts(self, column_name[, normalize][, dropna][, as_dataframe])](#Dataframe.value_counts)
-- [Dataframe.which_max(self, column_name)](#Dataframe.which_max)
-- [Dataframe.which_min(self, column_name)](#Dataframe.which_min)
-- [Dataframe.get_mode(self, column_name[, normalize][, dropna][, as_dataframe])](#Dataframe.get_mode)
-- [Dataframe.get_max_value(self, column_name)](#Dataframe.get_max_value)
-- [Dataframe.get_min_value(self, column_name)](#Dataframe.get_min_value)
+# API documentation for [statistical functions](#__Statistical functions__)
+- [Dataframe.unique](#Dataframe.unique)
+- [Dataframe.value_counts](#Dataframe.value_counts)
+- [Dataframe.which_max](#Dataframe.which_max)
+- [Dataframe.which_min](#Dataframe.which_min)
+- [Dataframe.get_mode](#Dataframe.get_mode)
+- [Dataframe.get_max_value](#Dataframe.get_max_value)
+- [Dataframe.get_min_value](#Dataframe.get_min_value)
 
 <a name="__Statistical functions__">
 ## Statistical functions

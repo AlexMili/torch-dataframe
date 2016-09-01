@@ -38,29 +38,13 @@ files.helper_classes, docs.helper_classes = load_dir_files{
 	docs = true
 }
 
-argdoc.record()
-local main_file = string.gsub(dataframe_path,"?", "main")
-local Dataframe = assert(loadfile(main_file))()
-docs.core = {[main_file] = argdoc.stop()}
-files.core = {main_file}
-
--- Load all extensions, i.e. .lua files in extensions directory
-files.extensions, docs.extensions =
-	load_dir_files{
-		path = dataframe_dir .. "extensions/",
-		params = {Dataframe},
-		docs = true
-	}
--- Add extensions to the core docs
-for _,fn in ipairs(files.extensions) do
-	files.core[#files.core + 1] = fn
-	docs.core[fn] = docs.extensions[fn]
-end
-docs.extensions = nil
-files.extensions = nil
-
 files.dataseries, docs.dataseries = load_dir_files{
 	path = dataframe_dir .. "dataseries/",
+	docs = true
+}
+
+files.core, docs.core = load_dir_files{
+	path = dataframe_dir .. "dataframe/",
 	docs = true
 }
 
