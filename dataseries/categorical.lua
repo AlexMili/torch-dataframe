@@ -83,7 +83,6 @@ _Return value_: self
 		new_col:set(i, val)
 	end
 
-
 	self:_replace_data(new_col)
 	self.categorical = levels
 	if (labels) then
