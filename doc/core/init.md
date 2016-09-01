@@ -1,5 +1,5 @@
 # API documentation for [core functions](#__Core functions__)
-- [Dataframe.__init](#Dataframe.__init)
+- [Dataframe.`__init`](#Dataframe.__init)
 - [Dataframe.get_schema](#Dataframe.get_schema)
 - [Dataframe.shape](#Dataframe.shape)
 - [Dataframe.version](#Dataframe.version)

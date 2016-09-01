@@ -1,5 +1,5 @@
 # API documentation for [Dataseries](#__Dataseries__)
-- [Dataseries.__init](#Dataseries.__init)
+- [Dataseries.`__init`](#Dataseries.__init)
 - [Dataseries.copy](#Dataseries.copy)
 - [Dataseries.size](#Dataseries.size)
 - [Dataseries.resize](#Dataseries.resize)

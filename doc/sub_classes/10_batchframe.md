@@ -1,5 +1,5 @@
 # API documentation for [Batchframe](#__Batchframe__)
-- [Batchframe.__init](#Batchframe.__init)
+- [Batchframe.`__init`](#Batchframe.__init)
 - [Batchframe.set_data_retriever](#Batchframe.set_data_retriever)
 - [Batchframe.get_data_retriever](#Batchframe.get_data_retriever)
 - [Batchframe.set_label_retriever](#Batchframe.set_label_retriever)

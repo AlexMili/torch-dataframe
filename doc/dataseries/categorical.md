@@ -1,7 +1,7 @@
 # API documentation for [categorical functions](#__Categorical functions__)
 - [Dataseries.as_categorical](#Dataseries.as_categorical)
 - [Dataseries.add_cat_key](#Dataseries.add_cat_key)
-- [Dataseries.as_string](#	Dataseries.as_string)
+- [Dataseries.as_string](#Dataseries.as_string)
 - [Dataseries.clean_categorical](#Dataseries.clean_categorical)
 - [Dataseries.is_categorical](#Dataseries.is_categorical)
 - [Dataseries.get_cat_keys](#Dataseries.get_cat_keys)

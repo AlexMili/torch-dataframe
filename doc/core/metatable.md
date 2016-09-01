@@ -1,6 +1,6 @@
 # API documentation for [metatable functions](#__Metatable functions__)
 - [Dataframe.size](#Dataframe.size)
-- [Dataframe.__tostring__](#	Dataframe.__tostring__)
+- [Dataframe.`__tostring__`](#Dataframe.__tostring__)
 - [Dataframe.copy](#Dataframe.copy)
 - [Dataframe.#](#Dataframe.#)
 - [Dataframe.==](#Dataframe.==)

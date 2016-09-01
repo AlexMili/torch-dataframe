@@ -26,7 +26,7 @@ add apropriate anchor tags during documentation.
 
 
 - **[Core functions](init.md)**
-  - [Dataframe.__init](init.md#Dataframe.__init)
+  - [Dataframe.`__init`](init.md#Dataframe.__init)
   - [Dataframe.get_schema](init.md#Dataframe.get_schema)
   - [Dataframe.shape](init.md#Dataframe.shape)
   - [Dataframe.version](init.md#Dataframe.version)
@@ -36,7 +36,7 @@ add apropriate anchor tags during documentation.
 - **[Categorical functions](categorical.md)**
   - [Dataframe.as_categorical](categorical.md#Dataframe.as_categorical)
   - [Dataframe.add_cat_key](categorical.md#Dataframe.add_cat_key)
-  - [Dataframe.as_string](categorical.md#	Dataframe.as_string)
+  - [Dataframe.as_string](categorical.md#Dataframe.as_string)
   - [Dataframe.clean_categorical](categorical.md#Dataframe.clean_categorical)
   - [Dataframe.is_categorical](categorical.md#Dataframe.is_categorical)
   - [Dataframe.get_cat_keys](categorical.md#Dataframe.get_cat_keys)
@@ -66,17 +66,17 @@ add apropriate anchor tags during documentation.
   - [Dataframe.get](export_data.md#Dataframe.get)
 - **[Data loader functions](load_data.md)**
   - [Dataframe.load_csv](load_data.md#Dataframe.load_csv)
-  - [Dataframe.load_table](load_data.md#	Dataframe.load_table)
-  - [Dataframe._clean_columns](load_data.md#	Dataframe._clean_columns)
+  - [Dataframe.load_table](load_data.md#Dataframe.load_table)
+  - [Dataframe._clean_columns](load_data.md#Dataframe._clean_columns)
 - **[Metatable functions](metatable.md)**
   - [Dataframe.size](metatable.md#Dataframe.size)
-  - [Dataframe.__tostring__](metatable.md#	Dataframe.__tostring__)
+  - [Dataframe.`__tostring__`](metatable.md#Dataframe.__tostring__)
   - [Dataframe.copy](metatable.md#Dataframe.copy)
   - [Dataframe.#](metatable.md#Dataframe.#)
   - [Dataframe.==](metatable.md#Dataframe.==)
 - **[Missing data functions](missing_data.md)**
   - [Dataframe.count_na](missing_data.md#Dataframe.count_na)
-  - [Dataframe.fill_na](missing_data.md#	Dataframe.fill_na)
+  - [Dataframe.fill_na](missing_data.md#Dataframe.fill_na)
   - [Dataframe.fill_na](missing_data.md#Dataframe.fill_na)
 - **[Output functions](output.md)**
   - [Dataframe.output](output.md#Dataframe.output)

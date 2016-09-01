@@ -1,7 +1,7 @@
 # API documentation for [categorical functions](#__Categorical functions__)
 - [Dataframe.as_categorical](#Dataframe.as_categorical)
 - [Dataframe.add_cat_key](#Dataframe.add_cat_key)
-- [Dataframe.as_string](#	Dataframe.as_string)
+- [Dataframe.as_string](#Dataframe.as_string)
 - [Dataframe.clean_categorical](#Dataframe.clean_categorical)
 - [Dataframe.is_categorical](#Dataframe.is_categorical)
 - [Dataframe.get_cat_keys](#Dataframe.get_cat_keys)
