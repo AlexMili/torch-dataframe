@@ -1,6 +1,4 @@
-# API documentation
-
-- [Df_Array](#__Df_Array__)
+# API documentation for [Df_Array](#__Df_Array__)
 
 <a name="__Df_Array__">
 ## Df_Array

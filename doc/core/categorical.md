@@ -1,14 +1,13 @@
-# API documentation
-
-- [Categorical functions](#__Categorical functions__)
-- [Dataframe.as_categorical(self, column_name[, levels][, labels][, exclude])](#Dataframe.as_categorical)
-- [Dataframe.add_cat_key(self, column_name, key)](#Dataframe.add_cat_key)
-- [Dataframe.as_string(self, column_name)](#	Dataframe.as_string)
-- [Dataframe.clean_categorical(self, column_name[, reset_keys])](#Dataframe.clean_categorical)
-- [Dataframe.is_categorical(self, column_name)](#Dataframe.is_categorical)
-- [Dataframe.get_cat_keys(self, column_name)](#Dataframe.get_cat_keys)
-- [Dataframe.to_categorical(self, data, column_name)](#Dataframe.to_categorical)
-- [Dataframe.from_categorical(self, data, column_name[, as_tensor])](#Dataframe.from_categorical)
+# API documentation for [categorical functions](#__Categorical functions__)
+- [Dataframe.as_categorical](#Dataframe.as_categorical)
+- [Dataframe.add_cat_key](#Dataframe.add_cat_key)
+- [Dataframe.as_string](#Dataframe.as_string)
+- [Dataframe.clean_categorical](#Dataframe.clean_categorical)
+- [Dataframe.is_categorical](#Dataframe.is_categorical)
+- [Dataframe.get_cat_keys](#Dataframe.get_cat_keys)
+- [Dataframe.to_categorical](#Dataframe.to_categorical)
+- [Dataframe.from_categorical](#Dataframe.from_categorical)
+- [Dataframe.boolean2categorical](#Dataframe.boolean2categorical)
 
 <a name="__Categorical functions__">
 ## Categorical functions
@@ -149,3 +148,27 @@ _Return value_: string with the value
 Converts categorical to numerical according to a column's keys
 
 _Return value_: table or tensor
+
+```
+({
+   self        = Dataframe      -- 
+   data        = number|string  -- The data to be converted
+   column_name = string         -- The name of the column
+})
+```
+
+<a name="Dataframe.boolean2categorical">
+### Dataframe.boolean2categorical(self, column_name[, false_str][, true_str])
+
+Converts a boolean column into a torch.ByteTensor of type integer
+
+```
+({
+   self        = Dataframe  -- 
+   column_name = string     -- The boolean column that you want to convert
+  [false_str   = string]    -- The string value for false [default=false]
+  [true_str    = string]    -- The string value for true [default=true]
+})
+```
+
+_Return value_: self

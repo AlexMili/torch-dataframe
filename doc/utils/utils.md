@@ -1,12 +1,10 @@
-# API documentation
-
-- [Utility functions](#__Utility functions__)
-- [trim(s[, ignore])](#trim)
-- [trim_table_strings(t)](#trim_table_strings)
-- [table.array2hash(array)](#table.array2hash)
-- [get_variable_type(value[, prev_type])](#get_variable_type)
-- [warning(ARGP)](#warning)
-- [convert_table_2_dataframe(tbl[, value_name][, key_name])](#convert_table_2_dataframe)
+# API documentation for [utility functions](#__Utility functions__)
+- [trim](#trim)
+- [trim_table_strings](#trim_table_strings)
+- [table.array2hash](#table.array2hash)
+- [get_variable_type](#get_variable_type)
+- [warning](#warning)
+- [convert_table_2_dataframe](#convert_table_2_dataframe)
 
 <a name="__Utility functions__">
 ## Utility functions

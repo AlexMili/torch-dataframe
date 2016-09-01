@@ -1,6 +1,4 @@
-# API documentation
-
-- [Df_Dict](#__Df_Dict__)
+# API documentation for [Df_Dict](#__Df_Dict__)
 
 <a name="__Df_Dict__">
 ## Df_Dict

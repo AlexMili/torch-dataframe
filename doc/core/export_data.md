@@ -1,9 +1,7 @@
-# API documentation
-
-- [Data save/export functions](#__Data save/export functions__)
-- [Dataframe.to_csv(self, path[, separator][, verbose])](#Dataframe.to_csv)
-- [Dataframe.to_tensor(self)](#Dataframe.to_tensor)
-- [Dataframe.get(self, idx)](#Dataframe.get)
+# API documentation for [Data save/export functions](#__Data save/export functions__)
+- [Dataframe.to_csv](#Dataframe.to_csv)
+- [Dataframe.to_tensor](#Dataframe.to_tensor)
+- [Dataframe.get](#Dataframe.get)
 
 <a name="__Data save/export functions__">
 ## Data save/export functions

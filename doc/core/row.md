@@ -1,11 +1,9 @@
-# API documentation
-
-- [Row functions](#__Row functions__)
-- [Dataframe.get_row(self, index)](#Dataframe.get_row)
-- [Dataframe.insert(self, index, rows)](#Dataframe.insert)
-- [Dataframe.append(self, rows[, column_order][, schema])](#Dataframe.append)
-- [Dataframe.rbind(self, rows)](#Dataframe.rbind)
-- [Dataframe.remove_index(self, index)](#Dataframe.remove_index)
+# API documentation for [row functions](#__Row functions__)
+- [Dataframe.get_row](#Dataframe.get_row)
+- [Dataframe.insert](#Dataframe.insert)
+- [Dataframe.append](#Dataframe.append)
+- [Dataframe.rbind](#Dataframe.rbind)
+- [Dataframe.remove_index](#Dataframe.remove_index)
 
 <a name="__Row functions__">
 ## Row functions

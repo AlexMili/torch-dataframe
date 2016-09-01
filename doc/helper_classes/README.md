@@ -19,9 +19,9 @@ add apropriate anchor tags during documentation.
 
 
 - **[Df_Iterator and general about Dataframe's iterators](10_iterator.md)**
-  - [Df_Iterator(self, dataset, batch_size[, filter][, transform][, input_transform][, target_transform])](10_iterator.md#Df_Iterator)
+  - [Df_Iterator](10_iterator.md#Df_Iterator)
 - **[Df_ParallelIterator](11_paralleliterator.md)**
-  - [Df_ParallelIterator(self, dataset, batch_size[, init], nthread[, filter][, transform][, input_transform][, target_transform][, ordered])](11_paralleliterator.md#Df_ParallelIterator)
+  - [Df_ParallelIterator](11_paralleliterator.md#Df_ParallelIterator)
 - **[Df_Tbl](20_tbl.md)**
 - **[Df_Dict](21_dict.md)**
 - **[Df_Array](22_array.md)**
