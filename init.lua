@@ -1,30 +1,25 @@
 local paths = require 'paths'
-local dataframe_path = paths.thisfile():gsub("init.lua$", "?.lua")
-local dataframe_dir = string.gsub(dataframe_path, "[^/]+$", "")
+local dataframe_dir = string.gsub(paths.thisfile(), "[^/]+$", "")
 
 -- Custom argument checks
-local argcheck_file = string.gsub(dataframe_path,"?", "argcheck")
+local argcheck_file = dataframe_dir .. "argcheck.lua"
 assert(loadfile(argcheck_file))()
 -- Custom busted assertions, only needed for running tests
-local assert_file = string.gsub(dataframe_path,"?", "custom_assertions")
+local assert_file = dataframe_dir .. "custom_assertions.lua"
 if (paths.filep(assert_file)) then
   assert(loadfile(assert_file))()
 end
 
 -- Get the loader funciton and start by making utils available to all
-local loader_file = string.gsub(dataframe_path,"?", "utils/loader")
+local loader_file = dataframe_dir .. "utils/loader.lua"
 assert(loadfile(loader_file))()
 load_dir_files(dataframe_dir .. "utils/")
 
 -- Load all helper classes
 load_dir_files(dataframe_dir .. "helper_classes/")
 
--- Load the main file
-local main_file = string.gsub(dataframe_path,"?", "main")
-local Dataframe = assert(loadfile(main_file))()
-
 -- Load all extensions, i.e. .lua files in extensions directory
-load_dir_files(dataframe_dir .. "extensions/", {Dataframe})
+load_dir_files(dataframe_dir .. "dataframe/", {Dataframe})
 
 load_dir_files(dataframe_dir .. "dataseries/", {Dataframe})
 
