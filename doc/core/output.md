@@ -2,7 +2,7 @@
 - [Dataframe.output](#Dataframe.output)
 - [Dataframe.show](#Dataframe.show)
 - [Dataframe.tostring](#Dataframe.tostring)
-- [Dataframe._to_html](#Dataframe._to_html)
+- [Dataframe.`_to_html`](#Dataframe._to_html)
 
 <a name="__Output functions__">
 ## Output functions
