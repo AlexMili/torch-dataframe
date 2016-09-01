@@ -1,7 +1,7 @@
 # API documentation for [Data loader functions](#__Data loader functions__)
 - [Dataframe.load_csv](#Dataframe.load_csv)
-- [Dataframe.load_table](#	Dataframe.load_table)
-- [Dataframe._clean_columns](#	Dataframe._clean_columns)
+- [Dataframe.load_table](#Dataframe.load_table)
+- [Dataframe._clean_columns](#Dataframe._clean_columns)
 
 <a name="__Data loader functions__">
 ## Data loader functions

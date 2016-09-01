@@ -57,7 +57,7 @@ add apropriate anchor tags during documentation.
 
 
 - **[Core functions](core/init.md)**
-  - [Dataframe.__init](core/init.md#Dataframe.__init)
+  - [Dataframe.`__init`](core/init.md#Dataframe.__init)
   - [Dataframe.get_schema](core/init.md#Dataframe.get_schema)
   - [Dataframe.shape](core/init.md#Dataframe.shape)
   - [Dataframe.version](core/init.md#Dataframe.version)
@@ -67,7 +67,7 @@ add apropriate anchor tags during documentation.
 - **[Categorical functions](core/categorical.md)**
   - [Dataframe.as_categorical](core/categorical.md#Dataframe.as_categorical)
   - [Dataframe.add_cat_key](core/categorical.md#Dataframe.add_cat_key)
-  - [Dataframe.as_string](core/categorical.md#	Dataframe.as_string)
+  - [Dataframe.as_string](core/categorical.md#Dataframe.as_string)
   - [Dataframe.clean_categorical](core/categorical.md#Dataframe.clean_categorical)
   - [Dataframe.is_categorical](core/categorical.md#Dataframe.is_categorical)
   - [Dataframe.get_cat_keys](core/categorical.md#Dataframe.get_cat_keys)
@@ -97,17 +97,17 @@ add apropriate anchor tags during documentation.
   - [Dataframe.get](core/export_data.md#Dataframe.get)
 - **[Data loader functions](core/load_data.md)**
   - [Dataframe.load_csv](core/load_data.md#Dataframe.load_csv)
-  - [Dataframe.load_table](core/load_data.md#	Dataframe.load_table)
-  - [Dataframe._clean_columns](core/load_data.md#	Dataframe._clean_columns)
+  - [Dataframe.load_table](core/load_data.md#Dataframe.load_table)
+  - [Dataframe._clean_columns](core/load_data.md#Dataframe._clean_columns)
 - **[Metatable functions](core/metatable.md)**
   - [Dataframe.size](core/metatable.md#Dataframe.size)
-  - [Dataframe.__tostring__](core/metatable.md#	Dataframe.__tostring__)
+  - [Dataframe.`__tostring__`](core/metatable.md#Dataframe.__tostring__)
   - [Dataframe.copy](core/metatable.md#Dataframe.copy)
   - [Dataframe.#](core/metatable.md#Dataframe.#)
   - [Dataframe.==](core/metatable.md#Dataframe.==)
 - **[Missing data functions](core/missing_data.md)**
   - [Dataframe.count_na](core/missing_data.md#Dataframe.count_na)
-  - [Dataframe.fill_na](core/missing_data.md#	Dataframe.fill_na)
+  - [Dataframe.fill_na](core/missing_data.md#Dataframe.fill_na)
   - [Dataframe.fill_na](core/missing_data.md#Dataframe.fill_na)
 - **[Output functions](core/output.md)**
   - [Dataframe.output](core/output.md#Dataframe.output)
@@ -149,7 +149,7 @@ add apropriate anchor tags during documentation.
 
 
 - **[Dataseries](dataseries/init.md)**
-  - [Dataseries.__init](dataseries/init.md#Dataseries.__init)
+  - [Dataseries.`__init`](dataseries/init.md#Dataseries.__init)
   - [Dataseries.copy](dataseries/init.md#Dataseries.copy)
   - [Dataseries.size](dataseries/init.md#Dataseries.size)
   - [Dataseries.resize](dataseries/init.md#Dataseries.resize)
@@ -168,7 +168,7 @@ add apropriate anchor tags during documentation.
 - **[Categorical functions](dataseries/categorical.md)**
   - [Dataseries.as_categorical](dataseries/categorical.md#Dataseries.as_categorical)
   - [Dataseries.add_cat_key](dataseries/categorical.md#Dataseries.add_cat_key)
-  - [Dataseries.as_string](dataseries/categorical.md#	Dataseries.as_string)
+  - [Dataseries.as_string](dataseries/categorical.md#Dataseries.as_string)
   - [Dataseries.clean_categorical](dataseries/categorical.md#Dataseries.clean_categorical)
   - [Dataseries.is_categorical](dataseries/categorical.md#Dataseries.is_categorical)
   - [Dataseries.get_cat_keys](dataseries/categorical.md#Dataseries.get_cat_keys)
@@ -180,7 +180,7 @@ add apropriate anchor tags during documentation.
   - [Dataseries.to_table](dataseries/export.md#Dataseries.to_table)
 - **[Metatable functions](dataseries/metatable.md)**
   - [Dataseries.#](dataseries/metatable.md#Dataseries.#)
-  - [Dataseries.__tostring__](dataseries/metatable.md#	Dataseries.__tostring__)
+  - [Dataseries.`__tostring__`](dataseries/metatable.md#Dataseries.__tostring__)
 - **[Single element functions](dataseries/sngl_elmnt_ops.md)**
   - [Dataseries.get](dataseries/sngl_elmnt_ops.md#Dataseries.get)
   - [Dataseries.set](dataseries/sngl_elmnt_ops.md#Dataseries.set)
@@ -201,7 +201,7 @@ add apropriate anchor tags during documentation.
 
 
 - **[Df_Subset](sub_classes/01_subset.md)**
-  - [Df_Subset.__init](sub_classes/01_subset.md#Df_Subset.__init)
+  - [Df_Subset.`__init`](sub_classes/01_subset.md#Df_Subset.__init)
   - [Df_Subset._clean](sub_classes/01_subset.md#Df_Subset._clean)
   - [Df_Subset.set_idxs](sub_classes/01_subset.md#Df_Subset.set_idxs)
   - [Df_Subset.get_idx](sub_classes/01_subset.md#Df_Subset.get_idx)
@@ -218,15 +218,15 @@ add apropriate anchor tags during documentation.
   - [Df_Subset.get_batch](sub_classes/01_subset.md#Df_Subset.get_batch)
   - [Df_Subset.reset_sampler](sub_classes/01_subset.md#Df_Subset.reset_sampler)
   - [Df_Subset.get_iterator](sub_classes/01_subset.md#Df_Subset.get_iterator)
-  - [Df_Subset.get_parallel_iterator](sub_classes/01_subset.md#	Df_Subset.get_parallel_iterator)
-  - [Df_Subset.size](sub_classes/01_subset.md#	Df_Subset.size)
+  - [Df_Subset.get_parallel_iterator](sub_classes/01_subset.md#Df_Subset.get_parallel_iterator)
+  - [Df_Subset.size](sub_classes/01_subset.md#Df_Subset.size)
   - [Df_Subset.shape](sub_classes/01_subset.md#Df_Subset.shape)
-  - [Df_Subset.__tostring__](sub_classes/01_subset.md#	Df_Subset.__tostring__)
+  - [Df_Subset.`__tostring__`](sub_classes/01_subset.md#Df_Subset.__tostring__)
   - [Df_Subset.set_data_retriever](sub_classes/01_subset.md#Df_Subset.set_data_retriever)
   - [Df_Subset.set_label_retriever](sub_classes/01_subset.md#Df_Subset.set_label_retriever)
   - [Df_Subset.set_label_shape](sub_classes/01_subset.md#Df_Subset.set_label_shape)
 - **[Batchframe](sub_classes/10_batchframe.md)**
-  - [Batchframe.__init](sub_classes/10_batchframe.md#Batchframe.__init)
+  - [Batchframe.`__init`](sub_classes/10_batchframe.md#Batchframe.__init)
   - [Batchframe.set_data_retriever](sub_classes/10_batchframe.md#Batchframe.set_data_retriever)
   - [Batchframe.get_data_retriever](sub_classes/10_batchframe.md#Batchframe.get_data_retriever)
   - [Batchframe.set_label_retriever](sub_classes/10_batchframe.md#Batchframe.set_label_retriever)

@@ -1,6 +1,6 @@
 # API documentation for [missing data functions](#__Missing data functions__)
 - [Dataframe.count_na](#Dataframe.count_na)
-- [Dataframe.fill_na](#	Dataframe.fill_na)
+- [Dataframe.fill_na](#Dataframe.fill_na)
 - [Dataframe.fill_na](#Dataframe.fill_na)
 
 <a name="__Missing data functions__">

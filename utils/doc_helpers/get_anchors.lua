@@ -1,7 +1,11 @@
 function get_anchor_link(title, md_path, tag, indent)
 	indent = indent or "  "
 	md_path = md_path or ""
+	title = trim(title)
 	title = title:gsub("(.+)%([^)]+%)", "%1")
+	title = title:gsub("([^ `]+)%.__([^_()]+)__([^_`]*)", "%1.`__%2__`%3")
+	title = title:gsub("%.__([^_()`]+)$", ".`__%1`")
+	tag = trim(tag)
 
 	return ("\n%s- [%s](%s#%s)"):
 		format(indent, title, md_path, tag)
