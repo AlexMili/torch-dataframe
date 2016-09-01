@@ -240,9 +240,6 @@ Dataframe.get_mode = argcheck{
 				default_value = cn,
 				type = "string"
 			}
-			-- Since the key can be either numeric or string we need to force it to the
-			--  latter or there will be conflicts
-			value:get_column("key"):type("string")
 			modes:append(value)
 		else
 			modes[cn] = value
