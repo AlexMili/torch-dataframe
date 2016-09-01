@@ -23,7 +23,7 @@ describe("Data manipulationf incl. where, update etc.", function()
 		assert.are.same(ret_val:shape(), {rows = 1, cols = 3})
 
 		local ret_val = a:where('Col A', 222222222)
-		assert.are.same(ret_val:shape(), {rows = 0, cols = 0})
+		assert.are.same(ret_val:shape(), {rows = 0, cols = 3})
 
 		a:__init()
 		a:load_csv{path = "./data/advanced_short.csv",

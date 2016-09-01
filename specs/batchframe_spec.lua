@@ -148,7 +148,7 @@ describe("Loading batch data", function()
 				batch:to_tensor(Df_Array("Gender"),
 				                Df_Array("Weight"))
 
-			assert.is_false(torch.all(torch.eq(data, label)))
+			assert.are.not_same(data, label)
 		end)
 	end)
 

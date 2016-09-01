@@ -53,14 +53,11 @@ describe("Column operations", function()
 			-- All are dropped
 			a:drop('Col C')
 			assert.are.same(a.dataset, {})-- "All columns are dropped"
-			assert.are.same(a.columns,{})
 			assert.are.same(a.column_order,{})
-			assert.are.same(a.categorical,{})
 			assert.are.same(a.tostring_defaults,
 			                {no_rows = 10,
 			                min_col_width = 7,
 			                max_table_width = 80})
-			assert.are.same(a.schema,{})
 			assert.is.equal(a.n_rows,0)
 		end)
 	end)
@@ -74,7 +71,7 @@ describe("Column operations", function()
 
 		it("Allows to use a table as the default value",function()
 			d_col = {0,1,2,3}
-			a:add_column('Col D', Df_Array(d_col))
+			a:add_column('Col D', Dataseries(Df_Array(d_col)))
 			assert.are.same(a:get_column('Col D'), d_col)-- "Col D isn't the expected value"
 			assert.are.same(a:shape(), {rows=4, cols=4})-- "The simple_short.csv is 4x3 after add should be 4x4"
 		end)
@@ -83,8 +80,8 @@ describe("Column operations", function()
 			a:add_column('Col E')
 			col = a:get_column('Col E')
 
-			for _,v in pairs(col) do
-				assert.is_true(isnan(v))
+			for i=1,#col do
+				assert.is.nan(col[i])
 			end
 		end)
 
@@ -101,7 +98,11 @@ describe("Column operations", function()
 			a:add_column('Position 1', 1, 1)
 			assert.are.same(a:get_column_order('Position 1'), 1)
 
-			a:add_column('Position 3', 3, 'A')
+			a:add_column{
+				column_name = 'Position 3',
+				pos = 3,
+				default_value = 'A' -- Can't do ordered call since 'A' becomes type
+			}
 			assert.are.same(a:get_column_order('Position 3'), 3)
 		end)
 	end)
@@ -117,8 +118,8 @@ describe("Column operations", function()
 
 		it("Returns a numerical column as a tensor",function()
 			a_tnsr = torch.Tensor({1,2,3,4})
-			a_col = a:get_column{column_name="Col A",as_tensor=true}
-
+			a_col = a:get_column{column_name="Col A", as_tensor=true}
+			a_col = a_col:type(a_tnsr:type())
 			assert.is_true(torch.all(a_tnsr:eq(a_col)))
 		end)
 
@@ -158,7 +159,7 @@ describe("Column operations", function()
 
 		it("Refreshs metadata",function()
 			local colfound = false
-			for k,v in pairs(a.columns) do
+			for k,v in pairs(a.column_order) do
 				if v == 'Col V' then
 					colfound = true
 				end
@@ -257,6 +258,55 @@ describe("Column operations", function()
 			local c = Dataframe()
 			c:load_table(Df_Dict({['Col A'] = {1,2,3}}))
 			assert.has_error(function() a:cbind(c) end)
+		end)
+	end)
+
+	describe("Boolean columns", function()
+		before_each(function()
+			a = Dataframe(Df_Dict{
+				nmbr = {1, 2, 3, 4},
+				str = {"a", "b", "c", "d"},
+				bool = {true, false, true, 0/0}
+			})
+		end)
+
+		it("Check that column type is boolean", function()
+			assert.is_true(a:is_boolean("bool"))
+			assert.is_false(a:is_boolean("nmbr"))
+			assert.is_false(a:is_boolean("str"))
+		end)
+
+		it("Verify that boolean2tensor conversion works", function()
+			a:boolean2tensor{
+				column_name = "bool",
+				false_value = 1,
+				true_value = 2
+			}
+
+			assert.is_false(a:is_boolean("bool"))
+			assert.is_true(a:is_numerical("bool"))
+			assert.are.same(a:get_column("bool"), {2,1,2,0/0})
+		end)
+
+		it("Verify that boolean2tensor conversion works", function()
+			a:boolean2categorical("bool")
+
+			assert.is_false(a:is_boolean("bool"))
+			assert.is_true(a:is_numerical("bool"))
+			assert.are.same(a:get_column("bool"),
+			                {"true","false","true",0/0})
+		end)
+
+		it("Verify that boolean2tensor with custom strins work", function()
+			a:boolean2categorical("bool", "no", "yes")
+
+			assert.is_false(a:is_boolean("bool"))
+			assert.is_true(a:is_numerical("bool"))
+			assert.are.same(a:get_column("bool"),
+			                {"yes", "no", "yes",0/0})
+			a:fill_all_na()
+			assert.are.same(a:get_column("bool"),
+			                {"yes", "no", "yes","__nan__"})
 		end)
 	end)
 end)

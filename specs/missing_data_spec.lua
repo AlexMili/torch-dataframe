@@ -38,7 +38,10 @@ describe("Dataframe class", function()
 
 		a.dataset['Col A'][3] = nil
 
-		assert.are.same(a:count_na{as_dataframe = false}, {["Col A"]= 1, ["Col B"]= 0, ["Col C"]=1})
+		local cnt, tot = a:count_na{as_dataframe = false}
+		assert.are.same(cnt, {["Col A"]= 1, ["Col B"]= 0, ["Col C"]=1})
+		assert.are.same(tot, 2)
+
 
 		a:fill_all_na(-1)
 
@@ -46,7 +49,7 @@ describe("Dataframe class", function()
 		assert.are.same(a:get_column('Col A'), {1,2,-1})
 	end)
 
-	it("The count_na should return a Dataframe by default", function()
+	it("The count_na should #1 return a Dataframe by default", function()
 		local a = Dataframe("./data/advanced_short.csv")
 
 		local ret = a:count_na()
