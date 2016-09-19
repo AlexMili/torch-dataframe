@@ -58,6 +58,12 @@ _Return value_: self
 			column_order[i] = "Column no. " .. i
 		end
 	end
+	if (verbose) then
+		print("Loaded the header: ")
+		for _,n in ipairs(column_order) do
+			print(" - " .. n)
+		end
+	end
 
 	if (schema) then
 		schema = schema.data
@@ -68,6 +74,12 @@ _Return value_: self
 			column_order = Df_Array(column_order)
 		}
 	end
+	if (verbose) then
+		print("Inferred schema: ")
+		for _,n in ipairs(column_order) do
+			print((" - %s: %s"):format(n, column_order[n]))
+		end
+	end
 
 	self:__init{
 		-- Call the init with schema + no_rows
@@ -76,6 +88,10 @@ _Return value_: self
 		column_order = Df_Array(column_order),
 		set_missing = false
 	}
+	if (verbose) then
+		print("Initiated the schema")
+	end
+
 	local data_rowno = 0
 	for csv_rowno=first_data_row,#data_iterator do
 		data_rowno = data_rowno + 1
@@ -94,11 +110,21 @@ _Return value_: self
 
 			self.dataset[self.column_order[col_idx]]:set(data_rowno, val)
 		end
+		if (verbose and csv_rowno % 1e4 == 0) then
+			print(("Done processing %d rows"):format(csv_rowno))
+		end
+	end
+	if (verbose) then
+		print("Done reading in data")
 	end
 
 	self.dataset, self.column_order =
 		self:_clean_columns{data = self.dataset,
 		                    column_order = self.column_order}
+
+	if (verbose) then
+		print("Finished cleaning columns")
+	end
 
 	return self
 end}
