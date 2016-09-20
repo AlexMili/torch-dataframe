@@ -324,7 +324,7 @@ th doc.lua > /dev/null
 
 ## Contributing
 
-Feel free to report a bug, suggest enhancements or submit new cool features using [Issues][df_issues] or directly send us a [Pull Request][df_pr] :). Don't forget to test your code and generate the doc before submitting. You can find how we implemented our tests in the [specs directory][df_specs]. See "Behavior Driven Development" for more details on this technique.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for further details.
 
 [df_issues]: https://github.com/AlexMili/torch-dataframe/issues
 [df_pr]: https://github.com/AlexMili/torch-dataframe/pulls
