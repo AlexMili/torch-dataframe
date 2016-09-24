@@ -169,16 +169,16 @@ Dataframe._infer_csvigo_schema = argcheck{
 	 doc="The column order"},
 	{name="rows2explore", type="number",
 	 doc="The maximum number of rows to traverse",
-	 default=1e3},
+	 opt=true},
 	{name="first_data_row", type="number",
 	 doc="The first number in the iterator to use (i.e. skip header == 2)",
 	 default=1},
 	call=function(self, iterator, column_order, rows2explore, first_data_row)
-	rows2explore = math.min(rows2explore, #iterator)
+	local no_rows_2_investigate = math.min(rows2explore or 1e3, #iterator)
 	column_order = column_order.data
 
  	local schema = {}
- 	for i = first_data_row,rows2explore do
+ 	for i = first_data_row,no_rows_2_investigate do
  		local row = iterator[i]
  		for idx,val in ipairs(row) do
 			local cn = column_order[idx]
@@ -187,6 +187,25 @@ Dataframe._infer_csvigo_schema = argcheck{
  				                  prev_type = schema[cn]}
  		end
  	end
+
+	for i=1,#column_order do
+		local cn = column_order[i]
+		if (schema[cn] == nil) then
+			print("Warning: could not identify the row type for " .. cn)
+			if (rows2explore == nil) then
+				print("Trying to investigate if increasing the number from 1e3 to 1e4 rows helps")
+				return self:_infer_csvigo_schema{
+					iterator = data_iterator,
+					first_data_row = first_data_row,
+					column_order = Df_Array(column_order),
+					rows2explore = 1e4
+				}
+			else
+				print(("Assuming the most general type: string for '%s'"):format(cn))
+				schema[cn] = get_variable_type('some text')
+			end
+		end
+	end
 
  	return schema
  end}
