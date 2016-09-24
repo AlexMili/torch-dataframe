@@ -36,7 +36,10 @@ _Return value_: self
 	 doc="skip this many lines at start of file"},
 	{name="verbose", type="boolean", default=false,
 	 doc="verbose load"},
-	call=function(self, path, header, schema, separator, skip, verbose)
+	{name="rows2explore", type="number",
+	 doc="The maximum number of rows to traverse when trying to identify schema",
+	 opt = true},
+	call=function(self, path, header, schema, separator, skip, verbose, rows2explore)
 	-- Remove previous data
 	self:_clean()
 
@@ -60,8 +63,8 @@ _Return value_: self
 	end
 	if (verbose) then
 		print("Loaded the header: ")
-		for _,n in ipairs(column_order) do
-			print(" - " .. n)
+		for i,n in ipairs(column_order) do
+			print(("%2d - %s"):format(i, n))
 		end
 	end
 
@@ -71,13 +74,15 @@ _Return value_: self
 		schema = self:_infer_csvigo_schema{
 			iterator = data_iterator,
 			first_data_row = first_data_row,
-			column_order = Df_Array(column_order)
+			column_order = Df_Array(column_order),
+			rows2explore = rows2explore
 		}
 	end
 	if (verbose) then
 		print("Inferred schema: ")
-		for _,n in ipairs(column_order) do
-			print((" - %s: %s"):format(n, column_order[n]))
+		for i=1,#column_order do
+			local cn = column_order[i]
+			print(("%2d - %s = %s"):format(i, cn, schema[cn]))
 		end
 	end
 
