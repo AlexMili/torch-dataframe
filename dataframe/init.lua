@@ -195,7 +195,7 @@ Dataframe._infer_csvigo_schema = argcheck{
 			if (rows2explore == nil) then
 				print("Trying to investigate if increasing the number from 1e3 to 1e4 rows helps")
 				return self:_infer_csvigo_schema{
-					iterator = data_iterator,
+					iterator = iterator,
 					first_data_row = first_data_row,
 					column_order = Df_Array(column_order),
 					rows2explore = 1e4
