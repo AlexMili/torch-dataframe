@@ -3,6 +3,9 @@ News file for torch-dataframe
 
 Version: development
 --------------------
+
+Version: 1.6
+--------------------
 * The data is now stored in Dataseries that handles all the manipulations, statistics, categoricals, etc internally. The data backend is either a tensor or a tds.Vec in order to better accomodate large datasets.
 * The self.columns has been dropped and there is now only self.column_order that keeps track of column order.
 * Most functions now use either tds.Hash or tds.Vec for returning values instead of regular tables.
