@@ -41,6 +41,18 @@ function da:__init(...)
 	self.data = array_data
 end
 
+function da:__index__(index)
+	if (torch.type(index) == "number") then
+		return self.data[index], true
+	end
+
+	return false
+end
+
+function da:__newindex__(index)
+	return false
+end
+
 da.__len__ = argcheck{
 	{name="self", type="Df_Array"},
 	{name="other", type="Df_Array", opt=true},
