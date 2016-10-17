@@ -62,7 +62,7 @@ _Return value_: self
 	if (schema) then
 		schema = schema.data
 	else
-		schema = self:_infer_csvigo_schema{
+		schema = self:_infer_schema{
 			iterator = data_iterator,
 			first_data_row = first_data_row,
 			column_order = Df_Array(column_order)
@@ -156,9 +156,11 @@ _Return value_: self
 	if (column_order) then
 		column_order = column_order.data
 	end
+
 	if (schema) then
 		schema = schema.data
 	end
+
 	data, column_order, schema =
 		self:_clean_columns{data = data,
 		                    column_order = column_order,
@@ -189,7 +191,7 @@ _Return value_: self
 
 	if (not schema) then
 		-- Get the data types from the data
-		schema = self:_infer_data_schema{data = Df_Dict(data)}
+		schema = self:_infer_schema{data = Df_Dict(data)}
 	end
 
 	if (column_order) then

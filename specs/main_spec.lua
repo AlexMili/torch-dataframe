@@ -103,7 +103,7 @@ describe("Dataframe class", function()
 
 		assert.is.equal(a["$firstColumn"]:get_variable_type(), 'integer')
 		assert.is.equal(a["$secondColumn"]:get_variable_type(), 'integer')
-		assert.is.equal(a["$thirdColumn"]:get_variable_type(), 'string')
+		assert.is.equal(a["$thirdColumn"]:get_variable_type(), 'integer')
 	end)
 
 	it("Returns the shape of the Dataframe",function()

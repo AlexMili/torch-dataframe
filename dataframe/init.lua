@@ -159,9 +159,64 @@ Dataframe._copy_meta = argcheck{
 
 	return to
 end}
+
 -- Internal function to detect columns types
-Dataframe._infer_csvigo_schema = argcheck{
+Dataframe._infer_schema = argcheck{
+	{name="self", type="Dataframe"},
+	{name="rows2explore", type="number",
+	 doc="The maximum number of rows to traverse",
+	 default=1e3},
+	call=function(self, rows2explore)
+
+	rows2explore = math.min(rows2explore, self:size())
+
+	local schema = {}
+
+	-- All columns of the current dataframe are browsed
+	for _,col_name in pairs(self.column_order) do
+		-- Counter containing a count for every types,
+		-- the type with the greater number of occurrences will be selected for the schema
+		local count_types = {["integer"]=0,["double"]=0,
+							["long"]=0,["string"]=0,["boolean"]=0}
+
+		-- save the current max value in the count_types table
+		-- default type is string
+		local max_key = "string" -- save the current max value in the count_types table
+
+		-- Rows are explored
+		for i=1,rows2explore do
+			local cell = self:get_column(col_name)[i]
+			local value_type = get_variable_type(cell)
+			local count_key = tostring(value_type)
+
+			-- nil values don't matter on the count
+			if (count_key ~= "nil") then
+				-- The counter of the right type is incremented
+				count_types[count_key] = count_types[count_key] + 1
+
+				-- If the new count for the current type is greater than the max value
+				if (count_types[count_key] > count_types[max_key]) then
+					max_key = count_key
+				end
+			end
+		end
+
+		-- If in a column there is at least one double, all the column is converted
+		-- to double to keep all the value
+		if ((max_key == "integer" or max_key == "long") and count_types["double"] > 0) then
+			max_key = "double"
+		end
+
+		schema[col_name] = max_key
+	end
+
+	return schema
+end}
+
+-- Internal function to detect columns types
+Dataframe._infer_schema = argcheck{
 	noordered=true,
+	overload=Dataframe._infer_schema,
 	{name="self", type="Dataframe"},
 	{name="iterator", type="table", -- TODO: ask csvigo to add a class name
 	 doc="Data iterator where [i] returns the i:th row."},
@@ -174,25 +229,70 @@ Dataframe._infer_csvigo_schema = argcheck{
 	 doc="The first number in the iterator to use (i.e. skip header == 2)",
 	 default=1},
 	call=function(self, iterator, column_order, rows2explore, first_data_row)
+	
 	rows2explore = math.min(rows2explore, #iterator)
-	column_order = column_order.data
+	-- column_order = column_order.data
 
- 	local schema = {}
- 	for i = first_data_row,rows2explore do
- 		local row = iterator[i]
- 		for idx,val in ipairs(row) do
-			local cn = column_order[idx]
- 			schema[cn] =
- 				get_variable_type{value = val,
- 				                  prev_type = schema[cn]}
- 		end
- 	end
+	local schema = {}
+	local schema_count = {}
 
- 	return schema
- end}
+	-- save the current max value in the count_types table
+	-- default type is string
+	local max_keys = {}
+
+	-- We go from first_data_row to rows2explore in iterator
+	for i = first_data_row,rows2explore do
+		local row = iterator[i]
+		-- We go through the row's columns
+		for index,value in ipairs(row) do
+			local col_name = column_order[index]
+
+			-- If this is the first time we encounter the current column
+			-- A new type counter is created
+			if (type(schema_count[col_name]) == "nil") then
+				-- Counter containing a count for every types, 
+				-- the type with the greater number of occurrences will be selected for the schema
+				schema_count[col_name] = {["integer"]=0,["double"]=0,
+						["long"]=0,["string"]=0,["boolean"]=0}
+
+				max_keys[col_name] = "string" --default type
+			end
+
+			local value_type = get_variable_type(value)
+			local count_key = tostring(value_type)
+
+			-- nil values don't matter on the count
+			if (count_key ~= "nil") then
+				-- The counter of the right type is incremented
+				schema_count[col_name][count_key] = schema_count[col_name][count_key] + 1
+
+				-- If the new count for the current type is greater than the max value
+				if (schema_count[col_name][count_key] > schema_count[col_name][max_keys[col_name]]) then
+					max_keys[col_name] = count_key
+				end
+			end
+		end
+	end
+	
+	-- Now that the csv file is parsed to rows2explore, the schema can be defined
+	for col_name,_ in pairs(schema_count) do
+		-- If in a column there is at least one double, all the column is converted
+		-- to double to keep all the value
+		if ((max_keys[col_name] == "integer" or max_keys[col_name] == "long")
+			and schema_count[col_name]["double"] > 0) then
+
+			max_keys[col_name] = "double"
+		end
+
+		schema[col_name] = max_keys[col_name]
+	end
+
+	return schema
+end}
 
 -- Internal function to detect columns types
-Dataframe._infer_data_schema = argcheck{
+Dataframe._infer_schema = argcheck{
+	overload=Dataframe._infer_schema,
 	{name="self", type="Dataframe"},
 	{name="data", type="Df_Dict",
 	 doc="Data for exploration. If omitted it defaults to the self.dataset"},
@@ -205,7 +305,9 @@ Dataframe._infer_data_schema = argcheck{
 	call=function(self, data, rows2explore, first_data_row)
 
 	data = data.data
+	
 	local collength = nil
+
 	for key,column in pairs(data) do
 		local len = 1
 		if (type(column) == "table") then
@@ -227,24 +329,74 @@ Dataframe._infer_data_schema = argcheck{
 	rows2explore = math.min(rows2explore, collength)
 
 	local schema = {}
-	for cn,col_vals in pairs(data) do
+	local schema_count = {}
+
+	-- save the current max value in the count_types table
+	-- default type is string
+	local max_keys = {}
+
+	for col_name,col_vals in pairs(data) do
+
+		-- If this is the first time we encounter the current column
+		-- A new type counter is created
+		-- If the column is a dataseries no need to infer schema
+		if (type(schema_count[col_name]) == "nil" and
+			torch.isTypeOf(col_vals, "Dataseries") == false) then
+			-- Counter containing a count for every types, 
+			-- the type with the greater number of occurrences will be selected for the schema
+			schema_count[col_name] = {["integer"]=0,["double"]=0,
+					["long"]=0,["string"]=0,["boolean"]=0}
+
+			max_keys[col_name] = "string" --default type
+		end
+
 		if (torch.isTypeOf(col_vals, "Dataseries")) then
-			schema[cn] = col_vals:get_variable_type()
+			schema[col_name] = col_vals:get_variable_type()
+		elseif ((type(col_vals) == "number" or
+				    type(col_vals) == "boolean" or
+				    type(col_vals) == "string") and
+				    type(col_vals) ~= "nil") then
+			
+			local value_type = get_variable_type(col_vals)
+			local count_key = tostring(value_type)
+			
+			-- The counter of the right type is incremented
+			schema_count[col_name][count_key] = schema_count[col_name][count_key] + 1
+
+			-- If the new count for the current type is greater than the max value
+			if (schema_count[col_name][count_key] > schema_count[col_name][max_keys[col_name]]) then
+				max_keys[col_name] = count_key
+			end
 		else
 			for i=first_data_row,rows2explore do
-				if (type(col_vals) == "number" or
-				    type(col_vals) == "boolean" or
-				    type(col_vals) == "string") then
-					schema[cn] =
-						get_variable_type{value = col_vals,
-						                  prev_type = schema[cn]}
-				elseif(col_vals[i]) then
-					schema[cn] =
-						get_variable_type{value = col_vals[i],
-						                  prev_type = schema[cn]}
+				local value_type = get_variable_type(col_vals[i])
+				local count_key = tostring(value_type)
+
+				-- nil values don't matter on the count
+				if (count_key ~= "nil") then
+					-- The counter of the right type is incremented
+					schema_count[col_name][count_key] = schema_count[col_name][count_key] + 1
+
+					-- If the new count for the current type is greater than the max value
+					if (schema_count[col_name][count_key] > schema_count[col_name][max_keys[col_name]]) then
+						max_keys[col_name] = count_key
+					end
 				end
 			end
 		end
+	end
+
+	-- Now that the data are parsed to rows2explore, the schema can be defined
+	for col_name,_ in pairs(schema_count) do
+		-- If in a column there is at least one double, all the column is converted
+		-- to double to keep all the value
+		if ((max_keys[col_name] == "integer" or max_keys[col_name] == "long")
+			and schema_count[col_name]["double"] > 0) then
+
+			max_keys[col_name] = "double"
+		end
+
+		schema[col_name] = max_keys[col_name]
 	end
 
 	return schema
