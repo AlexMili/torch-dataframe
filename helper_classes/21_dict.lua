@@ -32,6 +32,8 @@ function dict:__init(table_data)
 				      ("For key '%s' in the position %d the value is a table, this isn't allowed"):format(k, i))
 				dict_lengths[k] = dict_lengths[k] + 1
 			end
+		else
+			dict_lengths[k] = 1
 		end
 
 		if (dict_lengths[max_length_key] == nil or
