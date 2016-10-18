@@ -49,8 +49,13 @@ _Return value_: self
 	{name="index", type="number", doc="The row number where to insert the row(s)"},
 	{name="rows", type="Df_Dict", doc="Insert values to the dataset"},
 	call=function(self, index, rows)
+
 	if (self:size(1) == 0 and index == 1) then
-		return self:append{rows = rows}
+		return self:append{
+			rows = rows,
+			schema = Df_Dict(self:get_schema()),
+			column_order = Df_Array(self.column_order)
+		}
 	end
 
 	self:assert_is_index{index = index, plus_one = true}
@@ -62,15 +67,46 @@ _Return value_: self
 		self:_check_and_prep_row_argmnt{rows = rows,
 		                                add_new_columns = true,
 		                                add_old_columns = true}
+
 	for _, column_name in pairs(self.column_order) do
 		for j = index,(index + no_rows_2_insert - 1) do
 			value = rows[column_name][j-index + 1]
 			self.dataset[column_name]:insert(j, value)
 		end
 	end
+	
 	self.n_rows = self.n_rows + no_rows_2_insert
 
 	return self
+end}
+
+Dataframe.insert = argcheck{
+	doc =  [[
+<a name="Dataframe.insert">
+### Dataframe.insert(@ARGP)
+
+Inserts a row or multiple rows into database at the position of the provided index and 
+according to the prvided schema.
+
+@ARGT
+
+_Return value_: self
+]],
+	overload=Dataframe.insert,
+	{name="self", 	type="Dataframe"},
+	{name="index", 	type="number", 	doc="The row number where to insert the row(s)"},
+	{name="rows", 	type="Df_Dict", doc="Insert values to the dataset"},
+	{name="schema", type="Df_Dict",	doc="Specify a schema to check before insertion"},
+	call=function(self, index, rows, schema)
+
+	for k,v in pairs(rows.data) do
+		rows.data[k] = self._convert_val2_schema{
+						schema_type = schema.data[k],
+						val = rows.data[k]
+					}
+	end
+
+	return self:insert(index,rows)
 end}
 
 Dataframe.insert = argcheck{
@@ -189,6 +225,7 @@ _Return value_: self
 	{name="schema", type="Df_Dict", opt=true,
 	 doc="The schema for the data - used in case the table is new"},
 	call=function(self, rows, column_order, schema)
+
 	if (self:size(1) == 0) then
 		return self:load_table{
 			data = rows,
@@ -218,6 +255,7 @@ _Return value_: self
 			col:append(value)
 		end
 	end
+	
 	self.n_rows = self.n_rows + no_rows_2_insert
 
 	return self

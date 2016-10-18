@@ -7,6 +7,8 @@ local Dataframe = params[1]
 local argcheck = require "argcheck"
 local doc = require "argcheck.doc"
 
+local threads = require "threads"
+
 doc[[
 
 ## Data loader functions
@@ -36,10 +38,16 @@ _Return value_: self
 	 doc="skip this many lines at start of file"},
 	{name="verbose", type="boolean", default=false,
 	 doc="verbose load"},
-	call=function(self, path, header, schema, separator, skip, verbose)
-	-- Remove previous data
+	{name="nthreads", type="number", default=1,
+	 doc="Number of threads to use to read the csv file"},
+	call=function(self, path, header, schema, separator, skip, verbose, nthreads)
+	
+	-- TODO : implementing other method arguments (skip,separator,header)
+
+	-- Remove previous data (reset init variables)
 	self:_clean()
 
+	print("[INFO] Loading CSV")
 	local data_iterator = csvigo.load{path = path,
 		            header = header,
 		            separator = separator,
@@ -48,12 +56,18 @@ _Return value_: self
 		            column_order = true,
 		            mode = "large"}
 
-	local first_data_row = 2
+	print("[INFO] End loading CSV")
+
+	local column_order = {}
+	local first_data_row = 2 -- In large mode first row is always the header (if there is one)
+
 	if (header) then
-		column_order = data_iterator[1]
+		column_order = trim_table_strings(data_iterator[1])
 	else
+		-- If there is no header, first row to explore is set to the initial first row
+		-- and column names are automatically generated
 		first_data_row = 1
-		column_order = {}
+
 		for i in 1,len(data_iterator[1]) do
 			column_order[i] = "Column no. " .. i
 		end
@@ -69,36 +83,81 @@ _Return value_: self
 		}
 	end
 
-	self:__init{
-		-- Call the init with schema + no_rows
-		schema = Df_Dict(schema),
-		no_rows = #data_iterator - first_data_row + 1,
-		column_order = Df_Array(column_order),
-		set_missing = false
-	}
-	local data_rowno = 0
-	for csv_rowno=first_data_row,#data_iterator do
-		data_rowno = data_rowno + 1
-		local row = data_iterator[csv_rowno]
-		for col_idx=1,#row do
-			-- Clean the value according to the indicated data types
-			local val = row[col_idx]
-			if (val == "") then
-				val = 0/0
-			else
-				val = self._convert_val2_schema{
-					schema_type = schema[self.column_order[col_idx]],
-					val = val
-				}
-			end
+	print("Estimation number of rows : "..#data_iterator - first_data_row + 1)
 
-			self.dataset[self.column_order[col_idx]]:set(data_rowno, val)
+	local nfield= #data_iterator[1]-1
+	local nrecs = #data_iterator-1
+
+	local idx=torch.range(1,nrecs)
+	local chunks=idx:chunk(nthreads)
+
+	-- nthreads is adapted to chunks effectively created
+	nthreads = #chunks
+
+	local tic = torch.tic()
+	local t = threads.Threads(
+		nthreads,
+		function(threadn)
+			print("[INFO] Starting preprocessing")
+			require "csvigo"
+
+			nthreads=nthreads
+			nfield=nfield
+			nrecs=nrecs
+			chunks=chunks
+			path=path
+			header=header
+			schema=schema
+			columns_order=column_order
+			verbose=verbose
 		end
-	end
+	)
 
-	self.dataset, self.column_order =
-		self:_clean_columns{data = self.dataset,
-		                    column_order = self.column_order}
+	data_iterator = nil
+	collectgarbage()
+
+	for j=1,nthreads do
+		t:addjob(
+			function()
+				print("[INFO] Start of thread n°"..__threadid)
+				local Dataframe = require "Dataframe"
+
+				tac = torch.tic()
+				local o=csvigo.load{path=path,mode='large',column_order=true,verbose=verbose}
+				-- chunk
+				local c=chunks[__threadid]
+				
+				print("[INFO] Start of processing in thread n°"..__threadid.." (size :"..c:size(1)..")")
+
+				local csv_df=Dataframe()
+
+				csv_df:_init_with_schema{
+						schema = Df_Dict(schema),
+						column_order = Df_Array(columns_order)
+				}
+
+				for j=1,c:size(1) do
+					local row = Df_Dict(o[c[j]+1])
+					row:set_keys(columns_order)
+
+					csv_df:insert(j,row,Df_Dict(schema))
+				end
+
+				collectgarbage()
+
+				return csv_df,__threadid
+			end,
+			function(data,threadn)
+				self:append(data)
+			end
+		)
+	end
+	
+	t:synchronize()
+	t:terminate()
+
+	print('done')
+	print(torch.toc(tic))
 
 	return self
 end}
@@ -275,6 +334,7 @@ _Return value_: self
 
 	if (column_order) then
 		column_order = trim_table_strings(column_order)
+
 		assert(tables_equals(cnames, column_order, false, true),
 		       "Column names don't match after string trimming")
 	end
