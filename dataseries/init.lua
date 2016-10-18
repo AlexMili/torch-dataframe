@@ -43,6 +43,38 @@ local Dataseries, parent_class = torch.class('Dataseries', 'tnt.Dataset')
 Dataseries.__init = argcheck{
 	doc =  [[
 <a name="Dataseries.__init">
+### Dataseries.__init()
+
+@ARGT
+
+]],
+	{name="self", type="Dataseries"},
+	{name="type", type="string", doc="The type of data storage to init."},
+	call=function(self, type)
+		parent_class.__init(self)
+		if (type == "integer") then
+			self.data = torch.IntTensor()
+		elseif (type == "long") then
+			self.data = torch.LongTensor()
+		elseif (type == "double") then
+			self.data = torch.DoubleTensor()
+		elseif (type == "boolean" or
+		        type == "string" or
+		        type == "tds.Vec" or
+		        type == nil) then
+			self.data = tds.Vec()
+		elseif (type:match("torch.*Tensor")) then
+			self.data = torch.Tensor():type(type)
+		else
+			assert(false, ("The type '%s' has not yet been implemented"):format(type))
+		end
+		self.missing = tds.Hash()
+		self._variable_type = type
+end}
+
+Dataseries.__init = argcheck{
+	doc =  [[
+<a name="Dataseries.__init">
 ### Dataseries.__init(@ARGP)
 
 Creates and initializes a Dataseries class. Envoked through `local my_series = Dataseries()`.
@@ -56,6 +88,7 @@ The type can be:
 @ARGT
 
 ]],
+	overload=Dataseries.__init,
 	{name="self", type="Dataseries"},
 	{name="size", type="number", doc="The size of the new series"},
 	{name="type", type="string", doc="The type of data storage to init.", opt=true},
