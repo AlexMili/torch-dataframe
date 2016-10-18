@@ -115,6 +115,10 @@ Dataframe._convert_val2_schema = argcheck{
 		 schema_type == "long" or
 		 schema_type == "double") then
 		val = tonumber(val)
+
+		if (val == nil) then
+			val = 0/0
+		end
 	elseif(schema_type == "boolean") then
 		local lwr_txt = val:lower()
 		if (lwr_txt:match("^true$")) then
@@ -125,7 +129,12 @@ Dataframe._convert_val2_schema = argcheck{
 			print(("Invalid boolean value '%s' for row no. %d at column %s"):
 						 format(val, csv_rowno, self.column_order[col_idx]))
 		end
+	elseif(schema_type == "string") then
+		if (val == "") then
+			val = 0/0
+		end
 	end
+
 	return val
 end}
 
