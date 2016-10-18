@@ -138,6 +138,70 @@ as values. The column types are:
 end}
 
 
+Dataframe.set_schema = argcheck{
+	doc =  [[
+No updates is performed on already inserted data. The purpose of this method
+is to prepare a Dataframe object.
+
+A schema is a hash table with the column names as keys and the column types
+as values. The column types are:
+- `boolean`
+- `integer`
+- `long`
+- `double`
+- `string` (this is stored as a `tds.Vec` and can be any value)
+
+@ARGT
+
+]],
+	{name="self", type="Dataframe"},
+	{name="schema", type="Df_Dict",
+	 doc="The schema to use for initializaiton"},
+	{name="column_order", type="Df_Array",
+	 doc="The column order"},
+	call=function(self, schema, column_order)
+	schema = schema.data
+
+	column_order = column_order.data
+	assert(#column_order == table.exact_length(schema),
+	       ("The schema (%d entries) doesn't match the number of columns (%d)"):
+	       format(#column_order, table.exact_length(schema)))
+	for _,col_name in pairs(column_order) do
+		assert(schema[col_name], "The schema doesn't have the column: " .. col_name)
+	end
+
+
+	self.dataset = {}
+	for _,col_name in pairs(column_order) do
+		self.dataset[col_name] = {}
+	end
+	self.column_order = column_order
+
+	return self
+end}
+
+Dataframe._init_with_schema = argcheck{
+	{name="self", type="Dataframe"},
+	{name="schema", type="Df_Dict"},
+	{name="column_order", type="Df_Array", opt=true},
+	call=function(self, schema, column_order)
+		self:__init()
+		self:_clean()
+
+		if (torch.isTypeOf(column_order, "Df_Array")) then
+			column_order = column_order.data
+		else
+			column_order = schema.keys
+		end
+
+		self.column_order = column_order
+		
+		for _,col_name in pairs(self.column_order) do
+			self.dataset[col_name] = Dataseries(schema.data[col_name])
+		end
+	end
+}
+
 -- Private function for cleaning and reseting all data and meta data
 Dataframe._clean = argcheck{
 	{name="self", type="Dataframe"},
