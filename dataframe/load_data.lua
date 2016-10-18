@@ -159,7 +159,7 @@ _Return value_: self
 	 doc="Provide if you want to force column types"},
 	{name="column_order", type="Df_Array", opt=true,
 	 doc="The order of the column (has to be array and _not_ a dictionary)"},
-	call=function(self, data, infer_schema, column_order)
+	call=function(self, data, schema, column_order)
 	self:_clean()
 	data = data.data
 	if (column_order) then
