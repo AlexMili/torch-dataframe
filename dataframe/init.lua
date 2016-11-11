@@ -385,15 +385,43 @@ samplers to either:
 
 @ARGT
 
+*Note:* Sometimes the version check fails to identify that the Dataframe is of
+an old version and you can therefore skip the version check.
+
 _Return value_: Dataframe
 ]],
 	{name = "self", type = "Dataframe"},
-	call = function(self)
-	local current_version = self:version()
+	{name = "skip_version", type="boolean", opt=true,
+		doc="Set to true if you want to upgrade your dataframe regardless of the version check"},
+	{name = "current_version", type="number", opt=true,
+		doc="The current version of the dataframe"},
+	call = function(self, skip_version, current_version)
+	if (not current_version) then
+		current_version = self:version()
+	end
+
 	self:set_version()
-	if (current_version == self.__version) then
-		print(("No need to update dataframe as it already is version '%s'"):format(current_version))
-		return
+	if (skip_version) then
+		if (current_version == self.__version) then
+			print(("No need to update dataframe as it already is version '%s'"):format(current_version))
+			return
+		end
+	end
+
+	if (type(self.print) == "table") then
+		-- Do silently as this is rather unimportant
+		self.tostring_defaults = self.print
+		self.tostring_defaults.max_col_width = nil
+		self.print = nil
+
+		local str_defaults = self:_get_init_tostring_dflts()
+		for key, value in pairs(str_defaults) do
+			if (not self.tostring_defaults[key]) then
+				self.tostring_defaults[key] = value
+			end
+		end
+	elseif (not self.tostring_defaults) then
+		self.tostring_defaults = self:_get_init_tostring_dflts()
 	end
 
 	if (current_version < 1.5) then
@@ -424,27 +452,17 @@ _Return value_: Dataframe
 
 			print("Updated batch metadata")
 		end
-
-		if (type(self.print) == "table") then
-			-- Do silently as this is rather unimportant
-			self.tostring_defaults = self.print
-			self.tostring_defaults.max_col_width = nil
-
-			local str_defaults = self:_get_init_tostring_dflts()
-			for key, value in pairs(str_defaults) do
-				if (not self.tostring_defaults[key]) then
-					self.tostring_defaults[key] = value
-				end
-			end
-		end
 	end
 
 	if (current_version <= 1.6) then
+		print("** Updating columns to Dataseries **")
 		self.columns = nil
 		for _,cn in ipairs(self.column_order) do
-			self.dataset[cn] = Dataseries(Df_Array(cn))
+			print(" - column: " .. cn)
+			self.dataset[cn] = Dataseries(Df_Array(self.dataset[cn]))
 		end
 		self.schema = nil
+		print("done updating columns")
 	end
 
 	return self
