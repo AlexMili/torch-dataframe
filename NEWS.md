@@ -4,6 +4,7 @@ News file for torch-dataframe
 Version: development
 --------------------
 * The get_max_value/get_min_value use torch.max/min when no missing data is present in the column
+* Fixed upgrade_frame bug
 
 Version: 1.6
 --------------------
