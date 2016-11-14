@@ -184,7 +184,7 @@ _Return value_: string
 							else
 								val = tostring(v[i])
 							end
-						elseif(self:is_boolean(k)) then
+						elseif(torch.type(v[i]) ~= "string") then
 							val = tostring(v[i])
 						else
 							val = v[i]
