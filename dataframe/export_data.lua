@@ -31,7 +31,7 @@ _Return value_: self (Dataframe)
 	-- Make sure that categorical columns are presented in the correct way
 	save_data = {}
 	for _,k in pairs(self.column_order) do
-		save_data[k] = self:get_column(k):to_table()
+		save_data[k] = self:get_column(k):to_table{boolean2string = true}
 	end
 
 	-- TODO: The csvigo will have memory issues when used with regular tables

@@ -29,13 +29,14 @@ function for details or run the `boolean2tensor`.
 
 _Return value_: `torch.*Tensor` of the current type
 <a name="Dataseries.to_table">
-### Dataseries.to_table(self)
+### Dataseries.to_table(self[, boolean2string])
 
 Returns the values in table format
 
 ```
 ({
-   self = Dataseries  -- 
+   self           = Dataseries  -- 
+  [boolean2string = boolean]    -- Convert boolean values to strings since they cause havoc with csvigo
 })
 ```
 
