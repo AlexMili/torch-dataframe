@@ -69,10 +69,20 @@ Returns the values in table format
 _Return value_: table
 ]],
 	{name="self", type="Dataseries"},
-	call=function(self)
+	{name="boolean2string", type="boolean", opt=true,
+	 doc="Convert boolean values to strings since they cause havoc with csvigo"},
+	call=function(self, boolean2string)
 	local ret = {}
 	for i=1,self:size() do
 		ret[i] = self:get(i)
+	end
+
+	if (boolean2string and self:type() == "tds.Vec") then
+		for i=1,#ret do
+			if (type(ret[i]) == "boolean") then
+				ret[i] = tostring(ret[i])
+			end
+		end
 	end
 
 	return ret
