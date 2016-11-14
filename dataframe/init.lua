@@ -427,8 +427,8 @@ _Return value_: Dataframe
 	if (current_version < 1.5) then
 		assert(self.subsets == nil, "The dataframe seems to be upgraded as it already has a subset property")
 
-		if (self.batch == nil) then
-			print("No need to update batch info")
+		if (torch.type(self.batch) == "table") then
+			print("No need to update batch info - batch is already a '" .. torch.type(self.batch) .. "'")
 		else
 			-- Initiate the subsets
 			self:create_subsets(Df_Dict(self.batch.data_types))
@@ -460,9 +460,29 @@ _Return value_: Dataframe
 		for _,cn in ipairs(self.column_order) do
 			print(" - column: " .. cn)
 			self.dataset[cn] = Dataseries(Df_Array(self.dataset[cn]))
+
+			-- Move the categorical information into the series
+			if (self.categorical) then
+				if (self.categorical[cn]) then
+					self.dataset[cn].categorical = self.categorical[cn]
+				end
+			end
 		end
+		self.categorical = nil
 		self.schema = nil
 		print("done updating columns")
+
+		if (self.subsets) then
+			print("** Updating subsets **")
+			for sub_name,_ in pairs(self.subsets.sub_objs) do
+				print(" - " .. sub_name)
+				self.subsets.sub_objs[sub_name] = self.subsets.sub_objs[sub_name]:upgrade_frame{
+					skip_version = skip_version,
+					current_version = current_version
+				}
+			end
+			print("done updating subsets")
+		end
 	end
 
 	return self
