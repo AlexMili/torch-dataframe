@@ -54,7 +54,8 @@ Convert the numeric section or specified columns of the dataset to a tensor
 
 @ARGT
 
-_Return value_: (1) torch.tensor with self.n_rows rows and #columns, (2) exported column names
+_Return value_: (1) torch.tensor with self:size(1) rows and self:size(2) columns,
+ (2) exported column names
 
 ]],
 	{name="self", type="Dataframe"},

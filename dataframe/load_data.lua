@@ -194,7 +194,6 @@ _Return value_: self
 		self:_clean_columns{data = data,
 		                    column_order = column_order,
 		                    schema = schema}
-
 	-- Check that all columns with a no_rows > 1 has the same number of rows (no_rows)
 	local no_rows = -1
 	for k,v in pairs(data) do
@@ -238,7 +237,7 @@ _Return value_: self
 	-- Copy the data into the columns
 	for cn,col_vals in pairs(data) do
 		local col_data = self:get_column(cn)
-		for i=1,self.n_rows do
+		for i=1,no_rows do
 			local value
 			if (type(col_vals) == "number" or
 				 type(col_vals) == "boolean" or
