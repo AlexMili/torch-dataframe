@@ -336,7 +336,7 @@ _Return value_: table
 ]],
 	{name="self", type="Dataframe"},
 	call=function(self)
-	return {rows=self.n_rows,cols=#self.column_order}
+	return {rows=self:size(1), cols=self:size(2)}	
 end}
 
 Dataframe.version = argcheck{

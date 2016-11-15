@@ -26,13 +26,13 @@ _Return value_: Dataframe
 	{name="stop", type='number', doc='Last row to include', default=false},
 	call = function(self, start, stop)
 	if (not stop) then
-		stop = self.n_rows
+		stop = self:size(1)
 	end
 
 	assert(start <= stop, ("Stop argument '%d' is less than the start argument '%d'"):
 		format(start, stop))
 	assert(start > 0, "Start position can't be less than 1")
-	assert(stop <= self.n_rows, "Stop position can't be more than available rows")
+	assert(stop <= self:size(1), "Stop position can't be more than available rows")
 
 	local indexes = {}
 	for i = start,stop do
@@ -59,7 +59,7 @@ _Return value_: Dataframe
 
 	self:assert_is_index(n_items)
 
-	local rperm = torch.randperm(self.n_rows)
+	local rperm = torch.randperm(self:size(1))
 	local indexes = {}
 	for i = 1,n_items do
 		table.insert(indexes, rperm[i])
@@ -85,7 +85,7 @@ _Return value_: Dataframe
 	{name='n_items', type='number', doc='Number of rows to retrieve', default=10},
 	call = function(self, n_items)
 
-	head = self:sub(1, math.min(n_items, self.n_rows))
+	head = self:sub(1, math.min(n_items, self:size(1)))
 
 	return head
 end}
@@ -105,7 +105,7 @@ _Return value_: Dataframe
 	{name='n_items', type='number', doc='Number of rows to retrieve', default=10},
 	call = function(self, n_items)
 
-	start_pos = math.max(1, self.n_rows - n_items + 1)
+	start_pos = math.max(1, self:size(1) - n_items + 1)
 	tail = self:sub(start_pos)
 
 	return tail
@@ -266,7 +266,7 @@ _Return value_: table
 	call=function(self, condition_function)
 
 	local matches = {}
-	for i = 1, self.n_rows do
+	for i = 1, self:size(1) do
 		local row = self:get_row(i)
 		if condition_function(row) then
 			table.insert(matches, i)
@@ -295,13 +295,13 @@ _Return value_: table
 	local matches = {}
 	-- This is needed as 0/0 ~= 0/0
 	if (isnan(value)) then
-		for i = 1, self.n_rows do
+		for i = 1, self:size(1) do
 			if isnan(values[i]) then
 				table.insert(matches, i)
 			end
 		end
 	else
-		for i = 1, self.n_rows do
+		for i = 1, self:size(1) do
 			if values[i] == value then
 				table.insert(matches, i)
 			end
@@ -332,13 +332,13 @@ _Return value_: table
 	local values = self:get_column(column_name)
 	local matches = {}
 	if (not regex) then
-		for i = 1, self.n_rows do
+		for i = 1, self:size(1) do
 			if values[i] == value then
 				table.insert(matches, i)
 			end
 		end
 	else
-		for i = 1, self.n_rows do
+		for i = 1, self:size(1) do
 			if values[i]:matches(value) then
 				table.insert(matches, i)
 			end
@@ -411,11 +411,12 @@ _Return value_: Dataframe
 	call = function(self, item_to_find, column_name, new_value)
 	self:assert_has_column(column_name)
 	new_value = new_value.data
-
 	temp_converted_cat_cols = {}
 	column_data = self:get_column(column_name)
-	for i = 1, self.n_rows do
+
+	for i = 1, self:size(1) do
 		if column_data[i] == item_to_find then
+
 			for _,k in pairs(self.column_order) do
 				-- If the column shoul be updated then the user should have set the key
 				-- in the new_key table
@@ -516,7 +517,7 @@ _Return value_: Dataframe
 	end
 
 	local i = 1
-	while i <= ret.n_rows do
+	while i <= ret:size(1) do
 		local row = ret:get_row(i)
 		local first = true
 		for column_no,column_name in ipairs(columns) do
