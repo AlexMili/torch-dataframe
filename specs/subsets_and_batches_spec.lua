@@ -59,8 +59,9 @@ describe("Loading dataframe and creaing adequate subsets", function()
 		a:create_subsets(Df_Dict({core = 1}))
 
 		assert.are.equal(a["/core"]:size(1), a:size(1), "Number of cases don't match")
-		assert.are.equal(a["/core"]:size(2), a:size(2), "Number of columns don't match")
-		assert.are.same(a["/core"]:shape(), a:shape(), "Shapes don't match")
+		assert.are_not.equal(a["/core"]:size(2), a:size(2), "Number of columns don't match")
+		assert.is.equal(a["/core"]:size(2), 1,
+		               "The subset actually has only a single column - then indexes")
 		assert.are.equal(a.subsets.samplers["core"], 'permutation')
 	end)
 

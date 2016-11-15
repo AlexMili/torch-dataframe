@@ -219,8 +219,6 @@ add apropriate anchor tags during documentation.
   - [Df_Subset.reset_sampler](sub_classes/01_subset.md#Df_Subset.reset_sampler)
   - [Df_Subset.get_iterator](sub_classes/01_subset.md#Df_Subset.get_iterator)
   - [Df_Subset.get_parallel_iterator](sub_classes/01_subset.md#Df_Subset.get_parallel_iterator)
-  - [Df_Subset.size](sub_classes/01_subset.md#Df_Subset.size)
-  - [Df_Subset.shape](sub_classes/01_subset.md#Df_Subset.shape)
   - [Df_Subset.`__tostring__`](sub_classes/01_subset.md#Df_Subset.__tostring__)
   - [Df_Subset.set_data_retriever](sub_classes/01_subset.md#Df_Subset.set_data_retriever)
   - [Df_Subset.set_label_retriever](sub_classes/01_subset.md#Df_Subset.set_label_retriever)
