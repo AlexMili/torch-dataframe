@@ -17,8 +17,6 @@
 - [Df_Subset.reset_sampler](#Df_Subset.reset_sampler)
 - [Df_Subset.get_iterator](#Df_Subset.get_iterator)
 - [Df_Subset.get_parallel_iterator](#Df_Subset.get_parallel_iterator)
-- [Df_Subset.size](#Df_Subset.size)
-- [Df_Subset.shape](#Df_Subset.shape)
 - [Df_Subset.`__tostring__`](#Df_Subset.__tostring__)
 - [Df_Subset.set_data_retriever](#Df_Subset.set_data_retriever)
 - [Df_Subset.set_label_retriever](#Df_Subset.set_label_retriever)
@@ -316,34 +314,7 @@ _Return value_: `Df_Iterator`
 ```
 
 _Return value_: `Df_ParallelIterator`
-	<a name="Df_Subset.size">
-### Df_Subset.size(self[, dim])
-
-By providing dimension you can get only that dimension, row == 1, col == 2. If
-value omitted it will  return the number of rows in order to comply with torchnet
-standard.
-
-```
-({
-   self = Df_Subset  -- 
-  [dim  = number]    -- The dimension of interest [default=1]
-})
-```
-
-_Return value_: integer
-<a name="Df_Subset.shape">
-### Df_Subset.shape(self)
-
-Returns the number of rows and columns in a table
-
-```
-({
-   self = Df_Subset  -- 
-})
-```
-
-_Return value_: table
-	<a name="Df_Subset.__tostring__">
+		<a name="Df_Subset.__tostring__">
 ### Df_Subset.__tostring__(self)
 
 ```

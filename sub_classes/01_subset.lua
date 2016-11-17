@@ -388,49 +388,6 @@ _Return value_: `Df_ParallelIterator`
 	}
 end}
 
-
-subset.size = argcheck{
-	doc =  [[
-<a name="Df_Subset.size">
-### Df_Subset.size(@ARGP)
-
-By providing dimension you can get only that dimension, row == 1, col == 2. If
-value omitted it will  return the number of rows in order to comply with torchnet
-standard.
-
-@ARGT
-
-_Return value_: integer
-]],
-	{name="self", type="Df_Subset"},
-	{name="dim", type="number", doc="The dimension of interest", default = 1},
-	call=function(self, dim)
-	assert(isint(dim), "The dimension isn't an integer: " .. tostring(dim))
-	assert(dim == 1 or dim == 2, "The dimension can only be between 1 and 2 - you've provided: " .. dim)
-	if (dim == 1) then
-		return self.n_rows
-	end
-
-	return #self.parent.column_order
-end}
-
-subset.shape = argcheck{
-	doc =  [[
-<a name="Df_Subset.shape">
-### Df_Subset.shape(@ARGP)
-
-Returns the number of rows and columns in a table
-
-@ARGT
-
-_Return value_: table
-]],
-	{name="self", type="Df_Subset"},
-	call=function(self)
-	return {rows=self.n_rows,cols=#self.parent.column_order}
-end}
-
-
 subset.__tostring__ = argcheck{
 	doc=[[
 	<a name="Df_Subset.__tostring__">

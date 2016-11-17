@@ -82,10 +82,8 @@ _Return value_: boolean
 	{name="self", type="Dataframe"},
 	{name="column_name", type="string", doc="The column to check"},
 	call=function(self, column_name)
-	for _,v in pairs(self.column_order) do
-		if (v == column_name) then
-			return true
-		end
+	if (self.dataset[column_name]) then
+		return true
 	end
 	return false
 end}
@@ -237,7 +235,7 @@ _Return value_: self
 		end
 	end
 
-	local column_data = Dataseries(self.n_rows, type):fill(default_value)
+	local column_data = Dataseries(self:size(1), type):fill(default_value)
 	return self:add_column(column_name, pos, column_data)
 end}
 
@@ -260,7 +258,7 @@ If you have a column with values to add then directly input a tds.Vec
 
 	self:assert_has_not_column(column_name)
 
-	if (self.n_rows == 0) then
+	if (self:size(1) == 0) then
 		self.n_rows = #column_data
 	else
 		assert(#column_data == self.n_rows,
@@ -293,7 +291,8 @@ _Return value_: self
 	{name="self", type="Dataframe"},
 	{name="data", type="Dataframe", doc="The other dataframe to bind"},
 	call=function(self, data)
-	assert(self.n_rows == data.n_rows, ("The number of rows don't match %d ~= %d"):format(self.n_rows, data.n_rows))
+	assert(self:size(1) == data:size(1),
+		("The number of rows don't match %d ~= %d"):format(self:size(1), data:size(1)))
 	for i=1,#data.column_order do
 		self:assert_has_not_column(data.column_order[i])
 	end
@@ -339,7 +338,7 @@ _Return value_: table or tensor
 	call=function(self, column_name, as_raw, as_tensor)
 	self:assert_has_column(column_name)
 
-	column_data = self.dataset[column_name]
+	local column_data = self.dataset[column_name]
 	assert(column_data, "Data column " .. column_name .. " not present!")
 
 	assert(not as_tensor or

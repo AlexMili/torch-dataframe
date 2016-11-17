@@ -31,8 +31,8 @@ _Return value_: self
 	assert(max_rows > 0, "Can't print less than 1 row")
 
 	-- Subset only if we have more rows than we can show
-	if (max_rows < self.n_rows) then
-		max_rows = math.min(self.n_rows, max_rows)
+	if (max_rows < self:size(1)) then
+		max_rows = math.min(self:size(1), max_rows)
 
 		data = self:sub(1, max_rows)
 	else
@@ -64,7 +64,7 @@ _Return value_: self
 	 default=false},
 	call=function(self, digits)
 
-	if (self.n_rows <= 20) then
+	if (self:size(1) <= 20) then
 		-- Print all
 		self:output{max_rows = 20,
 								digits = digits}
@@ -81,7 +81,7 @@ _Return value_: self
 			text = text..'<td colspan="'.. self:shape()["cols"] ..'"><span style="font-size:20px;">...</span></td>' -- the remainder
 			text = text..'\n</tr>'
 			text = text..tail:_to_html{split_table='top',
-			                           offset=self.n_rows - tail:shape()["rows"],
+			                           offset=self:size(1) - tail:shape()["rows"],
 																 digits = digits}
 
 			itorch.html(text)
@@ -150,10 +150,10 @@ _Return value_: string
 	end
 
 	if (not no_rows) then
-		no_rows = math.min(self.tostring_defaults.no_rows, self.n_rows)
+		no_rows = math.min(self.tostring_defaults.no_rows, self:size(1))
 	else
 		if (no_rows == -1) then
-			no_rows = self.n_rows
+			no_rows = self:size(1)
 		else
 			self:assert_is_index(no_rows)
 		end
@@ -184,7 +184,7 @@ _Return value_: string
 							else
 								val = tostring(v[i])
 							end
-						elseif(self:is_boolean(k)) then
+						elseif(torch.type(v[i]) ~= "string") then
 							val = tostring(v[i])
 						else
 							val = v[i]
@@ -395,7 +395,7 @@ elements that were too large were %d while the available width was %d]]):
 		ret_str = ret_str .. " |"
 	end
 
-	if (self.n_rows > no_rows) then
+	if (self:size(1) > no_rows) then
 		ret_str = ret_str .. "\n| ..." .. string.rep(" ", table_width - 5 - 1) .. "|"
 	end
 
@@ -490,7 +490,7 @@ _Return value_: string
 		result = result.. '\n\t</tr>'
 	end
 
-	for row_no = 1,self.n_rows do
+	for row_no = 1,self:size(1) do
 		result = result.. '\n\t<tr>'
 		result = result.. '\n\t\t<td><span style="font-weight:bold;">'..(row_no + offset)..'</span></td>'
 		for col_no = 1,#self.column_order do

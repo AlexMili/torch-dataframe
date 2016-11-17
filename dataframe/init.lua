@@ -169,16 +169,16 @@ Dataframe._infer_csvigo_schema = argcheck{
 	 doc="The column order"},
 	{name="rows2explore", type="number",
 	 doc="The maximum number of rows to traverse",
-	 default=1e3},
+	 opt=true},
 	{name="first_data_row", type="number",
 	 doc="The first number in the iterator to use (i.e. skip header == 2)",
 	 default=1},
 	call=function(self, iterator, column_order, rows2explore, first_data_row)
-	rows2explore = math.min(rows2explore, #iterator)
+	local no_rows_2_investigate = math.min(rows2explore or 1e3, #iterator)
 	column_order = column_order.data
 
  	local schema = {}
- 	for i = first_data_row,rows2explore do
+ 	for i = first_data_row,no_rows_2_investigate do
  		local row = iterator[i]
  		for idx,val in ipairs(row) do
 			local cn = column_order[idx]
@@ -187,6 +187,25 @@ Dataframe._infer_csvigo_schema = argcheck{
  				                  prev_type = schema[cn]}
  		end
  	end
+
+	for i=1,#column_order do
+		local cn = column_order[i]
+		if (schema[cn] == nil) then
+			print("Warning: could not identify the row type for " .. cn)
+			if (rows2explore == nil) then
+				print("Trying to investigate if increasing the number from 1e3 to 1e4 rows helps")
+				return self:_infer_csvigo_schema{
+					iterator = iterator,
+					first_data_row = first_data_row,
+					column_order = Df_Array(column_order),
+					rows2explore = 1e4
+				}
+			else
+				print(("Assuming the most general type: string for '%s'"):format(cn))
+				schema[cn] = get_variable_type('some text')
+			end
+		end
+	end
 
  	return schema
  end}
@@ -317,7 +336,7 @@ _Return value_: table
 ]],
 	{name="self", type="Dataframe"},
 	call=function(self)
-	return {rows=self.n_rows,cols=#self.column_order}
+	return {rows=self:size(1), cols=self:size(2)}
 end}
 
 Dataframe.version = argcheck{
@@ -349,7 +368,7 @@ _Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	call=function(self)
-	self.__version = "1.6"
+	self.__version = "1.6.1"
 	return self
 end}
 
@@ -366,22 +385,50 @@ samplers to either:
 
 @ARGT
 
+*Note:* Sometimes the version check fails to identify that the Dataframe is of
+an old version and you can therefore skip the version check.
+
 _Return value_: Dataframe
 ]],
 	{name = "self", type = "Dataframe"},
-	call = function(self)
-	local current_version = self:version()
+	{name = "skip_version", type="boolean", opt=true,
+		doc="Set to true if you want to upgrade your dataframe regardless of the version check"},
+	{name = "current_version", type="number", opt=true,
+		doc="The current version of the dataframe"},
+	call = function(self, skip_version, current_version)
+	if (not current_version) then
+		current_version = self:version()
+	end
+
 	self:set_version()
-	if (current_version == self.__version) then
-		print(("No need to update dataframe as it already is version '%s'"):format(current_version))
-		return
+	if (skip_version) then
+		if (current_version == self.__version) then
+			print(("No need to update dataframe as it already is version '%s'"):format(current_version))
+			return
+		end
+	end
+
+	if (type(self.print) == "table") then
+		-- Do silently as this is rather unimportant
+		self.tostring_defaults = self.print
+		self.tostring_defaults.max_col_width = nil
+		self.print = nil
+
+		local str_defaults = self:_get_init_tostring_dflts()
+		for key, value in pairs(str_defaults) do
+			if (not self.tostring_defaults[key]) then
+				self.tostring_defaults[key] = value
+			end
+		end
+	elseif (not self.tostring_defaults) then
+		self.tostring_defaults = self:_get_init_tostring_dflts()
 	end
 
 	if (current_version < 1.5) then
 		assert(self.subsets == nil, "The dataframe seems to be upgraded as it already has a subset property")
 
-		if (self.batch == nil) then
-			print("No need to update batch info")
+		if (torch.type(self.batch) == "table") then
+			print("No need to update batch info - batch is already a '" .. torch.type(self.batch) .. "'")
 		else
 			-- Initiate the subsets
 			self:create_subsets(Df_Dict(self.batch.data_types))
@@ -405,27 +452,37 @@ _Return value_: Dataframe
 
 			print("Updated batch metadata")
 		end
-
-		if (type(self.print) == "table") then
-			-- Do silently as this is rather unimportant
-			self.tostring_defaults = self.print
-			self.tostring_defaults.max_col_width = nil
-
-			local str_defaults = self:_get_init_tostring_dflts()
-			for key, value in pairs(str_defaults) do
-				if (not self.tostring_defaults[key]) then
-					self.tostring_defaults[key] = value
-				end
-			end
-		end
 	end
 
 	if (current_version <= 1.6) then
+		print("** Updating columns to Dataseries **")
 		self.columns = nil
 		for _,cn in ipairs(self.column_order) do
-			self.dataset[cn] = Dataseries(Df_Array(cn))
+			print(" - column: " .. cn)
+			self.dataset[cn] = Dataseries(Df_Array(self.dataset[cn]))
+
+			-- Move the categorical information into the series
+			if (self.categorical) then
+				if (self.categorical[cn]) then
+					self.dataset[cn].categorical = self.categorical[cn]
+				end
+			end
 		end
+		self.categorical = nil
 		self.schema = nil
+		print("done updating columns")
+
+		if (self.subsets) then
+			print("** Updating subsets **")
+			for sub_name,_ in pairs(self.subsets.sub_objs) do
+				print(" - " .. sub_name)
+				self.subsets.sub_objs[sub_name] = self.subsets.sub_objs[sub_name]:upgrade_frame{
+					skip_version = skip_version,
+					current_version = current_version
+				}
+			end
+			print("done updating subsets")
+		end
 	end
 
 	return self
