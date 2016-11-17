@@ -58,7 +58,7 @@ describe("Column operations", function()
 			                {no_rows = 10,
 			                min_col_width = 7,
 			                max_table_width = 80})
-			assert.is.equal(a.n_rows,0)
+			assert.is.equal(a:size(1),0)
 		end)
 	end)
 

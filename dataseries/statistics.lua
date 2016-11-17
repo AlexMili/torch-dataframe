@@ -295,6 +295,10 @@ _Return value_: number
 		return max
 	end
 
+	assert(self:is_numerical(), "The column has to be numerical in order for a max value to exist")
+	if (self:count_na() == 0) then
+		return torch.max(self.data)
+	end
 	local _, max = self:which_max()
 
 	return max
@@ -329,6 +333,10 @@ _Return value_: number
 		return min
 	end
 
+	assert(self:is_numerical(), "The column has to be numerical in order for a max value to exist")
+	if (self:count_na() == 0) then
+		return torch.min(self.data)
+	end
 	local _, min = self:which_min()
 
 	return min

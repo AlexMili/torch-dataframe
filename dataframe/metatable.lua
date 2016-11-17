@@ -29,7 +29,18 @@ _Return value_: integer
 	assert(isint(dim), "The dimension isn't an integer: " .. tostring(dim))
 	assert(dim == 1 or dim == 2, "The dimension can only be between 1 and 2 - you've provided: " .. dim)
 	if (dim == 1) then
-		return self.n_rows
+		if (not self.column_order or #self.column_order == 0) then
+			return 0
+		end
+
+		local col = self.column_order[1]
+		if (self:has_column(col)) then
+			return self:get_column(self.column_order[1]):size()
+		else
+			-- this case happends when _copy_meta has been called and the column_order has been set
+			-- TODO: remove the dependence of column_order for the row calc
+			return 0
+		end
 	end
 
 	return #self.column_order
@@ -152,14 +163,14 @@ _Return value_: integer
 	{name="self", type="Dataframe"},
 	{name="other", type="Dataframe"},
 	call=function(self, other)
-	return self.n_rows
+	return self:size(1)
 end}
 
 Dataframe.__len__ = argcheck{
 	overload=Dataframe.__len__,
 	{name="self", type="Dataframe"},
 	call=function(self)
-	return self.n_rows
+	return self:size(1)
 end}
 
 Dataframe.__eq__ = argcheck{
@@ -192,7 +203,7 @@ _Return value_: boolean
 		local self_col = self:get_column(self.column_order[i])
 		local other_col = other:get_column(self.column_order[i])
 
-		for i=1,self.n_rows do
+		for i=1,self:size(1) do
 			-- one is nan and not the other
 			if ((not isnan(self_col[i]) and
 			     isnan(other_col[i])) or

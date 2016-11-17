@@ -36,7 +36,10 @@ _Return value_: self
 	 doc="skip this many lines at start of file"},
 	{name="verbose", type="boolean", default=false,
 	 doc="verbose load"},
-	call=function(self, path, header, schema, separator, skip, verbose)
+	{name="rows2explore", type="number",
+	 doc="The maximum number of rows to traverse when trying to identify schema",
+	 opt = true},
+	call=function(self, path, header, schema, separator, skip, verbose, rows2explore)
 	-- Remove previous data
 	self:_clean()
 
@@ -58,6 +61,12 @@ _Return value_: self
 			column_order[i] = "Column no. " .. i
 		end
 	end
+	if (verbose) then
+		print("Loaded the header: ")
+		for i,n in ipairs(column_order) do
+			print(("%2d - %s"):format(i, n))
+		end
+	end
 
 	if (schema) then
 		schema = schema.data
@@ -65,8 +74,16 @@ _Return value_: self
 		schema = self:_infer_csvigo_schema{
 			iterator = data_iterator,
 			first_data_row = first_data_row,
-			column_order = Df_Array(column_order)
+			column_order = Df_Array(column_order),
+			rows2explore = rows2explore
 		}
+	end
+	if (verbose) then
+		print("Inferred schema: ")
+		for i=1,#column_order do
+			local cn = column_order[i]
+			print(("%2d - %s = %s"):format(i, cn, schema[cn]))
+		end
 	end
 
 	self:__init{
@@ -76,6 +93,10 @@ _Return value_: self
 		column_order = Df_Array(column_order),
 		set_missing = false
 	}
+	if (verbose) then
+		print("Initiated the schema")
+	end
+
 	local data_rowno = 0
 	for csv_rowno=first_data_row,#data_iterator do
 		data_rowno = data_rowno + 1
@@ -94,11 +115,21 @@ _Return value_: self
 
 			self.dataset[self.column_order[col_idx]]:set(data_rowno, val)
 		end
+		if (verbose and csv_rowno % 1e4 == 0) then
+			print(("Done processing %d rows"):format(csv_rowno))
+		end
+	end
+	if (verbose) then
+		print("Done reading in data")
 	end
 
 	self.dataset, self.column_order =
 		self:_clean_columns{data = self.dataset,
 		                    column_order = self.column_order}
+
+	if (verbose) then
+		print("Finished cleaning columns")
+	end
 
 	return self
 end}
@@ -163,7 +194,6 @@ _Return value_: self
 		self:_clean_columns{data = data,
 		                    column_order = column_order,
 		                    schema = schema}
-
 	-- Check that all columns with a no_rows > 1 has the same number of rows (no_rows)
 	local no_rows = -1
 	for k,v in pairs(data) do
@@ -207,7 +237,7 @@ _Return value_: self
 	-- Copy the data into the columns
 	for cn,col_vals in pairs(data) do
 		local col_data = self:get_column(cn)
-		for i=1,self.n_rows do
+		for i=1,no_rows do
 			local value
 			if (type(col_vals) == "number" or
 				 type(col_vals) == "boolean" or
