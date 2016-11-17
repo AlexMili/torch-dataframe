@@ -336,7 +336,7 @@ _Return value_: table
 ]],
 	{name="self", type="Dataframe"},
 	call=function(self)
-	return {rows=self:size(1), cols=self:size(2)}	
+	return {rows=self:size(1), cols=self:size(2)}
 end}
 
 Dataframe.version = argcheck{
@@ -368,7 +368,7 @@ _Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	call=function(self)
-	self.__version = "1.6"
+	self.__version = "1.6.1"
 	return self
 end}
 
