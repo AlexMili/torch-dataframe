@@ -1,5 +1,6 @@
 # API documentation for [Dataseries](#__Dataseries__)
 - [Dataseries.`__init`](#Dataseries.__init)
+- [Dataseries.new_storage](#Dataseries.new_storage)
 - [Dataseries.copy](#Dataseries.copy)
 - [Dataseries.size](#Dataseries.size)
 - [Dataseries.resize](#Dataseries.resize)
@@ -53,6 +54,23 @@ The type can be:
    self = Dataseries  -- 
    size = number      -- The size of the new series
   [type = string]     -- The type of data storage to init.
+})
+```
+
+<a name="Dataseries.new_storage">
+### Dataseries.new_storage(size[, type])
+
+Retrieves a storage element for the Dataseries. The type can be:
+- boolean
+- integer
+- double
+- string
+- torch tensor or tds.Vec
+
+```
+({
+   size = number   -- The size of the storage
+  [type = string]  -- The type of data storage to initialize
 })
 ```
 

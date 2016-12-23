@@ -150,6 +150,7 @@ add apropriate anchor tags during documentation.
 
 - **[Dataseries](dataseries/init.md)**
   - [Dataseries.`__init`](dataseries/init.md#Dataseries.__init)
+  - [Dataseries.new_storage](dataseries/init.md#Dataseries.new_storage)
   - [Dataseries.copy](dataseries/init.md#Dataseries.copy)
   - [Dataseries.size](dataseries/init.md#Dataseries.size)
   - [Dataseries.resize](dataseries/init.md#Dataseries.resize)
@@ -184,6 +185,7 @@ add apropriate anchor tags during documentation.
 - **[Single element functions](dataseries/sngl_elmnt_ops.md)**
   - [Dataseries.get](dataseries/sngl_elmnt_ops.md#Dataseries.get)
   - [Dataseries.set](dataseries/sngl_elmnt_ops.md#Dataseries.set)
+  - [Dataseries.mutate](dataseries/sngl_elmnt_ops.md#Dataseries.mutate)
   - [Dataseries.append](dataseries/sngl_elmnt_ops.md#Dataseries.append)
   - [Dataseries.remove](dataseries/sngl_elmnt_ops.md#Dataseries.remove)
   - [Dataseries.insert](dataseries/sngl_elmnt_ops.md#Dataseries.insert)
