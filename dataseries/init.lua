@@ -62,25 +62,56 @@ The type can be:
 	call=function(self, size, type)
 	assert(isint(size) and size >= 0, "Size has to be a positive integer")
 	parent_class.__init(self)
-	if (type == "integer") then
-		self.data = torch.IntTensor(size)
-	elseif (type == "long") then
-		self.data = torch.LongTensor(size)
-	elseif (type == "double") then
-		self.data = torch.DoubleTensor(size)
-	elseif (type == "boolean" or
-	        type == "string" or
-	        type == "tds.Vec" or
-	        type == nil) then
-		self.data = tds.Vec()
-		self.data:resize(size)
-	elseif (type:match("torch.*Tensor")) then
-		self.data = torch.Tensor(size):type(type)
-	else
-		assert(false, ("The type '%s' has not yet been implemented"):format(type))
-	end
+	self.data = self.new_storage(size, type)
 	self.missing = tds.Hash()
 	self._variable_type = type
+end}
+
+Dataseries.new_storage = argcheck{
+	doc = [[
+<a name="Dataseries.new_storage">
+### Dataseries.new_storage(@ARGP)
+
+Retrieves a storage element for the Dataseries. The type can be:
+- boolean
+- integer
+- double
+- string
+- torch tensor or tds.Vec
+
+@ARGT
+
+]],
+	{name="size", type="number", doc="The size of the storage"},
+	{name="type", type="string", doc="The type of data storage to initialize", opt=true},
+	call = function(size, type)
+
+	if (type == "integer") then
+			return torch.IntTensor(size)
+	end
+
+	if (type == "long") then
+			return torch.LongTensor(size)
+	end
+
+	if (type == "double") then
+		return torch.DoubleTensor(size)
+	end
+
+	if (type == "boolean" or
+	    type == "string" or
+	    type == "tds.Vec" or
+	    type == nil) then
+		local data = tds.Vec()
+		data:resize(size)
+		return data
+	end
+
+	if (type:match("torch.*Tensor")) then
+		return torch.Tensor(size):type(type)
+	end
+
+	assert(false, ("The type '%s' has not yet been implemented"):format(type))
 end}
 
 Dataseries.__init = argcheck{
