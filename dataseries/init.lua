@@ -431,14 +431,12 @@ _Return value_: self, boolean indicating successful conversion
 		return self, false
 	end
 
-	local data = torch.ByteTensor(self:size())
+	local data = torch.ByteTensor(self:size()):fill(false_value)
 	for i=1,self:size() do
 		local val = self:get(i)
 		if (not isnan(val)) then
 			if (val) then
 				data[i] = true_value
-			else
-				data[i] = false_value
 			end
 		end
 	end
@@ -464,8 +462,12 @@ _Return value_: self
 	 doc="The default value"},
 	call=function(self, default_value)
 
-	for i=1,self:size() do
-		self:set(i, default_value)
+	if (torch.type(self.data):match("torch.*Tensor")) then
+		self.data:fill(default_value)
+	else
+		for i=1,self:size() do
+			self:set(i, default_value)
+		end
 	end
 
 	return self
@@ -486,6 +488,9 @@ _Return value_: self
 	{name="default_value", type="number|string|boolean",
 	 doc="The default missing value", default=0},
 	call=function(self, default_value)
+	if (self:count_na() == 0) then
+		return self
+	end
 
 	if (self:is_categorical() and
 	    not self:has_cat_key("__nan__")) then
@@ -496,8 +501,14 @@ _Return value_: self
 		default_value = "__nan__"
 	end
 
-	for pos,_ in pairs(self.missing) do
-		self:set(pos, default_value)
+	if (torch.type(self.data):match("torch.*Tensor")) then
+		local mask = self:get_data_mask{missing = true}
+		self.data:maskedFill(mask, default_value)
+		self.missing = tds.Hash()
+	else
+		for pos,_ in pairs(self.missing) do
+			self:set(pos, default_value)
+		end
 	end
 
 	return self
@@ -587,6 +598,36 @@ _Return value_: string
 	end
 
 	return true
+end}
+
+Dataseries.get_data_mask = argcheck{
+	doc=[[
+<a name="Dataseries.get_data_mask">
+### Dataseries.get_data_mask(@ARGP)
+
+Retrieves a mask that can be used to select missing or active values
+
+@ARGT
+
+_Return value_: torch.ByteTensor
+]],
+	{name="self", type="Dataseries"},
+	{name="missing", type="boolean", default=false,
+	  doc="Set to true if you want only the missing values"},
+	call=function(self, missing)
+	local fill_value = 1
+	local missing_value = 0
+	if (missing) then
+		fill_value = 0
+		missing_value = 1
+	end
+
+	local mask = torch.ByteTensor():resize(self:size()):fill(fill_value)
+	for i,_ in pairs(self.missing) do
+		mask[i] = missing_value
+	end
+
+	return mask
 end}
 
 return Dataseries

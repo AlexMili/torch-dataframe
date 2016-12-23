@@ -25,7 +25,8 @@ describe("Dataframe class", function()
 		assert.has.error(function() a:fill_na("Random column") end)
 
 		a:fill_na("Col A", 1)
-		assert.are.same(a:count_na{as_dataframe = false}, {["Col A"]= 0, ["Col B"]= 0, ["Col C"]=1})
+		assert.are.same(a:count_na{as_dataframe = false},
+    {["Col A"]= 0, ["Col B"]= 0, ["Col C"]=1})
 
 		a:fill_na("Col C", 1)
 		assert.are.same(a:count_na{as_dataframe = false}, {["Col A"]= 0, ["Col B"]= 0, ["Col C"]=0})
