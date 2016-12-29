@@ -34,8 +34,7 @@ end
 
 dict.__len__ = argcheck{
 	{name="self", type="Df_Dict"},
-	{name="other", type="Df_Dict", opt=true},
-	call=function(self, other)
+	call=function(self)
 	return table.exact_length(self.data)
 end}
 

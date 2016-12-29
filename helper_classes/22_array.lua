@@ -43,8 +43,7 @@ end
 
 da.__len__ = argcheck{
 	{name="self", type="Df_Array"},
-	{name="other", type="Df_Array", opt=true},
-	call=function(self, other)
+	call=function(self)
 	return #self.data
 end}
 
