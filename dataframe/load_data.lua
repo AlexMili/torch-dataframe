@@ -139,9 +139,10 @@ end}
 Dataframe.load_bulkcsv = argcheck{
 	doc =  [[
 <a name="Dataframe.load_csv">
-### Dataframe.load_csv(@ARGP)
+### Dataframe.load_bulkcsv(@ARGP)
 
-Loads a CSV file into Dataframe using csvigo as backend and threads
+Loads a CSV file into Dataframe using multithreading.
+Warning : this method does not do the same checks as load_csv would do.
 
 @ARGT
 
@@ -168,7 +169,10 @@ _Return value_: self
 	-- Remove previous data (reset init variables)
 	self:_clean()
 
-	print("[INFO] Loading CSV")
+	if (verbose) then
+		print("[INFO] Loading CSV")
+	end
+
 	local data_iterator = csvigo.load{path = path,
 		            header = header,
 		            separator = separator,
@@ -177,7 +181,9 @@ _Return value_: self
 		            column_order = true,
 		            mode = "large"}
 
-	print("[INFO] End loading CSV")
+	if (verbose) then
+		print("[INFO] End loading CSV")
+	end
 
 	local column_order = {}
 	local first_data_row = 2 -- In large mode first row is always the header (if there is one)
@@ -219,7 +225,9 @@ _Return value_: self
 		end
 	end
 
-	print("Estimation number of rows : "..#data_iterator - first_data_row + 1)
+	if (verbose) then
+		print("Estimation number of rows : "..#data_iterator - first_data_row + 1)
+	end
 
 	local nfield= #data_iterator[1]-1
 	local nrecs = #data_iterator-1
@@ -234,7 +242,9 @@ _Return value_: self
 	local t = threads.Threads(
 		nthreads,
 		function(threadn)
-			print("[INFO] Starting preprocessing")
+			if (verbose) then
+				print("[INFO] Starting preprocessing")
+			end
 			require "csvigo"
 
 			nthreads=nthreads
@@ -255,16 +265,16 @@ _Return value_: self
 	for j=1,nthreads do
 		t:addjob(
 			function()
-				print("[INFO] Start of thread n°"..__threadid)
+				if (verbose) then
+					print("[INFO] Start of thread n°"..__threadid)
+				end
+
 				local Dataframe = require "Dataframe"
 
 				tac = torch.tic()
 				local o=csvigo.load{path=path,mode='large',column_order=true,verbose=verbose}
 				-- chunk
 				local c=chunks[__threadid]
-
-				print("[INFO] Start of processing in thread n°"..__threadid.." (size :"..c:size(1)..")")
-
 				local csv_df=Dataframe()
 
 				csv_df:_init_with_schema{
@@ -291,9 +301,6 @@ _Return value_: self
 
 	t:synchronize()
 	t:terminate()
-
-	print('done')
-	print(torch.toc(tic))
 
 	if (verbose) then
 		print("Finished cleaning columns")
