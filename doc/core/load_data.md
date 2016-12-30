@@ -7,19 +7,20 @@
 ## Data loader functions
 
 <a name="Dataframe.load_csv">
-### Dataframe.load_csv(self, path[, header][, schema][, separator][, skip][, verbose])
+### Dataframe.load_csv(self, path[, header][, schema][, separator][, skip][, verbose][, rows2explore])
 
 Loads a CSV file into Dataframe using csvigo as backend
 
 ```
 ({
-   self      = Dataframe  -- 
-   path      = string     -- path to file
-  [header    = boolean]   -- if has header on first line [default=true]
-  [schema    = Df_Dict]   -- The column schema types with column names as keys
-  [separator = string]    -- separator (one character) [default=,]
-  [skip      = number]    -- skip this many lines at start of file [default=0]
-  [verbose   = boolean]   -- verbose load [default=false]
+   self         = Dataframe  -- 
+   path         = string     -- path to file
+  [header       = boolean]   -- if has header on first line [default=true]
+  [schema       = Df_Dict]   -- The column schema types with column names as keys
+  [separator    = string]    -- separator (one character) [default=,]
+  [skip         = number]    -- skip this many lines at start of file [default=0]
+  [verbose      = boolean]   -- verbose load [default=false]
+  [rows2explore = number]    -- The maximum number of rows to traverse when trying to identify schema
 })
 ```
 

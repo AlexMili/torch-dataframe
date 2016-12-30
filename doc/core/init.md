@@ -120,7 +120,7 @@ Sets the data-frame version
 
 _Return value_: self
 <a name="Dataframe.upgrade_frame">
-### Dataframe.upgrade_frame(self)
+### Dataframe.upgrade_frame(self[, skip_version][, current_version])
 
 Upgrades a dataframe using the old batch loading framework to the new framework
 by instantiating the subsets argument, copying the indexes and setting the
@@ -131,9 +131,14 @@ samplers to either:
 
 ```
 ({
-   self = Dataframe  -- 
+   self            = Dataframe  -- 
+  [skip_version    = boolean]   -- Set to true if you want to upgrade your dataframe regardless of the version check
+  [current_version = number]    -- The current version of the dataframe
 })
 ```
+
+*Note:* Sometimes the version check fails to identify that the Dataframe is of
+an old version and you can therefore skip the version check.
 
 _Return value_: Dataframe
 <a name="Dataframe.assert_is_index">

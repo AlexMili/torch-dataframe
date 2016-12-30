@@ -31,7 +31,7 @@ _Return value_: self (Dataframe)
 	-- Make sure that categorical columns are presented in the correct way
 	save_data = {}
 	for _,k in pairs(self.column_order) do
-		save_data[k] = self:get_column(k):to_table()
+		save_data[k] = self:get_column(k):to_table{boolean2string = true}
 	end
 
 	-- TODO: The csvigo will have memory issues when used with regular tables
@@ -54,7 +54,8 @@ Convert the numeric section or specified columns of the dataset to a tensor
 
 @ARGT
 
-_Return value_: (1) torch.tensor with self.n_rows rows and #columns, (2) exported column names
+_Return value_: (1) torch.tensor with self:size(1) rows and self:size(2) columns,
+ (2) exported column names
 
 ]],
 	{name="self", type="Dataframe"},

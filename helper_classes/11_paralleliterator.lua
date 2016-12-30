@@ -10,16 +10,8 @@
 
 local argcheck = require 'argcheck'
 local doc = require 'argcheck.doc'
-local torchnet
-if (doc.__record) then
-	doc.stop()
-	torchnet = require "torchnet"
-	doc.record()
-else
-	torchnet = require "torchnet"
-end
-
 local Threads = require 'threads'
+
 if (not Df_Iterator) then
 	require 'Dataframe.helper_classes.iterator'
 end
@@ -98,7 +90,6 @@ on which `Df_ParallelIterator` relies.
 	local upvalue_data_retr = retrievers.data
 	local upvalue_label_retr = retrievers.label
 	local upvalue_label_shape = retrievers.label_shape
-	local msd = "test"
 	self.dataset.batch_args = nil
 
 	local function data_copy()
@@ -145,16 +136,17 @@ on which `Df_ParallelIterator` relies.
 					--  this should though be the computationally expensive operation
 					threads:addjob(
 						function(argList)
-							local origIdx, serialized_batch, samplePlaceholder = table.unpack(argList)
+							local origIdx
+							origIdx, serialized_batch, samplePlaceholder = table.unpack(argList)
 
-							local batch = torch.deserialize(serialized_batch)
+							batch = torch.deserialize(serialized_batch)
 							batch:set_data_retriever(gdata_retr)
 								:set_label_retriever(glabel_retr)
 								:set_label_shape(glabel_shape)
 
 							batch = transform(batch)
 
-							local sample = samplePlaceholder
+							sample = samplePlaceholder
 							if (filter(batch)) then
 								sample = {}
 								sample.input, sample.target = batch:to_tensor()

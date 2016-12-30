@@ -24,7 +24,7 @@ describe("Dataframe class", function()
 			               {no_rows = 10,
 			                min_col_width = 7,
 			                max_table_width = 80})
-			assert.is.equal(df.n_rows,0)
+			assert.is.equal(df:size(1),0)
 		end)
 
 		it("Loads a CSV file if passed in argument",function()
@@ -72,7 +72,7 @@ describe("Dataframe class", function()
 			               {no_rows = 10,
 			                min_col_width = 7,
 			                max_table_width = 80})
-			assert.is.equal(df.n_rows,0)
+			assert.is.equal(df:size(1),0)
 		end)
 
 		it("Copy all meta variables to a new Dataframe object",function()
@@ -82,7 +82,7 @@ describe("Dataframe class", function()
 			df:_copy_meta(df2)
 
 			assert.are.same(df2.dataset,{})
-			assert.is.equal(df2.n_rows,0)
+			assert.is.equal(df2:size(1),0)
 
 			assert.are.same(df.column_order,df2.column_order)
 			assert.are.same(df.tostring_defaults,df2.tostring_defaults)
@@ -126,7 +126,7 @@ describe("Dataframe class", function()
 		local a = Dataframe("./data/simple_short.csv")
 
 		head = a:head(2)
-		assert.is.equal(head.n_rows, 2)-- "Self the n_rows isn't updated, is " .. head.n_rows .. " instead of expected 2"
+		assert.is.equal(head:size(1), 2)-- "Self the n_rows isn't updated, is " .. head:size(1) .. " instead of expected 2"
 		-- do a manual count
 		local no_elmnts = 0
 		for k,v in pairs(head.dataset) do
@@ -141,17 +141,17 @@ describe("Dataframe class", function()
 
 		-- Only 4 rows and thus all should be included
 		head = a:head(20)
-		assert.is.equal(head.n_rows, a.n_rows)-- "The elements should be identical to the original " .. a.n_rows .. " got instead " .. head.n_rows .. " elements"
+		assert.is.equal(head:size(1), a:size(1))-- "The elements should be identical to the original " .. a:size(1) .. " got instead " .. head:size(1) .. " elements"
 
 		head = a:head()
-		assert.is.equal(head.n_rows, a.n_rows)-- "The elements should be identical to the original " .. a.n_rows .. " as the default is < original elements. Got instead " .. head.n_rows .. " elements"
+		assert.is.equal(head:size(1), a:size(1))-- "The elements should be identical to the original " .. a:size(1) .. " as the default is < original elements. Got instead " .. head:size(1) .. " elements"
 	end)
 
 	it("Returns last elements of the dataframe",function()
 		local a = Dataframe("./data/simple_short.csv")
 
 		tail = a:tail(2)
-		assert.is.equal(tail.n_rows, 2)-- "Self the n_rows isn't updated, is " .. tail.n_rows .. " instead of expected 2"
+		assert.is.equal(tail:size(1), 2)-- "Self the n_rows isn't updated, is " .. tail:size(1) .. " instead of expected 2"
 		-- Do a manual count
 		local no_elmnts = 0
 		for k,v in pairs(tail.dataset) do
@@ -164,10 +164,10 @@ describe("Dataframe class", function()
 
 		-- Only 4 rows and thus all should be included
 		tail = a:tail(20)
-		assert.is.equal(tail.n_rows, a.n_rows)-- "Should have selected 20 las elements and returned the original length " .. a.n_rows .. " since there are only 4 rows and not " .. tail.n_rows
+		assert.is.equal(tail:size(1), a:size(1))-- "Should have selected 20 las elements and returned the original length " .. a:size(1) .. " since there are only 4 rows and not " .. tail:size(1)
 
 		tail = a:tail()
-		assert.is.equal(tail.n_rows, a.n_rows)-- "Default selection is bigger than the simple_short, you got " .. tail.n_rows .. " instead of " .. a.n_rows
+		assert.is.equal(tail:size(1), a:size(1))-- "Default selection is bigger than the simple_short, you got " .. tail:size(1) .. " instead of " .. a:size(1)
 	end)
 
 	it("Returns all unique #1 values in a column", function()

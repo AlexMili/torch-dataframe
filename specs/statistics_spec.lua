@@ -141,6 +141,11 @@ describe("Usual statistics functions", function()
 
 	describe("Max value",function()
 		df = Dataframe("./data/advanced_short.csv")
+		it("Retrieves the which indices the max value of a specific column reside at",function()
+      assert.are.same(df:which_max('Col A'), {3})
+			assert.are.same(df:which_max('Col C'), {3})
+		end)
+
 		it("Retrieves the max value of all numerical columns",function()
 			assert.are.same(df:get_max_value{as_dataframe = false}, {3, 9})
 			assert.are.same(dfs:get_max_value{as_dataframe = false}, {4, .5, 9999999999})
@@ -159,10 +164,15 @@ describe("Usual statistics functions", function()
 
 			assert.is.equal(dfs:get_max_value('Col C'), 9999999999)
 		end)
+
 	end)
 
 	describe("Min value",function()
 		df = Dataframe("./data/advanced_short.csv")
+		it("Retrieves the which indices the min value of a specific column reside at",function()
+      assert.are.same(df:which_min('Col A'), {1})
+			assert.are.same(df:which_min('Col C'), {1})
+		end)
 
 		it("Retrieves the min value of all numerical columns",function()
 

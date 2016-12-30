@@ -56,7 +56,7 @@ _Return value_:  Dataseries
 	{name="self", type="Dataseries"},
 	{name="index", type="Df_Array"},
 	overload=Dataseries.get,
-	call=function(self, index, as_raw)
+	call=function(self, index)
 	index = index.data
 
 	local ret = Dataseries.new(#index, self:get_variable_type())
@@ -104,6 +104,45 @@ _Return value_: self
 		self.data[index] = value
 	end
 
+	return self
+end}
+
+Dataseries.mutate = argcheck{
+	doc=[[
+<a name="Dataseries.mutate">
+### Dataseries.mutate(@ARGP)
+
+Modifies a dataseries. Takes a function where that each element is applied to.
+
+@ARGT
+
+_Return value_: self
+]],
+	{name="self", type="Dataseries"},
+	{name="mutation", type="function", doc="The function to apply to each value"},
+	{name="type", type="string", doc="The return type of the data if other than the current", opt=true},
+	call=function(self, mutation, type)
+	if (not type) then
+		type = self:type()
+	end
+
+	local data = self.data
+	if (type ~= self:type()) then
+		data = self.new_storage{
+			size = self:size(),
+			type = type
+		}
+	end
+
+	for i=1,self:size() do
+		if (not self.missing[i]) then
+			data[i] = mutation(self.data[i])
+		end
+	end
+
+	-- Finish the mutation
+	self.data = data
+	self._variable_type = type
 	return self
 end}
 

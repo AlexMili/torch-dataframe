@@ -55,7 +55,7 @@ _Return value_: Dataframe or nested table
 	{name='column_name', type='string', doc='column to inspect'},
 	{name='normalize', type='boolean', default=false,
 	 doc=[[
-	 	If True then the object returned will contain the relative frequencies of
+		If True then the object returned will contain the relative frequencies of
 		the unique values.]]},
 	{name='dropna', type='boolean', default=true,
 	 doc="Don’t include counts of NaN (missing values)."},
@@ -84,7 +84,7 @@ _Return value_: Table or Dataframe
 	{name='columns', type='Df_Array', doc='The columns to inspect', opt=true},
 	{name='normalize', type='boolean', default=false,
 	 doc=[[
-	 	If True then the object returned will contain the relative frequencies of
+		If True then the object returned will contain the relative frequencies of
 		the unique values.]]},
 	{name='dropna', type='boolean', default=true,
 	 doc="Don’t include counts of NaN (missing values)."},
@@ -181,7 +181,7 @@ _Return value_: Table or Dataframe
 	{name='column_name', type='string', doc='column to inspect'},
 	{name='normalize', type='boolean', default=false,
 	 doc=[[
-	 	If True then the object returned will contain the relative frequencies of
+		If True then the object returned will contain the relative frequencies of
 		the unique values.]]},
 	{name='dropna', type='boolean', default=true,
 	 doc="Don’t include counts of NaN (missing values)."},
@@ -208,7 +208,7 @@ Dataframe.get_mode = argcheck{
 	{name="columns", type="Df_Array", doc="The columns of interest", opt=true},
 	{name='normalize', type='boolean', default=false,
 	 doc=[[
-	 	If True then the object returned will contain the relative frequencies of
+		If True then the object returned will contain the relative frequencies of
 		the unique values.]]},
 	{name='dropna', type='boolean', default=true,
 	 doc="Don’t include counts of NaN (missing values)."},

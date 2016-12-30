@@ -21,6 +21,7 @@ add apropriate anchor tags during documentation.
 
 - **[Dataseries](init.md)**
   - [Dataseries.`__init`](init.md#Dataseries.__init)
+  - [Dataseries.new_storage](init.md#Dataseries.new_storage)
   - [Dataseries.copy](init.md#Dataseries.copy)
   - [Dataseries.size](init.md#Dataseries.size)
   - [Dataseries.resize](init.md#Dataseries.resize)
@@ -36,6 +37,7 @@ add apropriate anchor tags during documentation.
   - [Dataseries.tostring](init.md#Dataseries.tostring)
   - [Dataseries.sub](init.md#Dataseries.sub)
   - [Dataseries.eq](init.md#Dataseries.eq)
+  - [Dataseries.get_data_mask](init.md#Dataseries.get_data_mask)
 - **[Categorical functions](categorical.md)**
   - [Dataseries.as_categorical](categorical.md#Dataseries.as_categorical)
   - [Dataseries.add_cat_key](categorical.md#Dataseries.add_cat_key)
@@ -55,6 +57,7 @@ add apropriate anchor tags during documentation.
 - **[Single element functions](sngl_elmnt_ops.md)**
   - [Dataseries.get](sngl_elmnt_ops.md#Dataseries.get)
   - [Dataseries.set](sngl_elmnt_ops.md#Dataseries.set)
+  - [Dataseries.mutate](sngl_elmnt_ops.md#Dataseries.mutate)
   - [Dataseries.append](sngl_elmnt_ops.md#Dataseries.append)
   - [Dataseries.remove](sngl_elmnt_ops.md#Dataseries.remove)
   - [Dataseries.insert](sngl_elmnt_ops.md#Dataseries.insert)

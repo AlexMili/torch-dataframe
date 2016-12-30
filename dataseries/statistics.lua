@@ -168,21 +168,15 @@ _Return value_: table with the highest indexes, max value
 	{name="self", type="Dataseries"},
 	call=function(self)
 	assert(self:is_numerical() and not self:is_categorical(),
-	       "Column has to be numerical")
+	       "Column has to be numerical: " .. self:get_variable_type() ..
+	       " and not categorical: " .. tostring(self:is_categorical()))
 
-	local highest_indx = {}
-	local highest = false
-	for i=1,self:size() do
-		local v = self:get(i)
-		if (not highest or highest < v) then
-			highest = v
-			highest_indx = {i}
-		elseif (highest == v) then
-			table.insert(highest_indx, i)
-		end
-	end
-
-	return highest_indx, highest
+	local indx = torch.range(1, self:size())
+	local mask = self:get_data_mask()
+	local data = self.data:maskedSelect(mask)
+	local highest = self:get_max_value()
+	indx = indx:maskedSelect(mask):maskedSelect(data:eq(highest):byte())
+	return indx:totable(), highest
 end}
 
 Dataseries.which_min = argcheck{
@@ -200,21 +194,15 @@ _Return value_: table with the lowest indexes, lowest value
 	{name="self", type="Dataseries"},
 	call=function(self)
 	assert(self:is_numerical() and not self:is_categorical(),
-	       "Column has to be numerical")
+	       "Column has to be numerical: " .. self:get_variable_type() ..
+	       " and not categorical: " .. tostring(self:is_categorical()))
 
-	local lowest_indx = {}
-	local lowest = false
-	for i=1,self:size() do
-		local v = self:get(i)
-		if (not lowest or lowest > v) then
-			lowest = v
-			lowest_indx = {i}
-		elseif (lowest == v) then
-			table.insert(lowest_indx, i)
-		end
-	end
-
-	return lowest_indx, lowest
+	local indx = torch.range(1, self:size())
+	local mask = self:get_data_mask()
+	local data = self.data:maskedSelect(mask)
+	local lowest = self:get_min_value()
+	indx = indx:maskedSelect(mask):maskedSelect(data:eq(lowest):byte())
+	return indx:totable(), lowest
 end}
 
 Dataseries.get_mode = argcheck{
@@ -234,7 +222,7 @@ _Return value_: Table or Dataframe
 	{name="self", type="Dataseries"},
 	{name='normalize', type='boolean', default=false,
 	 doc=[[
-	 	If True then the object returned will contain the relative frequencies of
+		If True then the object returned will contain the relative frequencies of
 		the unique values.]]},
 	{name='dropna', type='boolean', default=true,
 	 doc="Don’t include counts of NaN (missing values)."},
@@ -242,28 +230,70 @@ _Return value_: Table or Dataframe
 	 doc="Return a dataframe"},
 	call=function(self, normalize, dropna, as_dataframe)
 
-	local counts = self:value_counts{normalize = normalize,
-	                                 dropna = dropna,
-	                                 as_dataframe = false}
-	local max_val = 0/0
-	for _,v in pairs(counts) do
-		if (isnan(max_val) or max_val < v) then
-			max_val  = v
+	local mode_ret = {}
+	if (torch.type(self.data):match("torch.*Tensor")) then
+		local data = self.data:maskedSelect(self:get_data_mask())
+		local org_size = data:size(1)
+		if (not dropna) then
+			org_size = self:size()
 		end
-	end
 
-	local modes = {}
-	for key,v in pairs(counts) do
-		if (max_val == v) then
-			modes[key] = v
+		-- Since several variables may have the same frequency they should
+		-- all be set as the mode. Torch only returns the most common variable
+		-- and therefore we need to loop through all the possible modes
+		local last_mode_val = 0/0
+		while #data:size() > 0 and data:size(1) > 0 do
+			local mode = data:mode()[1]
+			mode_key = mode
+			if (self:is_categorical()) then
+				mode_key = self:to_categorical(mode)
+			end
+			local val = data:eq(mode):sum()
+
+			-- This catches the case where we want to study missing
+			if (isnan(last_mode_val) and
+			    not dropna and val <= self:count_na()) then
+				mode_key = "NA"
+				val = self:count_na()
+			end
+
+			if (normalize) then
+				val = val / org_size
+			end
+
+			if (not isnan(last_mode_val) and val < last_mode_val) then
+				break
+			end
+
+			mode_ret[mode_key] = val
+
+			-- Remove the previous mode from the data
+			data = data:maskedSelect(data:ne(mode):byte())
+			last_mode_val = val
+		end
+	else
+		local counts = self:value_counts{normalize = normalize,
+		                                 dropna = dropna,
+		                                 as_dataframe = false}
+		local max_val = 0/0
+		for _,v in pairs(counts) do
+			if (isnan(max_val) or max_val < v) then
+				max_val  = v
+			end
+		end
+
+		for key,v in pairs(counts) do
+			if (max_val == v) then
+				mode_ret[key] = v
+			end
 		end
 	end
 
 	if (as_dataframe) then
-		modes = convert_table_2_dataframe(Df_Tbl(modes))
+		mode_ret = convert_table_2_dataframe(Df_Tbl(mode_ret))
 	end
 
-	return modes
+	return mode_ret
 end}
 
 Dataseries.get_max_value = argcheck{
@@ -295,9 +325,13 @@ _Return value_: number
 		return max
 	end
 
-	local _, max = self:which_max()
+	assert(self:is_numerical(), "The column has to be numerical in order for a max value to exist")
+	local data = self.data
+	if (self:count_na() > 0) then
+		data = data:maskedSelect(self:get_data_mask{ missing = false })
+	end
 
-	return max
+	return torch.max(data)
 end}
 
 Dataseries.get_min_value = argcheck{
@@ -329,7 +363,11 @@ _Return value_: number
 		return min
 	end
 
-	local _, min = self:which_min()
+	assert(self:is_numerical(), "The column has to be numerical in order for a max value to exist")
+	local data = self.data
+	if (self:count_na() > 0) then
+		data = data:maskedSelect(self:get_data_mask{ missing = false })
+	end
 
-	return min
+	return torch.min(data)
 end}

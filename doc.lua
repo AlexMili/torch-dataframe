@@ -1,4 +1,3 @@
-local argdoc = require 'argcheck.doc'
 local paths = require 'paths'
 
 local dataframe_path = paths.thisfile():gsub("doc.lua$", "?.lua")
@@ -93,9 +92,9 @@ for group_name,group in pairs(docs) do
 		          md_path)
 
 		grp_rough_toc, grp_detailed_toc =
-		 	get_doc_anchors(sub_doc_path, md_path, pd, grp_rough_toc, grp_detailed_toc)
+			get_doc_anchors(sub_doc_path, md_path, pd, grp_rough_toc, grp_detailed_toc)
 		gnrl_rough_toc, gnrl_detailed_toc =
-		 	get_doc_anchors(doc_path, md_path, pd, gnrl_rough_toc, gnrl_detailed_toc)
+			get_doc_anchors(doc_path, md_path, pd, gnrl_rough_toc, gnrl_detailed_toc)
 	end
 
 	local readmefile = io.open(sub_doc_path .. "README.md", "w")

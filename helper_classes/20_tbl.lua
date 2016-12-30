@@ -23,8 +23,7 @@ end
 
 dtbl.__len__ = argcheck{
 	{name="self", type="Df_Tbl"},
-	{name="other", type="Df_Tbl", opt=true},
-	call=function(self, other)
+	call=function(self)
 	return table.exact_length(self.data)
 end}
 

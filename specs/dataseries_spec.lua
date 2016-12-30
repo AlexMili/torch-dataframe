@@ -127,6 +127,27 @@ describe("#Core Dataseries functions", function()
 			assert.are.same(ds:get(2), 4)
 		end)
 
+    it("mutate all elements", function()
+			local ds = Dataseries{data = Df_Array(1,2,3,4)}
+			ds:mutate(function(var)
+				return var * 2
+			end)
+			assert.are.same(ds:size(), 4)
+			assert.are.same(ds:get(1), 2)
+			assert.are.same(ds:get(2), 4)
+			assert.are.same(ds:get(3), 6)
+			assert.are.same(ds:get(4), 8)
+
+			ds:mutate(function(var)
+				return tostring(var)
+			end, "string")
+			assert.are.same(ds:size(), 4)
+			assert.are.same(ds:get(1), "2")
+			assert.are.same(ds:get(2), "4")
+			assert.are.same(ds:get(3), "6")
+			assert.are.same(ds:get(4), "8")
+		end)
+
 		it("remove elements for tds.IntTensor", function()
 			local ds = Dataseries{data = Df_Array(1,2,0/0,4,5)}
 			assert.are.same(ds:type(), "torch.IntTensor")
