@@ -1,5 +1,3 @@
-local argdoc = require 'argcheck.doc'
-local paths = require 'paths'
 
 function parse_doc(raw_docs, file_name)
 	-- Get documentation
@@ -28,7 +26,7 @@ function parse_doc(raw_docs, file_name)
 	end
 
 	if (doc_tbl.content:len() > 0) then
-		local rows = doc_tbl.content:split("\n")
+		rows = doc_tbl.content:split("\n")
 
 		-- Remove empty rows and initial rows that are part of the title
 		local tmp = {}

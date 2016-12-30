@@ -121,7 +121,7 @@ Dataframe._check_and_prep_row_argmnt  = argcheck{
 	call=function(self, rows, add_new_columns, add_old_columns)
 	rows = rows.data
 	local no_rows_2_insert = 0
-	local new_columns = {}
+	
 	for k,v in pairs(rows) do
 		-- Force all input into tables
 		local thtype = torch.type(v)

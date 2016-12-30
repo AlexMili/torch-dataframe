@@ -39,7 +39,7 @@ column counts with column name as key.
 ({
    self         = Dataframe  -- 
    column_name  = string     -- column to inspect
-  [normalize    = boolean]   -- 	 	If True then the object returned will contain the relative frequencies of
+  [normalize    = boolean]   -- 		If True then the object returned will contain the relative frequencies of
 		the unique values. [default=false]
   [dropna       = boolean]   -- Don’t include counts of NaN (missing values). [default=true]
   [as_dataframe = boolean]   -- Return a dataframe [default=true]
@@ -53,7 +53,7 @@ Use the columns argument together with a Df_Array for specifying columns
 ({
    self         = Dataframe  -- 
   [columns      = Df_Array]  -- The columns to inspect
-  [normalize    = boolean]   -- 	 	If True then the object returned will contain the relative frequencies of
+  [normalize    = boolean]   -- 		If True then the object returned will contain the relative frequencies of
 		the unique values. [default=false]
   [dropna       = boolean]   -- Don’t include counts of NaN (missing values). [default=true]
   [as_dataframe = boolean]   -- Return a dataframe [default=true]
@@ -101,7 +101,7 @@ it always guesses the same value.
 ({
    self         = Dataframe  -- 
    column_name  = string     -- column to inspect
-  [normalize    = boolean]   -- 	 	If True then the object returned will contain the relative frequencies of
+  [normalize    = boolean]   -- 		If True then the object returned will contain the relative frequencies of
 		the unique values. [default=false]
   [dropna       = boolean]   -- Don’t include counts of NaN (missing values). [default=true]
   [as_dataframe = boolean]   -- Return a dataframe [default=true]
@@ -114,7 +114,7 @@ _Return value_: Table or Dataframe
 ({
    self         = Dataframe  -- 
   [columns      = Df_Array]  -- The columns of interest
-  [normalize    = boolean]   -- 	 	If True then the object returned will contain the relative frequencies of
+  [normalize    = boolean]   -- 		If True then the object returned will contain the relative frequencies of
 		the unique values. [default=false]
   [dropna       = boolean]   -- Don’t include counts of NaN (missing values). [default=true]
   [as_dataframe = boolean]   -- Return a dataframe [default=true]

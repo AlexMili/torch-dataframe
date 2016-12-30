@@ -37,6 +37,7 @@ add apropriate anchor tags during documentation.
   - [Dataseries.tostring](init.md#Dataseries.tostring)
   - [Dataseries.sub](init.md#Dataseries.sub)
   - [Dataseries.eq](init.md#Dataseries.eq)
+  - [Dataseries.get_data_mask](init.md#Dataseries.get_data_mask)
 - **[Categorical functions](categorical.md)**
   - [Dataseries.as_categorical](categorical.md#Dataseries.as_categorical)
   - [Dataseries.add_cat_key](categorical.md#Dataseries.add_cat_key)
