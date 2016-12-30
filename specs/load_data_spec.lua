@@ -52,7 +52,7 @@ describe("Loading data process", function()
 		end)
 
 		it("Updates the number of rows",function()
-			assert.is.equal(df.n_rows,4)
+			assert.is.equal(df:size(1),4)
 		end)
 
 		it("Fills numerical missing values with NaN values",function()
@@ -130,7 +130,7 @@ describe("Loading data process", function()
 				['second_column']={10,11,12}
 			})}
 
-			assert.is.equal(df.n_rows,3)
+			assert.is.equal(df:size(1),3)
 		end)
 
 		it("Fills numerical missing values with NaN values",function()

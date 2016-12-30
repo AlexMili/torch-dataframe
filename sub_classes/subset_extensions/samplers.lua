@@ -296,7 +296,7 @@ _Return value_: (1) a sampler function (2) a reset sampler function (inactive)
 		weights[i] = weight
 	end
 
-	local weights = torch.Tensor(weights)
+	weights = torch.Tensor(weights)
 	local getClass = function()
 		return torch.multinomial(weights, 1)[1]
 	end

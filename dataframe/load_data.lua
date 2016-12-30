@@ -38,10 +38,131 @@ _Return value_: self
 	 doc="skip this many lines at start of file"},
 	{name="verbose", type="boolean", default=false,
 	 doc="verbose load"},
+	{name="rows2explore", type="number",
+	 doc="The maximum number of rows to traverse when trying to identify schema",
+	 opt = true},
+	call=function(self, path, header, schema, separator, skip, verbose, rows2explore)
+	-- Remove previous data
+	self:_clean()
+
+	local data_iterator = csvigo.load{path = path,
+		            header = header,
+		            separator = separator,
+		            skip = skip,
+		            verbose = verbose,
+		            column_order = true,
+		            mode = "large"}
+
+	local first_data_row = 2
+	if (header) then
+		column_order = data_iterator[1]
+	else
+		first_data_row = 1
+		column_order = {}
+		for i in 1,len(data_iterator[1]) do
+			column_order[i] = "Column no. " .. i
+		end
+	end
+	if (verbose) then
+		print("Loaded the header: ")
+		for i,n in ipairs(column_order) do
+			print(("%2d - %s"):format(i, n))
+		end
+	end
+
+	if (schema) then
+		schema = schema.data
+	else
+		schema = self:_infer_schema{
+			iterator = data_iterator,
+			first_data_row = first_data_row,
+			column_order = Df_Array(column_order),
+			rows2explore = rows2explore
+		}
+	end
+	if (verbose) then
+		print("Inferred schema: ")
+		for i=1,#column_order do
+			local cn = column_order[i]
+			print(("%2d - %s = %s"):format(i, cn, schema[cn]))
+		end
+	end
+
+	self:__init{
+		-- Call the init with schema + no_rows
+		schema = Df_Dict(schema),
+		no_rows = #data_iterator - first_data_row + 1,
+		column_order = Df_Array(column_order),
+		set_missing = false
+	}
+	if (verbose) then
+		print("Initiated the schema")
+	end
+
+	local data_rowno = 0
+	for csv_rowno=first_data_row,#data_iterator do
+		data_rowno = data_rowno + 1
+		local row = data_iterator[csv_rowno]
+		for col_idx=1,#row do
+			-- Clean the value according to the indicated data types
+			local val = row[col_idx]
+			if (val == "") then
+				val = 0/0
+			else
+				val = self._convert_val2_schema{
+					schema_type = schema[self.column_order[col_idx]],
+					val = val
+				}
+			end
+
+			self.dataset[self.column_order[col_idx]]:set(data_rowno, val)
+		end
+		if (verbose and csv_rowno % 1e4 == 0) then
+			print(("Done processing %d rows"):format(csv_rowno))
+		end
+	end
+	if (verbose) then
+		print("Done reading in data")
+	end
+
+	self.dataset, self.column_order =
+		self:_clean_columns{data = self.dataset,
+		                    column_order = self.column_order}
+
+	if (verbose) then
+		print("Finished cleaning columns")
+	end
+
+	return self
+end}
+
+Dataframe.load_bulkcsv = argcheck{
+	doc =  [[
+<a name="Dataframe.load_csv">
+### Dataframe.load_csv(@ARGP)
+
+Loads a CSV file into Dataframe using csvigo as backend and threads
+
+@ARGT
+
+_Return value_: self
+	]],
+	{name="self", type="Dataframe"},
+	{name="path", type="string", doc="path to file"},
+	{name="header", type="boolean", default=true,
+	 doc="if has header on first line"},
+	{name="schema", type="Df_Dict", opt=true,
+	 doc="The column schema types with column names as keys"},
+	{name="separator", type="string", default=",",
+	 doc="separator (one character)"},
+	{name="skip", type="number", default=0,
+	 doc="skip this many lines at start of file"},
+	{name="verbose", type="boolean", default=false,
+	 doc="verbose load"},
 	{name="nthreads", type="number", default=1,
 	 doc="Number of threads to use to read the csv file"},
 	call=function(self, path, header, schema, separator, skip, verbose, nthreads)
-	
+
 	-- TODO : implementing other method arguments (skip,separator,header)
 
 	-- Remove previous data (reset init variables)
@@ -73,14 +194,29 @@ _Return value_: self
 		end
 	end
 
+	if (verbose) then
+		print("Loaded the header: ")
+		for i,n in ipairs(column_order) do
+			print(("%2d - %s"):format(i, n))
+		end
+	end
+
 	if (schema) then
 		schema = schema.data
 	else
 		schema = self:_infer_schema{
 			iterator = data_iterator,
 			first_data_row = first_data_row,
-			column_order = Df_Array(column_order)
+			column_order = Df_Array(column_order),
+			rows2explore = rows2explore
 		}
+	end
+	if (verbose) then
+		print("Inferred schema: ")
+		for i=1,#column_order do
+			local cn = column_order[i]
+			print(("%2d - %s = %s"):format(i, cn, schema[cn]))
+		end
 	end
 
 	print("Estimation number of rows : "..#data_iterator - first_data_row + 1)
@@ -126,7 +262,7 @@ _Return value_: self
 				local o=csvigo.load{path=path,mode='large',column_order=true,verbose=verbose}
 				-- chunk
 				local c=chunks[__threadid]
-				
+
 				print("[INFO] Start of processing in thread n°"..__threadid.." (size :"..c:size(1)..")")
 
 				local csv_df=Dataframe()
@@ -152,12 +288,16 @@ _Return value_: self
 			end
 		)
 	end
-	
+
 	t:synchronize()
 	t:terminate()
 
 	print('done')
 	print(torch.toc(tic))
+
+	if (verbose) then
+		print("Finished cleaning columns")
+	end
 
 	return self
 end}
@@ -233,7 +373,6 @@ _Return value_: self
 		self:_clean_columns{data = data,
 		                    column_order = column_order,
 		                    schema = schema}
-
 	-- Check that all columns with a no_rows > 1 has the same number of rows (no_rows)
 	local no_rows = -1
 	for k,v in pairs(data) do
@@ -277,7 +416,7 @@ _Return value_: self
 	-- Copy the data into the columns
 	for cn,col_vals in pairs(data) do
 		local col_data = self:get_column(cn)
-		for i=1,self.n_rows do
+		for i=1,no_rows do
 			local value
 			if (type(col_vals) == "number" or
 				 type(col_vals) == "boolean" or

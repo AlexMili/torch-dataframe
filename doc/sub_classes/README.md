@@ -34,8 +34,6 @@ add apropriate anchor tags during documentation.
   - [Df_Subset.reset_sampler](01_subset.md#Df_Subset.reset_sampler)
   - [Df_Subset.get_iterator](01_subset.md#Df_Subset.get_iterator)
   - [Df_Subset.get_parallel_iterator](01_subset.md#Df_Subset.get_parallel_iterator)
-  - [Df_Subset.size](01_subset.md#Df_Subset.size)
-  - [Df_Subset.shape](01_subset.md#Df_Subset.shape)
   - [Df_Subset.`__tostring__`](01_subset.md#Df_Subset.__tostring__)
   - [Df_Subset.set_data_retriever](01_subset.md#Df_Subset.set_data_retriever)
   - [Df_Subset.set_label_retriever](01_subset.md#Df_Subset.set_label_retriever)

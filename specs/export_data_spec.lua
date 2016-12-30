@@ -2,7 +2,7 @@ require 'lfs'
 
 -- Make sure that directory structure is always the same
 if (string.match(lfs.currentdir(), "/specs$")) then
-  lfs.chdir("..")
+	lfs.chdir("..")
 end
 
 -- Include Dataframe lib
@@ -150,6 +150,31 @@ describe("Exporting data process", function()
 
 			assert.is.equal(tnsr:size(1),1)
 			assert.is.equal(tnsr:size(2),table.exact_length(a:get_numerical_colnames()))
+		end)
+	end)
+
+	describe("to_csv with boolean values", function()
+		-- Do not use advanced_short since it has nan that are 0/0 ~= 0/0 == true
+		local df = Dataframe()
+
+		df:load_table{
+			data = Df_Dict{
+				A = {1,2,3},
+				B = {"A", "B", 'true'},
+				C = {true, false, false}
+			}
+		}
+
+		it("Saves with a boolean", function()
+			df:to_csv("test.csv")
+			local df2 = Dataframe("test.csv")
+
+			os.remove("test.csv")
+
+			assert.are.same(df.column_order, df2.column_order)
+			for _,cn in ipairs(df.column_order) do
+				assert.are.same(df:get_column(cn), df2:get_column(cn))
+			end
 		end)
 	end)
 

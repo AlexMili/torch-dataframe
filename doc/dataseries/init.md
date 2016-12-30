@@ -1,5 +1,6 @@
 # API documentation for [Dataseries](#__Dataseries__)
 - [Dataseries.`__init`](#Dataseries.__init)
+- [Dataseries.new_storage](#Dataseries.new_storage)
 - [Dataseries.copy](#Dataseries.copy)
 - [Dataseries.size](#Dataseries.size)
 - [Dataseries.resize](#Dataseries.resize)
@@ -15,6 +16,7 @@
 - [Dataseries.tostring](#Dataseries.tostring)
 - [Dataseries.sub](#Dataseries.sub)
 - [Dataseries.eq](#Dataseries.eq)
+- [Dataseries.get_data_mask](#Dataseries.get_data_mask)
 
 <a name="__Dataseries__">
 ## Dataseries
@@ -53,6 +55,23 @@ The type can be:
    self = Dataseries  -- 
    size = number      -- The size of the new series
   [type = string]     -- The type of data storage to init.
+})
+```
+
+<a name="Dataseries.new_storage">
+### Dataseries.new_storage(size[, type])
+
+Retrieves a storage element for the Dataseries. The type can be:
+- boolean
+- integer
+- double
+- string
+- torch tensor or tds.Vec
+
+```
+({
+   size = number   -- The size of the storage
+  [type = string]  -- The type of data storage to initialize
 })
 ```
 
@@ -269,3 +288,16 @@ Compares to Dataseries or table in order to see if they are identical
 ```
 
 _Return value_: string
+<a name="Dataseries.get_data_mask">
+### Dataseries.get_data_mask(self[, missing])
+
+Retrieves a mask that can be used to select missing or active values
+
+```
+({
+   self    = Dataseries  -- 
+  [missing = boolean]    -- Set to true if you want only the missing values [default=false]
+})
+```
+
+_Return value_: torch.ByteTensor

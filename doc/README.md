@@ -150,6 +150,7 @@ add apropriate anchor tags during documentation.
 
 - **[Dataseries](dataseries/init.md)**
   - [Dataseries.`__init`](dataseries/init.md#Dataseries.__init)
+  - [Dataseries.new_storage](dataseries/init.md#Dataseries.new_storage)
   - [Dataseries.copy](dataseries/init.md#Dataseries.copy)
   - [Dataseries.size](dataseries/init.md#Dataseries.size)
   - [Dataseries.resize](dataseries/init.md#Dataseries.resize)
@@ -165,6 +166,7 @@ add apropriate anchor tags during documentation.
   - [Dataseries.tostring](dataseries/init.md#Dataseries.tostring)
   - [Dataseries.sub](dataseries/init.md#Dataseries.sub)
   - [Dataseries.eq](dataseries/init.md#Dataseries.eq)
+  - [Dataseries.get_data_mask](dataseries/init.md#Dataseries.get_data_mask)
 - **[Categorical functions](dataseries/categorical.md)**
   - [Dataseries.as_categorical](dataseries/categorical.md#Dataseries.as_categorical)
   - [Dataseries.add_cat_key](dataseries/categorical.md#Dataseries.add_cat_key)
@@ -184,6 +186,7 @@ add apropriate anchor tags during documentation.
 - **[Single element functions](dataseries/sngl_elmnt_ops.md)**
   - [Dataseries.get](dataseries/sngl_elmnt_ops.md#Dataseries.get)
   - [Dataseries.set](dataseries/sngl_elmnt_ops.md#Dataseries.set)
+  - [Dataseries.mutate](dataseries/sngl_elmnt_ops.md#Dataseries.mutate)
   - [Dataseries.append](dataseries/sngl_elmnt_ops.md#Dataseries.append)
   - [Dataseries.remove](dataseries/sngl_elmnt_ops.md#Dataseries.remove)
   - [Dataseries.insert](dataseries/sngl_elmnt_ops.md#Dataseries.insert)
@@ -219,8 +222,6 @@ add apropriate anchor tags during documentation.
   - [Df_Subset.reset_sampler](sub_classes/01_subset.md#Df_Subset.reset_sampler)
   - [Df_Subset.get_iterator](sub_classes/01_subset.md#Df_Subset.get_iterator)
   - [Df_Subset.get_parallel_iterator](sub_classes/01_subset.md#Df_Subset.get_parallel_iterator)
-  - [Df_Subset.size](sub_classes/01_subset.md#Df_Subset.size)
-  - [Df_Subset.shape](sub_classes/01_subset.md#Df_Subset.shape)
   - [Df_Subset.`__tostring__`](sub_classes/01_subset.md#Df_Subset.__tostring__)
   - [Df_Subset.set_data_retriever](sub_classes/01_subset.md#Df_Subset.set_data_retriever)
   - [Df_Subset.set_label_retriever](sub_classes/01_subset.md#Df_Subset.set_label_retriever)

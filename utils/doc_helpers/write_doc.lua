@@ -1,4 +1,3 @@
-local paths = require 'paths'
 
 function write_doc(parsed_data, file_name)
 

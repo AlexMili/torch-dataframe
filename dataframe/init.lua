@@ -5,16 +5,6 @@ local argcheck = require "argcheck"
 local tds = require "tds"
 local doc = require "argcheck.doc"
 
--- Since torchnet also uses docs we need to escape them when recording the documentation
-local torchnet
-if (doc.__record) then
-	doc.stop()
-	torchnet = require "torchnet"
-	doc.record()
-else
-	torchnet = require "torchnet"
-end
-
 doc[[
 
 ## Core functions
@@ -195,7 +185,7 @@ Dataframe._init_with_schema = argcheck{
 		end
 
 		self.column_order = column_order
-		
+
 		for _,col_name in pairs(self.column_order) do
 			self.dataset[col_name] = Dataseries(schema.data[col_name])
 		end
@@ -224,7 +214,7 @@ Dataframe._copy_meta = argcheck{
 	return to
 end}
 
--- Internal function to detect columns types
+-- Internal function to detect columns types for current dataframe
 Dataframe._infer_schema = argcheck{
 	{name="self", type="Dataframe"},
 	{name="rows2explore", type="number",
@@ -277,9 +267,8 @@ Dataframe._infer_schema = argcheck{
 	return schema
 end}
 
--- Internal function to detect columns types
+-- Internal function to detect columns types for data in params
 Dataframe._infer_schema = argcheck{
-	noordered=true,
 	overload=Dataframe._infer_schema,
 	{name="self", type="Dataframe"},
 	{name="iterator", type="table", -- TODO: ask csvigo to add a class name
@@ -287,14 +276,15 @@ Dataframe._infer_schema = argcheck{
 	{name="column_order", type="Df_Array",
 	 doc="The column order"},
 	{name="rows2explore", type="number",
-	 doc="The maximum number of rows to traverse",
-	 default=1e3},
+	 doc="The maximum number of rows to traverse", default=1e3},
 	{name="first_data_row", type="number",
 	 doc="The first number in the iterator to use (i.e. skip header == 2)",
 	 default=1},
 	call=function(self, iterator, column_order, rows2explore, first_data_row)
-	
-	rows2explore = math.min(rows2explore, #iterator)
+
+	len_iterator = #iterator or rows2explore
+	-- Avoid math.min bug when iterator is nil
+	rows2explore = math.min(rows2explore, len_iterator)
 	-- column_order = column_order.data
 
 	local schema = {}
@@ -314,7 +304,7 @@ Dataframe._infer_schema = argcheck{
 			-- If this is the first time we encounter the current column
 			-- A new type counter is created
 			if (type(schema_count[col_name]) == "nil") then
-				-- Counter containing a count for every types, 
+				-- Counter containing a count for every types,
 				-- the type with the greater number of occurrences will be selected for the schema
 				schema_count[col_name] = {["integer"]=0,["double"]=0,
 						["long"]=0,["string"]=0,["boolean"]=0}
@@ -337,7 +327,7 @@ Dataframe._infer_schema = argcheck{
 			end
 		end
 	end
-	
+
 	-- Now that the csv file is parsed to rows2explore, the schema can be defined
 	for col_name,_ in pairs(schema_count) do
 		-- If in a column there is at least one double, all the column is converted
@@ -369,7 +359,7 @@ Dataframe._infer_schema = argcheck{
 	call=function(self, data, rows2explore, first_data_row)
 
 	data = data.data
-	
+
 	local collength = nil
 
 	for key,column in pairs(data) do
@@ -406,7 +396,7 @@ Dataframe._infer_schema = argcheck{
 		-- If the column is a dataseries no need to infer schema
 		if (type(schema_count[col_name]) == "nil" and
 			torch.isTypeOf(col_vals, "Dataseries") == false) then
-			-- Counter containing a count for every types, 
+			-- Counter containing a count for every types,
 			-- the type with the greater number of occurrences will be selected for the schema
 			schema_count[col_name] = {["integer"]=0,["double"]=0,
 					["long"]=0,["string"]=0,["boolean"]=0}
@@ -420,10 +410,10 @@ Dataframe._infer_schema = argcheck{
 				    type(col_vals) == "boolean" or
 				    type(col_vals) == "string") and
 				    type(col_vals) ~= "nil") then
-			
+
 			local value_type = get_variable_type(col_vals)
 			local count_key = tostring(value_type)
-			
+
 			-- The counter of the right type is incremented
 			schema_count[col_name][count_key] = schema_count[col_name][count_key] + 1
 
@@ -533,7 +523,7 @@ _Return value_: table
 ]],
 	{name="self", type="Dataframe"},
 	call=function(self)
-	return {rows=self.n_rows,cols=#self.column_order}
+	return {rows=self:size(1), cols=self:size(2)}
 end}
 
 Dataframe.version = argcheck{
@@ -565,7 +555,7 @@ _Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	call=function(self)
-	self.__version = "1.6"
+	self.__version = "1.6.1"
 	return self
 end}
 
@@ -582,22 +572,50 @@ samplers to either:
 
 @ARGT
 
+*Note:* Sometimes the version check fails to identify that the Dataframe is of
+an old version and you can therefore skip the version check.
+
 _Return value_: Dataframe
 ]],
 	{name = "self", type = "Dataframe"},
-	call = function(self)
-	local current_version = self:version()
+	{name = "skip_version", type="boolean", opt=true,
+		doc="Set to true if you want to upgrade your dataframe regardless of the version check"},
+	{name = "current_version", type="number", opt=true,
+		doc="The current version of the dataframe"},
+	call = function(self, skip_version, current_version)
+	if (not current_version) then
+		current_version = self:version()
+	end
+
 	self:set_version()
-	if (current_version == self.__version) then
-		print(("No need to update dataframe as it already is version '%s'"):format(current_version))
-		return
+	if (skip_version) then
+		if (current_version == self.__version) then
+			print(("No need to update dataframe as it already is version '%s'"):format(current_version))
+			return
+		end
+	end
+
+	if (type(self.print) == "table") then
+		-- Do silently as this is rather unimportant
+		self.tostring_defaults = self.print
+		self.tostring_defaults.max_col_width = nil
+		self.print = nil
+
+		local str_defaults = self:_get_init_tostring_dflts()
+		for key, value in pairs(str_defaults) do
+			if (not self.tostring_defaults[key]) then
+				self.tostring_defaults[key] = value
+			end
+		end
+	elseif (not self.tostring_defaults) then
+		self.tostring_defaults = self:_get_init_tostring_dflts()
 	end
 
 	if (current_version < 1.5) then
 		assert(self.subsets == nil, "The dataframe seems to be upgraded as it already has a subset property")
 
-		if (self.batch == nil) then
-			print("No need to update batch info")
+		if (torch.type(self.batch) == "table") then
+			print("No need to update batch info - batch is already a '" .. torch.type(self.batch) .. "'")
 		else
 			-- Initiate the subsets
 			self:create_subsets(Df_Dict(self.batch.data_types))
@@ -621,27 +639,37 @@ _Return value_: Dataframe
 
 			print("Updated batch metadata")
 		end
-
-		if (type(self.print) == "table") then
-			-- Do silently as this is rather unimportant
-			self.tostring_defaults = self.print
-			self.tostring_defaults.max_col_width = nil
-
-			local str_defaults = self:_get_init_tostring_dflts()
-			for key, value in pairs(str_defaults) do
-				if (not self.tostring_defaults[key]) then
-					self.tostring_defaults[key] = value
-				end
-			end
-		end
 	end
 
 	if (current_version <= 1.6) then
+		print("** Updating columns to Dataseries **")
 		self.columns = nil
 		for _,cn in ipairs(self.column_order) do
-			self.dataset[cn] = Dataseries(Df_Array(cn))
+			print(" - column: " .. cn)
+			self.dataset[cn] = Dataseries(Df_Array(self.dataset[cn]))
+
+			-- Move the categorical information into the series
+			if (self.categorical) then
+				if (self.categorical[cn]) then
+					self.dataset[cn].categorical = self.categorical[cn]
+				end
+			end
 		end
+		self.categorical = nil
 		self.schema = nil
+		print("done updating columns")
+
+		if (self.subsets) then
+			print("** Updating subsets **")
+			for sub_name,_ in pairs(self.subsets.sub_objs) do
+				print(" - " .. sub_name)
+				self.subsets.sub_objs[sub_name] = self.subsets.sub_objs[sub_name]:upgrade_frame{
+					skip_version = skip_version,
+					current_version = current_version
+				}
+			end
+			print("done updating subsets")
+		end
 	end
 
 	return self
