@@ -136,9 +136,182 @@ _Return value_: self
 	return self
 end}
 
+Dataframe.load_threadcsv = argcheck{
+	doc =  [[
+<a name="Dataframe.load_threadcsv">
+### Dataframe.load_threadcsv(@ARGP)
+
+Loads a CSV file into Dataframe using multithreading.
+Warning : line order is not respected.
+
+@ARGT
+
+_Return value_: self
+	]],
+	{name="self", type="Dataframe"},
+	{name="path", type="string", doc="path to file"},
+	{name="header", type="boolean", default=true,
+	 doc="if has header on first line"},
+	{name="schema", type="Df_Dict", opt=true,
+	 doc="The column schema types with column names as keys"},
+	{name="separator", type="string", default=",",
+	 doc="separator (one character)"},
+	{name="skip", type="number", default=0,
+	 doc="skip this many lines at start of file"},
+	{name="verbose", type="boolean", default=false,
+	 doc="verbose load"},
+	{name="nthreads", type="number", default=1,
+	 doc="Number of threads to use to read the csv file"},
+	call=function(self, path, header, schema, separator, skip, verbose, nthreads)
+
+	-- TODO : implementing other method arguments (skip,separator,header)
+
+	-- Remove previous data (reset init variables)
+	self:_clean()
+
+	if (verbose) then
+		print("[INFO] Loading CSV")
+	end
+
+	local data_iterator = csvigo.load{path = path,
+		            header = header,
+		            separator = separator,
+		            skip = skip,
+		            verbose = verbose,
+		            column_order = true,
+		            mode = "large"}
+
+	if (verbose) then
+		print("[INFO] End loading CSV")
+	end
+
+	local column_order = {}
+	local first_data_row = 2 -- In large mode first row is always the header (if there is one)
+
+	if (header) then
+		column_order = trim_table_strings(data_iterator[1])
+	else
+		-- If there is no header, first row to explore is set to the initial first row
+		-- and column names are automatically generated
+		first_data_row = 1
+
+		for i in 1,len(data_iterator[1]) do
+			column_order[i] = "Column no. " .. i
+		end
+	end
+
+	if (verbose) then
+		print("Loaded the header: ")
+		for i,n in ipairs(column_order) do
+			print(("%2d - %s"):format(i, n))
+		end
+	end
+
+	if (schema) then
+		schema = schema.data
+	else
+		schema = self:_infer_schema{
+			iterator = data_iterator,
+			first_data_row = first_data_row,
+			column_order = Df_Array(column_order),
+			rows2explore = rows2explore
+		}
+	end
+	if (verbose) then
+		print("Inferred schema: ")
+		for i=1,#column_order do
+			local cn = column_order[i]
+			print(("%2d - %s = %s"):format(i, cn, schema[cn]))
+		end
+	end
+
+	if (verbose) then
+		print("Estimation number of rows : "..#data_iterator - first_data_row + 1)
+	end
+
+	local nfield= #data_iterator[1]-1
+	local nrecs = #data_iterator-1
+
+	local idx=torch.range(1,nrecs)
+	local chunks=idx:chunk(nthreads)
+
+	-- nthreads is adapted to chunks effectively created
+	nthreads = #chunks
+
+	local tic = torch.tic()
+	local t = threads.Threads(
+		nthreads,
+		function(threadn)
+			if (verbose) then
+				print("[INFO] Starting preprocessing")
+			end
+			require "csvigo"
+
+			nthreads=nthreads
+			nfield=nfield
+			nrecs=nrecs
+			chunks=chunks
+			path=path
+			header=header
+			schema=schema
+			columns_order=column_order
+			verbose=verbose
+		end
+	)
+
+	data_iterator = nil
+	collectgarbage()
+
+	for j=1,nthreads do
+		t:addjob(
+			function()
+				if (verbose) then
+					print("[INFO] Start of thread n°"..__threadid)
+				end
+
+				local Dataframe = require "Dataframe"
+
+				tac = torch.tic()
+				local o=csvigo.load{path=path,mode='large',column_order=true,verbose=verbose}
+				-- chunk
+				local c=chunks[__threadid]
+				local csv_df=Dataframe()
+
+				csv_df:_init_with_schema{
+						schema = Df_Dict(schema),
+						column_order = Df_Array(columns_order)
+				}
+
+				for j=1,c:size(1) do
+					local row = Df_Dict(o[c[j]+1])
+					row:set_keys(columns_order)
+
+					csv_df:insert(j,row,Df_Dict(schema))
+				end
+
+				collectgarbage()
+
+				return csv_df,__threadid
+			end,
+			function(data,threadn)
+				self:append(data)
+			end
+		)
+	end
+
+	t:synchronize()
+	t:terminate()
+
+	if (verbose) then
+		print("Finished cleaning columns")
+	end
+
+	return self
+end}
+
 Dataframe.load_bulkcsv = argcheck{
 	doc =  [[
-<a name="Dataframe.load_csv">
+<a name="Dataframe.load_bulkcsv">
 ### Dataframe.load_bulkcsv(@ARGP)
 
 Loads a CSV file into Dataframe using multithreading.
@@ -217,6 +390,7 @@ _Return value_: self
 			rows2explore = rows2explore
 		}
 	end
+
 	if (verbose) then
 		print("Inferred schema: ")
 		for i=1,#column_order do
