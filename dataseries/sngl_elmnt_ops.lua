@@ -56,7 +56,7 @@ _Return value_:  Dataseries
 	{name="self", type="Dataseries"},
 	{name="index", type="Df_Array"},
 	overload=Dataseries.get,
-	call=function(self, index, as_raw)
+	call=function(self, index)
 	index = index.data
 
 	local ret = Dataseries.new(#index, self:get_variable_type())

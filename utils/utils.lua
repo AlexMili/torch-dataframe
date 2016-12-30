@@ -17,16 +17,15 @@ trim = argcheck{
 <a name="trim">
 ### trim(@ARGP)
 
-Trims a string fro whitespace chars
+Trims a string from whitespace chars
 
 @ARGT
 
 _Return value_: string
 ]],
 	{name="s", type="string", doc="The string to trim"},
-	{name="ignore", type="number", doc="As gsub returns a number this needs to be ignored", default=false},
+	{name="ignore", type="number", doc="Useful when string is directly given by the gsub function. Gsub returns a number this needs to be ignored through this argument", default=false},
 	call = function(s, ignore)
-	local from = s:match"^%s*()"
 	return s:match"^%s*()" > #s and "" or s:match(".*%S", s:match"^%s*()")
 end}
 
@@ -267,6 +266,7 @@ table._dump = function(tbl, txt)
 	if (txt) then
 		dump_str = ("\n** %s **%s"):format(txt, dump_str)
 	end
+
 	io.stderr:write(dump_str)
 end
 

@@ -4,16 +4,6 @@ require 'torch'
 local argcheck = require "argcheck"
 local doc = require "argcheck.doc"
 
--- Since torchnet also uses docs we need to escape them when recording the documentation
-local torchnet
-if (doc.__record) then
-	doc.stop()
-	torchnet = require "torchnet"
-	doc.record()
-else
-	torchnet = require "torchnet"
-end
-
 doc[[
 ## Dataseries
 
@@ -274,22 +264,22 @@ _Return value_: self
 	{name="index", type="number", doc="The index to check"},
 	{name = "plus_one", type = "boolean", default = false,
 	 doc= "When adding rows, an index of size(1) + 1 is OK"},
-	 call = function(self, index, plus_one)
- 	if (plus_one) then
- 		if (not isint(index) or
- 				index < 0 or
- 				index > self:size() + 1) then
- 				assert(false, ("The index has to be an integer between 1 and %d - you've provided %s"):
- 					format(self:size() + 1, index))
- 		end
- 	else
- 		if (not isint(index) or
- 				index < 0 or
- 				index > self:size()) then
- 				assert(false, ("The index has to be an integer between 1 and %d - you've provided %s"):
- 					format(self:size(), index))
- 		end
- 	end
+	call = function(self, index, plus_one)
+	if (plus_one) then
+		if (not isint(index) or
+				index < 0 or
+				index > self:size() + 1) then
+			assert(false, ("The index has to be an integer between 1 and %d - you've provided %s"):
+				format(self:size() + 1, index))
+		end
+	else
+		if (not isint(index) or
+				index < 0 or
+				index > self:size()) then
+			assert(false, ("The index has to be an integer between 1 and %d - you've provided %s"):
+				format(self:size(), index))
+		end
+	end
 
 	return self
 end}

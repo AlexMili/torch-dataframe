@@ -5,16 +5,6 @@ local argcheck = require "argcheck"
 local tds = require "tds"
 local doc = require "argcheck.doc"
 
--- Since torchnet also uses docs we need to escape them when recording the documentation
-local torchnet
-if (doc.__record) then
-	doc.stop()
-	torchnet = require "torchnet"
-	doc.record()
-else
-	torchnet = require "torchnet"
-end
-
 doc[[
 
 ## Core functions
@@ -177,16 +167,15 @@ Dataframe._infer_csvigo_schema = argcheck{
 	local no_rows_2_investigate = math.min(rows2explore or 1e3, #iterator)
 	column_order = column_order.data
 
- 	local schema = {}
- 	for i = first_data_row,no_rows_2_investigate do
- 		local row = iterator[i]
- 		for idx,val in ipairs(row) do
+	local schema = {}
+	for i = first_data_row,no_rows_2_investigate do
+		local row = iterator[i]
+		for idx,val in ipairs(row) do
 			local cn = column_order[idx]
- 			schema[cn] =
- 				get_variable_type{value = val,
- 				                  prev_type = schema[cn]}
- 		end
- 	end
+			schema[cn] =
+				get_variable_type{value = val, prev_type = schema[cn]}
+		end
+	end
 
 	for i=1,#column_order do
 		local cn = column_order[i]
@@ -207,8 +196,8 @@ Dataframe._infer_csvigo_schema = argcheck{
 		end
 	end
 
- 	return schema
- end}
+	return schema
+end}
 
 -- Internal function to detect columns types
 Dataframe._infer_data_schema = argcheck{

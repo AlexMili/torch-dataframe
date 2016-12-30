@@ -405,9 +405,9 @@ _Return value_: Dataframe
 	{name='item_to_find', type='number|string|boolean',
 	 doc='Value to search'},
 	{name='column_name', type='string',
- 	 doc='The name of the column'},
-	 {name='new_value', type='Df_Dict',
- 	 doc='Value to replace with'},
+	 doc='The name of the column'},
+	{name='new_value', type='Df_Dict',
+	 doc='Value to replace with'},
 	call = function(self, item_to_find, column_name, new_value)
 	self:assert_has_column(column_name)
 	new_value = new_value.data
@@ -443,7 +443,7 @@ _Return value_: Dataframe
 	{name='index', type='number',
 	 doc='Row index number'},
 	{name='new_values', type='Df_Dict',
- 	 doc='Value to replace with'},
+   doc='Value to replace with'},
 	call = function(self, index, new_values)
 	self:assert_is_index(index)
 
@@ -475,8 +475,8 @@ _Return value_: Dataframe
 	{name="self", type="Dataframe"},
 	{name='columns', type='Df_Array',
 	 doc='The columns that are to be merged'},
-	 {name='id_name', type='string',
- 	 doc='The column name for where to store the old column names'},
+	{name='id_name', type='string',
+   doc='The column name for where to store the old column names'},
 	{name='value_name', type='string',
 	 doc='The column name for where to store the values'},
 	call = function(self, columns, id_name, value_name)
@@ -568,8 +568,8 @@ You can also provide a regular expression for column names
 	{name="self", type="Dataframe"},
 	{name='column_regex', type='string',
 	 doc='Regular expression for the columns that are to be merged'},
-	 {name='id_name', type='string',
- 	 doc='The column name for where to store the old column names'},
+	{name='id_name', type='string',
+	 doc='The column name for where to store the old column names'},
 	{name='value_name', type='string',
 	 doc='The column name for where to store the values'},
 	call = function(self, column_regex, id_name, value_name)

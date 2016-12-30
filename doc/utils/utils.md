@@ -15,12 +15,12 @@ Lua functionality.
 <a name="trim">
 ### trim(s[, ignore])
 
-Trims a string fro whitespace chars
+Trims a string from whitespace chars
 
 ```
 ({
    s      = string   -- The string to trim
-  [ignore = number]  -- As gsub returns a number this needs to be ignored [default=false]
+  [ignore = number]  -- Useful when string is directly given by the gsub function. Gsub returns a number this needs to be ignored through this argument [default=false]
 })
 ```
 

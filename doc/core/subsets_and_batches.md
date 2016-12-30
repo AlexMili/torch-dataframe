@@ -79,7 +79,7 @@ _Return value_: self
 	 the label-distribution sampler that needs the distribution. Note that
 	 you need to have a somewhat complex table:
 	 `Df_Tbl{
-		 	train = Df_Dict{
+			train = Df_Dict{
 				distribution = Df_Dict{
 					A = 2,
 					B=10

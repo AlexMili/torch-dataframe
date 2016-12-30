@@ -98,7 +98,7 @@ _Return values_:
 
 		local files = paths.get_sorted_files(path)
 		for _,file in pairs(files) do
-			local file = path .. file
+			file = path .. file
 
 			if (not is_loaded(file)) then
 

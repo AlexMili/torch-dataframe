@@ -1,5 +1,3 @@
-local params = {...}
-
 require 'torch'
 
 local argcheck = require "argcheck"
@@ -174,7 +172,7 @@ _Return value_: self
 	end
 
 	self.parent:assert_has_column(label_column)
-	local label_column = self.parent:get_column(label_column)
+	label_column = self.parent:get_column(label_column)
 
 	-- A little hacky but it should speed up and re-checking makes no sense
 	local labels = Df_Array()
@@ -242,11 +240,11 @@ _Return value_: Batchframe, boolean (if reset_sampler() should be called)
 	call=function(self, no_lines, class_args)
 
 	assert(isint(no_lines) and
-	       (no_lines > 0 or
-	      	no_lines == -1),
-	       "The number of files to load has to be either -1 for all files or " ..
-	       " a positive integer." ..
-	       " You provided " .. tostring(no_lines))
+	      (no_lines > 0 or
+	      no_lines == -1),
+	      "The number of files to load has to be either -1 for all files or " ..
+	      " a positive integer." ..
+	      " You provided " .. tostring(no_lines))
 
 
 	if (not class_args) then

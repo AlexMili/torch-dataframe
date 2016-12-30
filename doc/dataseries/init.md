@@ -16,6 +16,7 @@
 - [Dataseries.tostring](#Dataseries.tostring)
 - [Dataseries.sub](#Dataseries.sub)
 - [Dataseries.eq](#Dataseries.eq)
+- [Dataseries.get_data_mask](#Dataseries.get_data_mask)
 
 <a name="__Dataseries__">
 ## Dataseries
@@ -287,3 +288,16 @@ Compares to Dataseries or table in order to see if they are identical
 ```
 
 _Return value_: string
+<a name="Dataseries.get_data_mask">
+### Dataseries.get_data_mask(self[, missing])
+
+Retrieves a mask that can be used to select missing or active values
+
+```
+({
+   self    = Dataseries  -- 
+  [missing = boolean]    -- Set to true if you want only the missing values [default=false]
+})
+```
+
+_Return value_: torch.ByteTensor

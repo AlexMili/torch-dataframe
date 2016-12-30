@@ -222,7 +222,7 @@ _Return value_: Table or Dataframe
 	{name="self", type="Dataseries"},
 	{name='normalize', type='boolean', default=false,
 	 doc=[[
-	 	If True then the object returned will contain the relative frequencies of
+		If True then the object returned will contain the relative frequencies of
 		the unique values.]]},
 	{name='dropna', type='boolean', default=true,
 	 doc="Don’t include counts of NaN (missing values)."},

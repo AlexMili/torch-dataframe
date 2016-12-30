@@ -96,7 +96,7 @@ it always guesses the same value.
 ```
 ({
    self         = Dataseries  -- 
-  [normalize    = boolean]    -- 	 	If True then the object returned will contain the relative frequencies of
+  [normalize    = boolean]    -- 		If True then the object returned will contain the relative frequencies of
 		the unique values. [default=false]
   [dropna       = boolean]    -- Don’t include counts of NaN (missing values). [default=true]
   [as_dataframe = boolean]    -- Return a dataframe [default=true]
