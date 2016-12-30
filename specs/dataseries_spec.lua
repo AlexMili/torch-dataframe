@@ -53,6 +53,12 @@ describe("#Core Dataseries functions", function()
 			assert.are.same(ds:get(2), "3.2a")
 			assert.are.same(ds:type(), "tds.Vec")
 		end)
+
+    it("create empty Dataseries", function()
+      local ds = Dataseries("string")
+      -- Use nElement instead of size() because size(1) bugs when tensor is empty
+      assert.are.same(ds:size(), 0)
+    end)
 	end)
 
 	describe("#missing", function()

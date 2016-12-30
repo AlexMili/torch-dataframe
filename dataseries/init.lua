@@ -42,22 +42,7 @@ Dataseries.__init = argcheck{
 	{name="type", type="string", doc="The type of data storage to init."},
 	call=function(self, type)
 		parent_class.__init(self)
-		if (type == "integer") then
-			self.data = torch.IntTensor()
-		elseif (type == "long") then
-			self.data = torch.LongTensor()
-		elseif (type == "double") then
-			self.data = torch.DoubleTensor()
-		elseif (type == "boolean" or
-		        type == "string" or
-		        type == "tds.Vec" or
-		        type == nil) then
-			self.data = tds.Vec()
-		elseif (type:match("torch.*Tensor")) then
-			self.data = torch.Tensor():type(type)
-		else
-			assert(false, ("The type '%s' has not yet been implemented"):format(type))
-		end
+		self.data = self.new_storage(0, type)
 		self.missing = tds.Hash()
 		self._variable_type = type
 end}
@@ -106,7 +91,7 @@ Retrieves a storage element for the Dataseries. The type can be:
 
 ]],
 	{name="size", type="number", doc="The size of the storage"},
-	{name="type", type="string", doc="The type of data storage to initialize", opt=true},
+	{name="type", type="string", doc="The type of data storage to initialize", default="string"},
 	call = function(size, type)
 
 	if (type == "integer") then
@@ -126,7 +111,11 @@ Retrieves a storage element for the Dataseries. The type can be:
 	    type == "tds.Vec" or
 	    type == nil) then
 		local data = tds.Vec()
-		data:resize(size)
+
+		if (size > 0) then
+			data:resize(size)
+		end
+
 		return data
 	end
 
