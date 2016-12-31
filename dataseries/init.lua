@@ -147,6 +147,26 @@ Creates and initializes a Dataseries with a given Df_Array. Envoked through `loc
 	end
 end}
 
+Dataseries.load = argcheck{
+	doc=[[
+<a name="Dataseries.load">
+### Dataseries.load(@ARGP)
+
+Load a Tensor or tds.Vec without checking type or missing values.
+
+@ARGT
+
+_Return value_: self
+]],
+	{name="self", type="Dataseries"},
+	{name="data", type="torch.*Tensor|tds.Vec", doc="data to load"},
+	call=function(self, data)
+		self.data = data
+		self.missing = tds.Hash()
+		self._variable_type = torch.type(self.data)
+		return self
+end}
+
 Dataseries.new_storage = argcheck{
 	doc = [[
 <a name="Dataseries.new_storage">
