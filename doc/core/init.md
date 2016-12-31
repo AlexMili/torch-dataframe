@@ -62,6 +62,25 @@ as values. The column types are:
 })
 ```
 
+No updates is performed on already inserted data. The purpose of this method
+is to prepare a Dataframe object.
+
+A schema is a hash table with the column names as keys and the column types
+as values. The column types are:
+- `boolean`
+- `integer`
+- `long`
+- `double`
+- `string` (this is stored as a `tds.Vec` and can be any value)
+
+```
+({
+   self         = Dataframe  -- 
+   schema       = Df_Dict    -- The schema to use for initializaiton
+   column_order = Df_Array   -- The column order
+})
+```
+
 <a name="Dataframe.get_schema">
 ### Dataframe.get_schema(self, column_name)
 

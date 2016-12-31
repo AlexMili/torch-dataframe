@@ -97,6 +97,8 @@ add apropriate anchor tags during documentation.
   - [Dataframe.get](core/export_data.md#Dataframe.get)
 - **[Data loader functions](core/load_data.md)**
   - [Dataframe.load_csv](core/load_data.md#Dataframe.load_csv)
+  - [Dataframe.load_threadcsv](core/load_data.md#Dataframe.load_threadcsv)
+  - [Dataframe.load_bulkcsv](core/load_data.md#Dataframe.load_bulkcsv)
   - [Dataframe.load_table](core/load_data.md#Dataframe.load_table)
   - [Dataframe.`_clean_columns`](core/load_data.md#Dataframe._clean_columns)
 - **[Metatable functions](core/metatable.md)**
@@ -116,6 +118,7 @@ add apropriate anchor tags during documentation.
   - [Dataframe.`_to_html`](core/output.md#Dataframe._to_html)
 - **[Row functions](core/row.md)**
   - [Dataframe.get_row](core/row.md#Dataframe.get_row)
+  - [Dataframe.insert](core/row.md#Dataframe.insert)
   - [Dataframe.insert](core/row.md#Dataframe.insert)
   - [Dataframe.append](core/row.md#Dataframe.append)
   - [Dataframe.rbind](core/row.md#Dataframe.rbind)
@@ -155,6 +158,7 @@ add apropriate anchor tags during documentation.
   - [Dataseries.size](dataseries/init.md#Dataseries.size)
   - [Dataseries.resize](dataseries/init.md#Dataseries.resize)
   - [Dataseries.assert_is_index](dataseries/init.md#Dataseries.assert_is_index)
+  - [Dataseries.is_numerical](dataseries/init.md#Dataseries.is_numerical)
   - [Dataseries.is_numerical](dataseries/init.md#Dataseries.is_numerical)
   - [Dataseries.is_boolean](dataseries/init.md#Dataseries.is_boolean)
   - [Dataseries.is_string](dataseries/init.md#Dataseries.is_string)

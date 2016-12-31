@@ -66,6 +66,8 @@ add apropriate anchor tags during documentation.
   - [Dataframe.get](export_data.md#Dataframe.get)
 - **[Data loader functions](load_data.md)**
   - [Dataframe.load_csv](load_data.md#Dataframe.load_csv)
+  - [Dataframe.load_threadcsv](load_data.md#Dataframe.load_threadcsv)
+  - [Dataframe.load_bulkcsv](load_data.md#Dataframe.load_bulkcsv)
   - [Dataframe.load_table](load_data.md#Dataframe.load_table)
   - [Dataframe.`_clean_columns`](load_data.md#Dataframe._clean_columns)
 - **[Metatable functions](metatable.md)**
@@ -85,6 +87,7 @@ add apropriate anchor tags during documentation.
   - [Dataframe.`_to_html`](output.md#Dataframe._to_html)
 - **[Row functions](row.md)**
   - [Dataframe.get_row](row.md#Dataframe.get_row)
+  - [Dataframe.insert](row.md#Dataframe.insert)
   - [Dataframe.insert](row.md#Dataframe.insert)
   - [Dataframe.append](row.md#Dataframe.append)
   - [Dataframe.rbind](row.md#Dataframe.rbind)

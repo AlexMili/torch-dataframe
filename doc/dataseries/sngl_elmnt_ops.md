@@ -25,12 +25,12 @@ Gets a single or a set of elements.
 ```
 
 _Return value_: number|string|boolean
-If you provde a Df_Array you get back a Dataseries of elements
+If you provide a Df_Array you get back a Dataseries of elements
 
 ```
 ({
    self  = Dataseries  -- 
-   index = Df_Array    -- 
+   index = Df_Array    -- Indexes of wanted elements
 })
 ```
 
