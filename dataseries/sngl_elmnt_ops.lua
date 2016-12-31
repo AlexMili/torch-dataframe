@@ -12,6 +12,8 @@ Here are functions are mainly used for manipulating a single element.
 
 ]]
 
+-- TODO : Remove assert_is_index because it could slow down processing.
+-- its utilisation should be up to the user outside this method
 Dataseries.get = argcheck{
 	doc=[[
 <a name="Dataseries.get">
