@@ -309,13 +309,13 @@ _Return value_: self
 	return self
 end}
 
-Dataframe.load_bulkcsv = argcheck{
+Dataframe.bulk_load_csv = argcheck{
 	doc =  [[
-<a name="Dataframe.load_bulkcsv">
-### Dataframe.load_bulkcsv(@ARGP)
+<a name="Dataframe.bulk_load_csv">
+### Dataframe.bulk_load_csv(@ARGP)
 
 Loads a CSV file into Dataframe using multithreading.
-Warning : this method does not do the same checks as load_csv would do.
+Warning : this method does not do the same checks as load_csv would do. It doesn't handle other format than torch.*Tensor.
 
 @ARGT
 
@@ -403,14 +403,23 @@ _Return value_: self
 		print("Estimation number of rows : "..#data_iterator - first_data_row + 1)
 	end
 
+	self:_init_with_schema{schema=Df_Dict(schema),column_order=Df_Array(column_order),number_rows=nrecs}
+
 	local nfield= #data_iterator[1]-1
 	local nrecs = #data_iterator-1
 
 	local idx=torch.range(1,nrecs)
 	local chunks=idx:chunk(nthreads)
+	local chunk_data = {}
+
+	-- Create results tensors
+	for i=1,#column_order do
+		chunk_data[column_order[i]] = Dataseries.new_storage(nrecs,schema[column_order[i]])
+	end
 
 	-- nthreads is adapted to chunks effectively created
 	nthreads = #chunks
+
 
 	local tic = torch.tic()
 	local t = threads.Threads(
@@ -425,6 +434,7 @@ _Return value_: self
 			nfield=nfield
 			nrecs=nrecs
 			chunks=chunks
+			--chunk_data=chunk_data
 			path=path
 			header=header
 			schema=schema
@@ -443,38 +453,72 @@ _Return value_: self
 					print("[INFO] Start of thread n°"..__threadid)
 				end
 
-				local Dataframe = require "Dataframe"
+				require "Dataframe"
 
 				tac = torch.tic()
 				local o=csvigo.load{path=path,mode='large',column_order=true,verbose=verbose}
 				-- chunk
 				local c=chunks[__threadid]
-				local csv_df=Dataframe()
+				local myData = {}
+				-- local csv_df=Dataframe()
 
-				csv_df:_init_with_schema{
-						schema = Df_Dict(schema),
-						column_order = Df_Array(columns_order)
-				}
+				--schema = Df_Dict(schema)
+				-- require 'pl.pretty'.dump(schema)
+				for i=1,#column_order do
+					-- print("------")
+					-- print(k)
+					-- print(v)
+					myData[column_order[i]] = Dataseries.new_storage(c:size(1),schema[column_order[i]])
+				end
+				-- require 'pl.pretty'.dump(myData)
 
+				-- csv_df:_init_with_schema{
+				-- 		schema = Df_Dict(schema),
+				-- 		column_order = Df_Array(columns_order)
+				-- }
+
+				local rec,loc
+				-- for every row in the chunk
 				for j=1,c:size(1) do
-					local row = Df_Dict(o[c[j]+1])
-					row:set_keys(columns_order)
+					rec=o[c[j]+1]-- data
+					loc=c[j]-c[1]+1-- loc is the index of the row in the chunk
+					--require 'pl.pretty'.dump(rec)
+					--d[loc]:copy(torch.FloatTensor(rec):sub(2,-1))
 
-					csv_df:insert(j,row,Df_Dict(schema))
+					for i=1,#column_order do
+						myData[column_order[i]][loc] = rec[i]
+					end
+					-- local row = Df_Dict(o[c[j]+1])
+					-- row:set_keys(columns_order)
+
+					-- csv_df:insert(j,row,Df_Dict(schema))
 				end
 
 				collectgarbage()
 
-				return csv_df,__threadid
+				-- require 'pl.pretty'.dump(myData)
+				return myData,__threadid
 			end,
 			function(data,threadn)
-				self:append(data)
+				local s=chunks[threadn][1]
+        local e=chunks[threadn][-1]
+				
+				for i=1,#column_order do
+					if (torch.type(data[column_order[i]]):match(("torch.*Tensor"))) then
+						chunk_data[column_order[i]]:sub(s,e):copy(data[column_order[i]])
+					end
+				end
 			end
 		)
 	end
 
 	t:synchronize()
 	t:terminate()
+
+	-- load tensor in each column
+	for i=1,#column_order do
+		self.dataset[column_order[i]]:load(chunk_data[column_order[i]])
+	end
 
 	if (verbose) then
 		print("Finished cleaning columns")
