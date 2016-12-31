@@ -1,29 +1,46 @@
 return {
 	modules = {
 		["init"] = 'init.lua',
-		["utils"] = 'utils.lua',
 		["argcheck"] = 'argcheck.lua',
 		["main"] = 'main.lua',
-		["Extensions.metatable"] = 'Extensions/metatable.lua',
-		["Extensions.categorical"] = 'Extensions/categorical.lua',
-		["Extensions.column"] = 'Extensions/column.lua',
-		["Extensions.row"] = 'Extensions/row.lua',
-		["Extensions.load_batch"] = 'Extensions/load_batch.lua',
-		["Extensions.load_data"] = 'Extensions/load_data.lua',
-		["Extensions.missing_data"] = 'Extensions/missing_data.lua',
-		["Extensions.output"] = 'Extensions/output.lua',
-		["Extensions.export_data"] = 'Extensions/export_data.lua',
-		["Extensions.select_set_update"] = 'Extensions/select_set_update.lua',
-		["Extensions.statistics"] = 'Extensions/statistics.lua',
-		
+
+		["utils.utils"] = 'utils/utils.lua',
+		["utils.loader"] = 'utils/loader.lua',
+		["utils.doc_helpers.get_anchors"] = 'utils/doc_helpers/get_anchors.lua',
+		["utils.doc_helpers.parse_file"] = 'utils/doc_helpers/parse_file.lua',
+		["utils.doc_helpers.write_doc"] = 'utils/doc_helpers/write_doc.lua',
+
 		["sub_classes.01_subset"] = 'sub_classes/01_subset.lua',
 		["sub_classes.10_batchframe"] = 'sub_classes/10_batchframe.lua',
 		["sub_classes.subset_extensions.samplers"] = 'sub_classes/subset_extensions/samplers.lua',
+		
+		["helper_classes.10_iterator"] = 'helper_classes/10_iterator.lua',
+		["helper_classes.11_paralleliterator"] = 'helper_classes/11_paralleliterator.lua',
+		["helper_classes.20_tbl"] = 'helper_classes/20_tbl.lua',
+		["helper_classes.21_dict"] = 'helper_classes/21_dict.lua',
+		["helper_classes.22_array"] = 'helper_classes/22_array.lua',
 
-		["helper_classes.01_iterator"] = 'helper_classes/01_iterator.lua',
-		["helper_classes.02_paralleliterator"] = 'helper_classes/02_paralleliterator.lua',
-		["helper_classes.10_array"] = 'helper_classes/10_array.lua',
-		["helper_classes.11_dict"] = 'helper_classes/11_dict.lua',
-		["helper_classes.12_tbl"] = 'helper_classes/12_tbl.lua'
+		["dataseries.categorical"] = 'dataseries/categorical.lua',
+		["dataseries.categorical"] = 'dataseries/export.lua',
+		["dataseries.export"] = 'dataseries/export.lua',
+		["dataseries.init"] = 'dataseries/init.lua',
+		["dataseries.metatable"] = 'dataseries/metatable.lua',
+		["dataseries.sngl_elmnt_ops"] = 'dataseries/sngl_elmnt_ops.lua',
+		["dataseries.statistics"] = 'dataseries/statistics.lua',
+
+		["dataframe.categorical"] = 'dataframe/categorical.lua',
+		["dataframe.column"] = 'dataframe/column.lua',
+		["dataframe.export_data"] = 'dataframe/export_data.lua',
+		["dataframe.init"] = 'dataframe/init.lua',
+		["dataframe.load_data"] = 'dataframe/load_data.lua',
+		["dataframe.metatable"] = 'dataframe/metatable.lua',
+		["dataframe.missing_data"] = 'dataframe/missing_data.lua',
+		["dataframe.output"] = 'dataframe/output.lua',
+		["dataframe.row"] = 'dataframe/row.lua',
+		["dataframe.select_set_update"] = 'dataframe/select_set_update.lua',
+		["dataframe.statistics"] = 'dataframe/statistics.lua',
+		["dataframe.subsets_and_batches"] = 'dataframe/subsets_and_batches.lua'
+		
+
 	}
 }

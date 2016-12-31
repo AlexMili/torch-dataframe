@@ -1,5 +1,6 @@
 [![Licence MIT](https://img.shields.io/badge/Licence-MIT-green.svg)](https://github.com/AlexMili/torch-dataframe/blob/master/LICENSE)
 [![Build Status](https://travis-ci.org/AlexMili/torch-dataframe.svg?branch=master)](https://travis-ci.org/AlexMili/torch-dataframe)
+[![codecov](https://codecov.io/gh/AlexMili/torch-dataframe/branch/master/graph/badge.svg)](https://codecov.io/gh/AlexMili/torch-dataframe)
 
 # Dataframe
 Dataframe is a [Torch7][torch] class to load and manipulate tabular
