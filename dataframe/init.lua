@@ -172,11 +172,16 @@ end}
 
 Dataframe._init_with_schema = argcheck{
 	{name="self", type="Dataframe"},
-	{name="schema", type="Df_Dict"},
-	{name="column_order", type="Df_Array", opt=true},
-	call=function(self, schema, column_order)
+	{name="schema", type="Df_Dict", doc="Schema to init with"},
+	{name="column_order", type="Df_Array", doc="column order to respect", opt=true},
+	{name="number_rows", type="number", doc="size of the dataset to create", opt=true},
+	call=function(self, schema, column_order, number_rows)
 		self:__init()
 		self:_clean()
+
+		if (number_rows == nil or type(number_rows) ~= "number") then
+			number_rows = 0
+		end
 
 		if (torch.isTypeOf(column_order, "Df_Array")) then
 			column_order = column_order.data
