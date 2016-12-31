@@ -511,7 +511,7 @@ _Return value_: self
 	 doc="The default value"},
 	call=function(self, default_value)
 
-	if (torch.type(self.data):match("torch.*Tensor")) then
+	if (self:is_tensor()) then
 		self.data:fill(default_value)
 	else
 		for i=1,self:size() do
@@ -550,14 +550,21 @@ _Return value_: self
 		default_value = "__nan__"
 	end
 
-	if (torch.type(self.data):match("torch.*Tensor")) then
+	if (self:is_tensor()) then
+		-- Get the mask differentiating values/missing_values
 		local mask = self:get_data_mask{missing = true}
+
+		-- Use this mask to only replace missing values
 		self.data:maskedFill(mask, default_value)
+
+		-- Reset missing values list
 		self.missing = tds.Hash()
 	else
+		-- Browse row by row
 		for pos,_ in pairs(self.missing) do
 			self:set(pos, default_value)
 		end
+		-- Here no need to reset missing values list, it is handled in `set()` method
 	end
 
 	return self
@@ -610,10 +617,11 @@ _Return value_: Dataseries
 	call=function(self, start, stop)
 	stop = stop or self:size()
 
-	self:assert_is_index(start)
-	self:assert_is_index(stop)
 	assert(start <= stop,
 	      ("Start larger than stop, i.e. %d > %d"):format(start, stop))
+
+	self:assert_is_index(start)
+	self:assert_is_index(stop)
 
 	local ret = Dataseries.new(stop - start + 1, self:get_variable_type())
 	for idx = start,stop do
@@ -638,7 +646,7 @@ _Return value_: string
 	{name="other", type="Dataseries|table"},
 	call=function(self, other)
 
-	if (#self ~= #other) then
+	if (self:size() ~= #other) then
 		return false
 	end
 
