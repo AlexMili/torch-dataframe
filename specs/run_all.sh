@@ -56,7 +56,9 @@ if [ $var -gt 0 ]
 then
 	echo -e "Number of scripts failed: \x1B[31m$var\x1B[0m (total scripts: $count)"
 	echo "Script(s) that failed:"
-	for i in "${failed_scripts[@]}"; do echo " -!- $i"; done
+	for i in "${failed_scripts[@]}"; do
+		echo " -!- $i";
+	done
 else
 	echo "Number of scripts failed: $var (total scripts: $count)"
 fi
