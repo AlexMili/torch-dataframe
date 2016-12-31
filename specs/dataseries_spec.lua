@@ -2,7 +2,7 @@ require 'lfs'
 
 -- Make sure that directory structure is always the same
 if (string.match(lfs.currentdir(), "/specs$")) then
-  lfs.chdir("..")
+	lfs.chdir("..")
 end
 
 -- Include Dataframe lib
@@ -54,11 +54,28 @@ describe("#Core Dataseries functions", function()
 			assert.are.same(ds:type(), "tds.Vec")
 		end)
 
-    it("create empty Dataseries", function()
-      local ds = Dataseries("string")
-      -- Use nElement instead of size() because size(1) bugs when tensor is empty
-      assert.are.same(ds:size(), 0)
-    end)
+		it("create empty Dataseries", function()
+			local ds = Dataseries("string")
+			assert.are.same(ds:size(), 0)
+		end)
+
+		it("load a tensor without checking", function()
+			local tensor = torch.IntTensor({1,2,3,4,5})
+			local ds = Dataseries():load(tensor)
+			assert.are.same(ds:size(), 5)
+			assert.are.same(ds:get(1), 1)
+			assert.are.same(ds:get(5), 5)
+			assert.are.same(ds:type(), "torch.IntTensor")
+		end)
+
+		it("load a tds.Vec without checking", function()
+			local tensor = tds.Vec({"some","thing","else"})
+			local ds = Dataseries():load(tensor)
+			assert.are.same(ds:size(), 3)
+			assert.are.same(ds:get(1), "some")
+			assert.are.same(ds:get(3), "else")
+			assert.are.same(ds:type(), "tds.Vec")
+		end)
 	end)
 
 	describe("#missing", function()
@@ -133,7 +150,7 @@ describe("#Core Dataseries functions", function()
 			assert.are.same(ds:get(2), 4)
 		end)
 
-    it("mutate all elements", function()
+		it("mutate all elements", function()
 			local ds = Dataseries{data = Df_Array(1,2,3,4)}
 			ds:mutate(function(var)
 				return var * 2

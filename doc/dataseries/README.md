@@ -21,6 +21,7 @@ add apropriate anchor tags during documentation.
 
 - **[Dataseries](init.md)**
   - [Dataseries.`__init`](init.md#Dataseries.__init)
+  - [Dataseries.load](init.md#Dataseries.load)
   - [Dataseries.new_storage](init.md#Dataseries.new_storage)
   - [Dataseries.copy](init.md#Dataseries.copy)
   - [Dataseries.size](init.md#Dataseries.size)

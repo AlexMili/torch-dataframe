@@ -1,5 +1,6 @@
 # API documentation for [Dataseries](#__Dataseries__)
 - [Dataseries.`__init`](#Dataseries.__init)
+- [Dataseries.load](#Dataseries.load)
 - [Dataseries.new_storage](#Dataseries.new_storage)
 - [Dataseries.copy](#Dataseries.copy)
 - [Dataseries.size](#Dataseries.size)
@@ -102,6 +103,19 @@ Creates and initializes a Dataseries with a given Df_Array. Envoked through `loc
 })
 ```
 
+<a name="Dataseries.load">
+### Dataseries.load(self, data)
+
+Load a Tensor or tds.Vec without checking type or missing values.
+
+```
+({
+   self = Dataseries             -- 
+   data = torch.*Tensor|tds.Vec  -- data to load
+})
+```
+
+_Return value_: self
 <a name="Dataseries.new_storage">
 ### Dataseries.new_storage(size[, type])
 
