@@ -251,10 +251,7 @@ _Return value_: number
 	{name="self", type="Dataseries"},
 	call=function(self)
 	if (self:is_tensor()) then
-		if (self.data:size():size() == 0) then
-			return 0
-		end
-		return self.data:size(1)
+		return self.data:nElement()
 	else
 		return #self.data
 	end
