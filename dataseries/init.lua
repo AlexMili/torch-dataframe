@@ -33,13 +33,22 @@ local Dataseries, parent_class = torch.class('Dataseries', 'tnt.Dataset')
 Dataseries.__init = argcheck{
 	doc =  [[
 <a name="Dataseries.__init">
-### Dataseries.__init()
+### Dataseries.__init(@ARGP)
+
+Creates and initializes an empty Dataseries. Envoked through `local my_series = Dataseries()`.
+
+The type can be:
+- boolean
+- integer
+- double
+- string
+- torch tensor or tds.Vec
 
 @ARGT
 
 ]],
 	{name="self", type="Dataseries"},
-	{name="type", type="string", doc="The type of data storage to init."},
+	{name="type", type="string", doc="The type of data storage to init.", default="string"},
 	call=function(self, type)
 		parent_class.__init(self)
 		self.data = self.new_storage(0, type)
@@ -49,7 +58,6 @@ end}
 
 Dataseries.__init = argcheck{
 	doc =  [[
-<a name="Dataseries.__init">
 ### Dataseries.__init(@ARGP)
 
 Creates and initializes a Dataseries class. Envoked through `local my_series = Dataseries()`.
@@ -75,12 +83,76 @@ The type can be:
 	self._variable_type = type
 end}
 
+Dataseries.__init = argcheck{
+	doc =  [[
+### Dataseries.__init(@ARGP)
+
+Creates and initializes a Dataseries with a given Tensor or Vector. Envoked through `local my_series = Dataseries(myData)`.
+
+The data can be a torch tensor or a tds.Vec.
+
+@ARGT
+
+]],
+	{name="self", type="Dataseries"},
+	{name="data", type="torch.*Tensor|tds.Vec"},
+	overload=Dataseries.__init,
+	call=function(self, data)
+	local size
+	local thname = torch.type(data)
+	if (thname:match("^tds")) then
+		size = #data
+	else
+		size = data:size(1)
+	end
+
+	-- Create the basic datastructures
+	self:__init(size, thname)
+
+	-- Copy values
+	for i=1,size do
+		self:set(i, data[i])
+	end
+end}
+
+Dataseries.__init = argcheck{
+	doc =  [[
+### Dataseries.__init(@ARGP)
+
+Creates and initializes a Dataseries with a given Df_Array. Envoked through `local my_series = Dataseries(Df_Array(myTable))`.
+
+@ARGT
+
+]],
+	{name="self", type="Dataseries"},
+	{name="data", type="Df_Array"},
+	{name="max_elmnts4type", type="number",
+	 doc="The maximum number of elements to traverse before settling a type",
+	 default=1e3},
+	overload=Dataseries.__init,
+	call=function(self, data, max_elmnts4type)
+	data = data.data
+	max_elmnts4type = math.min(#data, max_elmnts4type)
+	local type = nil
+	for i=1,max_elmnts4type do
+		type = get_variable_type{value = data[i], prev_type = type}
+	end
+
+	-- Create the basic datastructures
+	self:__init(#data, type)
+
+	-- Copy values
+	for i=1,#data do
+		self:set(i, data[i])
+	end
+end}
+
 Dataseries.new_storage = argcheck{
 	doc = [[
 <a name="Dataseries.new_storage">
 ### Dataseries.new_storage(@ARGP)
 
-Retrieves a storage element for the Dataseries. The type can be:
+Internal method to retrieve a storage element for the Dataseries. The type can be:
 - boolean
 - integer
 - double
@@ -124,57 +196,6 @@ Retrieves a storage element for the Dataseries. The type can be:
 	end
 
 	assert(false, ("The type '%s' has not yet been implemented"):format(type))
-end}
-
-Dataseries.__init = argcheck{
-	doc =  [[
-
-@ARGT
-
-]],
-	{name="self", type="Dataseries"},
-	{name="data", type="torch.*Tensor|tds.Vec"},
-	overload=Dataseries.__init,
-	call=function(self, data)
-	local size
-	local thname = torch.type(data)
-	if (thname:match("^tds")) then
-		size = #data
-	else
-		size = data:size(1)
-	end
-
-	-- Create the basic datastructures
-	self:__init(size, thname)
-
-	-- Copy values
-	for i=1,size do
-		self:set(i, data[i])
-	end
-end}
-
-Dataseries.__init = argcheck{
-	{name="self", type="Dataseries"},
-	{name="data", type="Df_Array"},
-	{name="max_elmnts4type", type="number",
-	 doc="The maximum number of elements to traverse before settling a type",
-	 default=1e3},
-	overload=Dataseries.__init,
-	call=function(self, data, max_elmnts4type)
-	data = data.data
-	max_elmnts4type = math.min(#data, max_elmnts4type)
-	local type = nil
-	for i=1,max_elmnts4type do
-		type = get_variable_type{value = data[i], prev_type = type}
-	end
-
-	-- Create the basic datastructures
-	self:__init(#data, type)
-
-	-- Copy values
-	for i=1,#data do
-		self:set(i, data[i])
-	end
 end}
 
 Dataseries.copy = argcheck{
@@ -307,6 +328,16 @@ _Return value_: self
 end}
 
 Dataseries.is_tensor = argcheck{
+	doc = [[
+<a name="Dataseries.is_numerical">
+### Dataseries.is_numerical(@ARGP)
+
+Checks if tensor
+
+@ARGT
+
+_Return value_: boolean
+]],
 	{name="self", type="Dataseries"},
 	call=function(self)
 	if (torch.type(self.data):match(("torch.*Tensor"))) then
@@ -385,6 +416,9 @@ _Return value_: string
 	return torch.typename(self.data)
 end}
 
+-- TODO : Change method name to something more explicit to avoid confusion between 
+-- getting type and changing type (information VS action).
+-- name proposition : astype (inspired from pandas)
 Dataseries.type = argcheck{
 	doc=[[
 
@@ -438,20 +472,26 @@ _Return value_: self, boolean indicating successful conversion
 	{name="true_value", type="number",
 	 doc="The numeric value for true"},
 	call=function(self, false_value, true_value)
+
 	if (not self:is_boolean()) then
 		warning("The series isn't a boolean")
 		return self, false
 	end
 
+	-- Create a ByteTensor with the same size as the current dataseries and 
+	-- fill it with false values
 	local data = torch.ByteTensor(self:size()):fill(false_value)
+	
 	for i=1,self:size() do
 		local val = self:get(i)
+
 		if (not isnan(val)) then
 			if (val) then
 				data[i] = true_value
 			end
 		end
 	end
+
 	self.data = data
 	self._variable_type = "integer"
 
@@ -538,8 +578,10 @@ Converts the series into a string output
 _Return value_: string
 ]],
 	{name="self", type="Dataseries"},
-	{name="max_elmnts", type="number", default=20},
+	{name="max_elmnts", type="number", doc="Number of elements to convert", 
+		default=20},
 	call=function(self, max_elmnts)
+
 	max_elmnts = math.min(self:size(), max_elmnts)
 	ret = ("Type: %s (%s)\nLength: %d\n-----"):
 		format(self:get_variable_type(), self:type(), self:size())
@@ -629,12 +671,16 @@ _Return value_: torch.ByteTensor
 	call=function(self, missing)
 	local fill_value = 1
 	local missing_value = 0
+
 	if (missing) then
 		fill_value = 0
 		missing_value = 1
 	end
 
+	-- Create a ByteTensor with the same size as the current dataseries and 
+	-- fill it with defined filling value
 	local mask = torch.ByteTensor():resize(self:size()):fill(fill_value)
+	
 	for i,_ in pairs(self.missing) do
 		mask[i] = missing_value
 	end
