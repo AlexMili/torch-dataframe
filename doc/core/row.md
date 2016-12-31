@@ -1,6 +1,7 @@
 # API documentation for [row functions](#__Row functions__)
 - [Dataframe.get_row](#Dataframe.get_row)
 - [Dataframe.insert](#Dataframe.insert)
+- [Dataframe.insert](#Dataframe.insert)
 - [Dataframe.append](#Dataframe.append)
 - [Dataframe.rbind](#Dataframe.rbind)
 - [Dataframe.remove_index](#Dataframe.remove_index)
@@ -31,6 +32,22 @@ Inserts a row or multiple rows into database at the position of the provided ind
    self  = Dataframe  -- 
    index = number     -- The row number where to insert the row(s)
    rows  = Df_Dict    -- Insert values to the dataset
+})
+```
+
+_Return value_: self
+<a name="Dataframe.insert">
+### Dataframe.insert(self, index, rows, schema)
+
+Inserts a row or multiple rows into database at the position of the provided index and 
+according to the prvided schema.
+
+```
+({
+   self   = Dataframe  -- 
+   index  = number     -- The row number where to insert the row(s)
+   rows   = Df_Dict    -- Insert values to the dataset
+   schema = Df_Dict    -- Specify a schema to check before insertion
 })
 ```
 

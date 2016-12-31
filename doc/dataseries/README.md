@@ -27,6 +27,7 @@ add apropriate anchor tags during documentation.
   - [Dataseries.resize](init.md#Dataseries.resize)
   - [Dataseries.assert_is_index](init.md#Dataseries.assert_is_index)
   - [Dataseries.is_numerical](init.md#Dataseries.is_numerical)
+  - [Dataseries.is_numerical](init.md#Dataseries.is_numerical)
   - [Dataseries.is_boolean](init.md#Dataseries.is_boolean)
   - [Dataseries.is_string](init.md#Dataseries.is_string)
   - [Dataseries.type](init.md#Dataseries.type)

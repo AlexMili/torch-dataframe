@@ -19,17 +19,17 @@ The `__index__` function is a powerful tool that allows quick access to regular 
 - _Single integer_: it returns the raw elemet table (see `get()`)
 - _Df_Array()_: select a set of interest (see `_create_subset()`)
 - _"start:stop"_: get a row span using start/stop index, e.g. `"2:5"` (see `sub()`)
-- _"$column_name"_: get a column by prepending the name with `$`, e.g. `"$a column name"` (see `get_column`)
-- _"/subset_name"_: get a subset by prepending the name with `/`, e.g. `"/a subset name"` (see `get_subset`)
 
 _Return value_: Table or Dataseries
 ]]
 
 function Dataseries:__index__(index)
 	local thtype = torch.type(index)
+	-- If this is a number or a Df_Array, let `get()` method handle them both
 	if (thtype == "number" or
 	    thtype == "Df_Array") then
 		return self:get(index), true
+	-- If this is a string matching "start:stop", it should be a query for a subset
 	elseif (thtype == "string" and index:match("^[0-9]*:[0-9]*$")) then
 		start = index:gsub(":.*", "")
 		start = tonumber(start)
@@ -39,8 +39,7 @@ function Dataseries:__index__(index)
 
 		return self:sub(start, stop), true
 	end
-
-
+	
 	return false
 end
 

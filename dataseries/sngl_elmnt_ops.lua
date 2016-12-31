@@ -49,22 +49,27 @@ end}
 
 Dataseries.get = argcheck{
 	doc=[[
-If you provde a Df_Array you get back a Dataseries of elements
+If you provide a Df_Array you get back a Dataseries of elements
 
 @ARGT
 
 _Return value_:  Dataseries
 ]],
 	{name="self", type="Dataseries"},
-	{name="index", type="Df_Array"},
+	{name="index", type="Df_Array", doc="Indexes of wanted elements"},
 	overload=Dataseries.get,
 	call=function(self, index)
-	index = index.data
+	indexes = index.data
 
-	local ret = Dataseries.new(#index, self:get_variable_type())
-	for ret_idx,org_idx in ipairs(index) do
+	-- Init new dataseries object (to return) with the number of indexes 
+	-- asked size and current type
+	local ret = Dataseries.new(#indexes, self:get_variable_type())
+
+	-- foreach indexes asked
+	for ret_idx,org_idx in ipairs(indexes) do
 		ret:set(ret_idx, self:get(org_idx, true))
 	end
+
 	ret.categorical = self.categorical
 
 	return ret
@@ -85,12 +90,17 @@ _Return value_: self
 	{name="index", type="number", doc="The index to set the value to"},
 	{name="value", type="*", doc="The data to set"},
 	call=function(self, index, value)
+
+	-- plus_one option ensure the index is within the dataseries OR 
+	-- it is the next new index
 	self:assert_is_index{index = index, plus_one = true}
 
+	-- if the added index is the next new element
 	if (index == self:size() + 1) then
 		return self:append(value)
 	end
 
+	-- if the new value is a NaN or NIL value
 	if (isnan(value) or value == nil) then
 		self.missing[index] = true
 	else
@@ -102,6 +112,7 @@ _Return value_: self
 				value = new_value
 			end
 		end
+
 		self.missing[index] = nil
 		self.data[index] = value
 	end
@@ -129,6 +140,8 @@ _Return value_: self
 	end
 
 	local data = self.data
+
+	-- If the new type is different from the current type, it is updated
 	if (type ~= self:type()) then
 		data = self.new_storage{
 			size = self:size(),
@@ -137,6 +150,7 @@ _Return value_: self
 	end
 
 	for i=1,self:size() do
+		-- If the current value is not a missing values
 		if (not self.missing[i]) then
 			data[i] = mutation(self.data[i])
 		end
@@ -197,21 +211,18 @@ _Return value_: self
 
 	if (self:type():match("^tds.Vec")) then
 		self.data:remove(index)
+	elseif (self:size() == 1) then
+		self.data:resize(0)
+	elseif (index == self:size()) then
+		self.data = self.data[{{1,index - 1}}]
+	elseif (index == 1) then
+		self.data = self.data[{{index + 1, self:size()}}]
 	else
-		if (self:size() == 1) then
-			self.data:resize(0)
-		elseif (index == self:size()) then
-			self.data = self.data[{{1,index - 1}}]
-		elseif (index == 1) then
-			self.data = self.data[{{index + 1, self:size()}}]
-		else
-			self.data = torch.cat(
-				self.data[{{1,index - 1}}],
-				self.data[{{index + 1, self:size()}}],
-				1)
-		end
+		self.data = torch.cat(
+			self.data[{{1,index - 1}}],
+			self.data[{{index + 1, self:size()}}],
+			1)
 	end
-
 
 	return self
 end}

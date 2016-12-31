@@ -1,5 +1,7 @@
 # API documentation for [Data loader functions](#__Data loader functions__)
 - [Dataframe.load_csv](#Dataframe.load_csv)
+- [Dataframe.load_threadcsv](#Dataframe.load_threadcsv)
+- [Dataframe.load_bulkcsv](#Dataframe.load_bulkcsv)
 - [Dataframe.load_table](#Dataframe.load_table)
 - [Dataframe.`_clean_columns`](#Dataframe._clean_columns)
 
@@ -21,6 +23,46 @@ Loads a CSV file into Dataframe using csvigo as backend
   [skip         = number]    -- skip this many lines at start of file [default=0]
   [verbose      = boolean]   -- verbose load [default=false]
   [rows2explore = number]    -- The maximum number of rows to traverse when trying to identify schema
+})
+```
+
+_Return value_: self
+	<a name="Dataframe.load_threadcsv">
+### Dataframe.load_threadcsv(self, path[, header][, schema][, separator][, skip][, verbose][, nthreads])
+
+Loads a CSV file into Dataframe using multithreading.
+Warning : line order is not respected.
+
+```
+({
+   self      = Dataframe  -- 
+   path      = string     -- path to file
+  [header    = boolean]   -- if has header on first line [default=true]
+  [schema    = Df_Dict]   -- The column schema types with column names as keys
+  [separator = string]    -- separator (one character) [default=,]
+  [skip      = number]    -- skip this many lines at start of file [default=0]
+  [verbose   = boolean]   -- verbose load [default=false]
+  [nthreads  = number]    -- Number of threads to use to read the csv file [default=1]
+})
+```
+
+_Return value_: self
+	<a name="Dataframe.load_bulkcsv">
+### Dataframe.load_bulkcsv(self, path[, header][, schema][, separator][, skip][, verbose][, nthreads])
+
+Loads a CSV file into Dataframe using multithreading.
+Warning : this method does not do the same checks as load_csv would do.
+
+```
+({
+   self      = Dataframe  -- 
+   path      = string     -- path to file
+  [header    = boolean]   -- if has header on first line [default=true]
+  [schema    = Df_Dict]   -- The column schema types with column names as keys
+  [separator = string]    -- separator (one character) [default=,]
+  [skip      = number]    -- skip this many lines at start of file [default=0]
+  [verbose   = boolean]   -- verbose load [default=false]
+  [nthreads  = number]    -- Number of threads to use to read the csv file [default=1]
 })
 ```
 
