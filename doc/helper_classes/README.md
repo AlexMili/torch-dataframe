@@ -24,6 +24,11 @@ add apropriate anchor tags during documentation.
   - [Df_ParallelIterator](11_paralleliterator.md#Df_ParallelIterator)
 - **[Df_Tbl](20_tbl.md)**
 - **[Df_Dict](21_dict.md)**
+  - [Df_Dict.`__init`](21_dict.md#Df_Dict.__init)
+  - [Df_Dict.check_lengths()](21_dict.md#Df_Dict.check_lengths)
+  - [Df_Dict.set_keys](21_dict.md#Df_Dict.set_keys)
+  - [Df_Dict.[]](21_dict.md#Df_Dict.[])
+  - [Df_Dict.#](21_dict.md#Df_Dict.#)
 - **[Df_Array](22_array.md)**
   - [Df_Array.`__init`](22_array.md#Df_Array.__init)
   - [Df_Array.[]](22_array.md#Df_Array.[])
