@@ -13,6 +13,16 @@ Version: development
 * Df_Dict `check_length()` checks if all elements have the same length
 * Df_Dict `set_keys(table)` replaces every keys by the given table (must be the same size)
 * More complete documentation for Df_Dict and specs
+* More complete documentation for Df_Tbl and specs
+* Internal methods `_infer_csvigo_schema()` and `_infer_data_schema()` renamed to `_infer_schema()`
+* Type inference is now based on type frequences but if it encounter a single double/float in a integer column it will consider the column as double/float
+* it is now possible to directly set a schema for a Dataframe without any checks with `set_schema()`. Use it wisely
+* Possibility to init a Dataframe with a schema, a column order and a number of rows with internal method `_init_with_schema()`
+* Added `bulk_load_csv()` method wich loads large CSVs files using threads but without checking missing values or data integrity. To use with caution. See #28
+* Added `load_threadcsv()`
+* Added the possiblity to create empty Dataseries
+* Added Dataseries `load()` method to directly load a tensor or tds.Vec in memory without any check
+* Added iris dataset in `/specs/data`
 
 Version: 1.6.1
 --------------------
