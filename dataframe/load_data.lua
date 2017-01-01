@@ -324,13 +324,13 @@ _Return value_: self
 	{name="self", type="Dataframe"},
 	{name="path", type="string", doc="path to file"},
 	{name="header", type="boolean", default=true,
-	 doc="if has header on first line"},
+	 doc="if has header on first line (not used at the moment)"},
 	{name="schema", type="Df_Dict", opt=true,
 	 doc="The column schema types with column names as keys"},
 	{name="separator", type="string", default=",",
 	 doc="separator (one character)"},
 	{name="skip", type="number", default=0,
-	 doc="skip this many lines at start of file"},
+	 doc="skip this many lines at start of file (not used at the moment)"},
 	{name="verbose", type="boolean", default=false,
 	 doc="verbose load"},
 	{name="nthreads", type="number", default=1,
@@ -373,16 +373,10 @@ _Return value_: self
 		end
 	end
 
-	if (verbose) then
-		print("Loaded the header: ")
-		for i,n in ipairs(column_order) do
-			print(("%2d - %s"):format(i, n))
-		end
-	end
-
 	if (schema) then
 		schema = schema.data
 	else
+		-- Tries to guess schema y exploring n rows
 		schema = self:_infer_schema{
 			iterator = data_iterator,
 			first_data_row = first_data_row,
@@ -392,27 +386,29 @@ _Return value_: self
 	end
 
 	if (verbose) then
-		print("Inferred schema: ")
-		for i=1,#column_order do
-			local cn = column_order[i]
-			print(("%2d - %s = %s"):format(i, cn, schema[cn]))
-		end
-	end
-
-	if (verbose) then
 		print("Estimation number of rows : "..#data_iterator - first_data_row + 1)
 	end
 
+	-- Init a sized-Dataframe with the infered schema
 	self:_init_with_schema{schema=Df_Dict(schema),column_order=Df_Array(column_order),number_rows=nrecs}
 
-	local nfield= #data_iterator[1]-1
-	local nrecs = #data_iterator-1
+	local nfield= #data_iterator[1]-1-- number of columns in csv file
+	local nrecs = #data_iterator-1-- number of lines in csv file
 
 	local idx=torch.range(1,nrecs)
-	local chunks=idx:chunk(nthreads)
+	local chunks=idx:chunk(nthreads)-- split data in chunks given a number of threads
+
+	-- Create a tensor for each column given its schema and its size (nrecs) :
+	-- chunk_data {
+	--  "column1" : torch.*Tensor|tds.vec,
+	--  "column2" : torch.*Tensor|tds.vec,
+	--  "column3" : torch.*Tensor|tds.vec,
+	--  "column4" : torch.*Tensor|tds.vec,
+	-- }
+	-- it will be used in at the end of each theads to store data chunks
+	-- extracted in the thread
 	local chunk_data = {}
 
-	-- Create results tensors
 	for i=1,#column_order do
 		chunk_data[column_order[i]] = Dataseries.new_storage(nrecs,schema[column_order[i]])
 	end
@@ -420,24 +416,19 @@ _Return value_: self
 	-- nthreads is adapted to chunks effectively created
 	nthreads = #chunks
 
-
-	local tic = torch.tic()
 	local t = threads.Threads(
 		nthreads,
 		function(threadn)
 			if (verbose) then
 				print("[INFO] Starting preprocessing")
 			end
+
 			require "csvigo"
 
-			nthreads=nthreads
-			nfield=nfield
-			nrecs=nrecs
 			chunks=chunks
-			--chunk_data=chunk_data
 			path=path
-			header=header
 			schema=schema
+			separator=separator
 			columns_order=column_order
 			verbose=verbose
 		end
@@ -455,61 +446,48 @@ _Return value_: self
 
 				require "Dataframe"
 
-				tac = torch.tic()
-				local o=csvigo.load{path=path,mode='large',column_order=true,verbose=verbose}
-				-- chunk
+				local o=csvigo.load{path=path,mode='large',separator=separator,column_order=true,verbose=verbose}
+				
+				-- get the chunk corresponding to thread number
 				local c=chunks[__threadid]
-				local myData = {}
-				-- local csv_df=Dataframe()
 
-				--schema = Df_Dict(schema)
-				-- require 'pl.pretty'.dump(schema)
+				-- create myData table, which is the same as chunk_data but for a single thread/chunk
+				local myData = {}
 				for i=1,#column_order do
-					-- print("------")
-					-- print(k)
-					-- print(v)
 					myData[column_order[i]] = Dataseries.new_storage(c:size(1),schema[column_order[i]])
 				end
-				-- require 'pl.pretty'.dump(myData)
-
-				-- csv_df:_init_with_schema{
-				-- 		schema = Df_Dict(schema),
-				-- 		column_order = Df_Array(columns_order)
-				-- }
 
 				local rec,loc
 				-- for every row in the chunk
 				for j=1,c:size(1) do
-					rec=o[c[j]+1]-- data
-					loc=c[j]-c[1]+1-- loc is the index of the row in the chunk
-					--require 'pl.pretty'.dump(rec)
-					--d[loc]:copy(torch.FloatTensor(rec):sub(2,-1))
+					rec=o[c[j]+1]-- extract data from the iterator 'o'
+					-- rec as the following format : {"valueColumn1","valueColumn2",...}
 
+					loc=c[j]-c[1]+1-- loc is the index of the row in the chunk
+
+					-- store iterator values in myData var
 					for i=1,#column_order do
 						myData[column_order[i]][loc] = rec[i]
 					end
-					-- local row = Df_Dict(o[c[j]+1])
-					-- row:set_keys(columns_order)
-
-					-- csv_df:insert(j,row,Df_Dict(schema))
 				end
 
 				collectgarbage()
 
-				-- require 'pl.pretty'.dump(myData)
 				return myData,__threadid
 			end,
 			function(data,threadn)
+				-- get the chunk data according to the position of the chunk in the whole dataset
 				local s=chunks[threadn][1]
 				local e=chunks[threadn][-1]
 				
 				for i=1,#column_order do
+					-- If the column is a tensor, we use sub/copy tensor methods
 					if (torch.type(data[column_order[i]]):match(("torch.*Tensor"))) then
 						chunk_data[column_order[i]]:sub(s,e):copy(data[column_order[i]])
+					-- If it is a tds.Vec, we copy row by row
 					elseif (torch.type(data[column_order[i]]) == "tds.Vec") then
-						-- copy row by row
 						for j=s,e do
-							chunk_data[column_order[i]][j] = data[column_order[i]][j]
+							chunk_data[column_order[i]][j] = data[column_order[i]][j-s+1]
 						end
 					end
 				end
@@ -520,7 +498,7 @@ _Return value_: self
 	t:synchronize()
 	t:terminate()
 
-	-- load tensor in each column
+	-- load chunk_data tensors in each dataset's columns
 	for i=1,#column_order do
 		self.dataset[column_order[i]]:load(chunk_data[column_order[i]])
 	end

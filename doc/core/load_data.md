@@ -57,10 +57,10 @@ Warning : this method does not do the same checks as load_csv would do. It doesn
 ({
    self      = Dataframe  -- 
    path      = string     -- path to file
-  [header    = boolean]   -- if has header on first line [default=true]
+  [header    = boolean]   -- if has header on first line (not used at the moment) [default=true]
   [schema    = Df_Dict]   -- The column schema types with column names as keys
   [separator = string]    -- separator (one character) [default=,]
-  [skip      = number]    -- skip this many lines at start of file [default=0]
+  [skip      = number]    -- skip this many lines at start of file (not used at the moment) [default=0]
   [verbose   = boolean]   -- verbose load [default=false]
   [nthreads  = number]    -- Number of threads to use to read the csv file [default=1]
 })
