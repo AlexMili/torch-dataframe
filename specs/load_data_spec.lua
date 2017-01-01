@@ -75,6 +75,13 @@ describe("Loading data process", function()
 				 [3] = "Col C",
 				 [4] = "Col D"})
 		end)
+
+		it("Loads in bulk mode",function()
+			local csv_file = "./data/iris-label.csv"
+			local df_bulk = Dataframe():bulk_load_csv{path=csv_file,nthreads=4}
+			local df_classic = Dataframe():load_csv{path=csv_file}
+			assert.is_true(df_bulk == df_classic)
+		end)
 	end)
 
 	describe("for lua tables",function()
