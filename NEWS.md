@@ -3,9 +3,6 @@ News file for torch-dataframe
 
 Version: development
 --------------------
-* The get_max_value/get_min_value use torch.max/min when no missing data is present in the column
-* Fixed upgrade_frame bug
-* Fixed bug with saving CSV-files when they contain boolean values
 * Added faster torch.Tensor functions to fill/stat functions for speed
 * Added mutate function to Dataseries
 * `__index__` access for Df_Array
@@ -16,6 +13,12 @@ Version: development
 * Df_Dict `check_length()` checks if all elements have the same length
 * Df_Dict `set_keys(table)` replaces every keys by the given table (must be the same size)
 * More complete documentation for Df_Dict and specs
+
+Version: 1.6.1
+--------------------
+* The get_max_value/get_min_value use torch.max/min when no missing data is present in the column
+* Fixed upgrade_frame bug
+* Fixed bug with saving CSV-files when they contain boolean values
 
 Version: 1.6
 --------------------
