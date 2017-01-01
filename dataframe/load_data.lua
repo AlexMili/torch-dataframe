@@ -137,17 +137,6 @@ _Return value_: self
 end}
 
 Dataframe.load_threadcsv = argcheck{
-	doc =  [[
-<a name="Dataframe.load_threadcsv">
-### Dataframe.load_threadcsv(@ARGP)
-
-Loads a CSV file into Dataframe using multithreading.
-Warning : line order is not respected.
-
-@ARGT
-
-_Return value_: self
-	]],
 	{name="self", type="Dataframe"},
 	{name="path", type="string", doc="path to file"},
 	{name="header", type="boolean", default=true,
