@@ -249,6 +249,11 @@ add apropriate anchor tags during documentation.
   - [Df_ParallelIterator](helper_classes/11_paralleliterator.md#Df_ParallelIterator)
 - **[Df_Tbl](helper_classes/20_tbl.md)**
 - **[Df_Dict](helper_classes/21_dict.md)**
+  - [Df_Dict.`__init`](helper_classes/21_dict.md#Df_Dict.__init)
+  - [Df_Dict.check_lengths()](helper_classes/21_dict.md#Df_Dict.check_lengths)
+  - [Df_Dict.set_keys](helper_classes/21_dict.md#Df_Dict.set_keys)
+  - [Df_Dict.[]](helper_classes/21_dict.md#Df_Dict.[])
+  - [Df_Dict.#](helper_classes/21_dict.md#Df_Dict.#)
 - **[Df_Array](helper_classes/22_array.md)**
   - [Df_Array.`__init`](helper_classes/22_array.md#Df_Array.__init)
   - [Df_Array.[]](helper_classes/22_array.md#Df_Array.[])

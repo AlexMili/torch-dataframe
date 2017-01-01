@@ -10,6 +10,12 @@ Version: development
 * Added mutate function to Dataseries
 * `__index__` access for Df_Array
 * More complete documentation for Df_Array and specs
+* Df_Dict elements can be accessed using `myDict[index]` or `myDict["$colname"]`
+* Df_Dict `key` property available. It list the Df_Dict's keys
+* Df_Dict `length` property available. It list by key, the length of its content
+* Df_Dict `check_length()` checks if all elements have the same length
+* Df_Dict `set_keys(table)` replaces every keys by the given table (must be the same size)
+* More complete documentation for Df_Dict and specs
 
 Version: 1.6
 --------------------
