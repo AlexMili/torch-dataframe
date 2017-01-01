@@ -250,6 +250,9 @@ add apropriate anchor tags during documentation.
 - **[Df_Tbl](helper_classes/20_tbl.md)**
 - **[Df_Dict](helper_classes/21_dict.md)**
 - **[Df_Array](helper_classes/22_array.md)**
+  - [Df_Array.`__init`](helper_classes/22_array.md#Df_Array.__init)
+  - [Df_Array.[]](helper_classes/22_array.md#Df_Array.[])
+  - [Df_Array.#](helper_classes/22_array.md#Df_Array.#)
 
 ## Utils
 
