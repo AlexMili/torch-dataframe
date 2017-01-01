@@ -8,6 +8,8 @@ Version: development
 * Fixed bug with saving CSV-files when they contain boolean values
 * Added faster torch.Tensor functions to fill/stat functions for speed
 * Added mutate function to Dataseries
+* `__index__` access for Df_Array
+* More complete documentation for Df_Array and specs
 
 Version: 1.6
 --------------------

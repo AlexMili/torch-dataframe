@@ -25,3 +25,6 @@ add apropriate anchor tags during documentation.
 - **[Df_Tbl](20_tbl.md)**
 - **[Df_Dict](21_dict.md)**
 - **[Df_Array](22_array.md)**
+  - [Df_Array.`__init`](22_array.md#Df_Array.__init)
+  - [Df_Array.[]](22_array.md#Df_Array.[])
+  - [Df_Array.#](22_array.md#Df_Array.#)
