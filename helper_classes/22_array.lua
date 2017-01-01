@@ -21,7 +21,9 @@ function da:__init(...)
 	arg = {...}
 	if (#arg == 1 and
 		(torch.type(arg[1]) == 'table' or
-		torch.isTensor(arg[1]))) then
+		torch.isTensor(arg[1])) or
+		torch.type(arg[1]) == "Dataseries") then
+		-- If this is the case, arg var is set as its single value
 		arg = arg[1]
 	end
 
