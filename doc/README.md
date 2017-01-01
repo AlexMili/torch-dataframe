@@ -98,7 +98,7 @@ add apropriate anchor tags during documentation.
 - **[Data loader functions](core/load_data.md)**
   - [Dataframe.load_csv](core/load_data.md#Dataframe.load_csv)
   - [Dataframe.load_threadcsv](core/load_data.md#Dataframe.load_threadcsv)
-  - [Dataframe.load_bulkcsv](core/load_data.md#Dataframe.load_bulkcsv)
+  - [Dataframe.bulk_load_csv](core/load_data.md#Dataframe.bulk_load_csv)
   - [Dataframe.load_table](core/load_data.md#Dataframe.load_table)
   - [Dataframe.`_clean_columns`](core/load_data.md#Dataframe._clean_columns)
 - **[Metatable functions](core/metatable.md)**

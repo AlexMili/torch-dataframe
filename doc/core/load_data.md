@@ -1,7 +1,7 @@
 # API documentation for [Data loader functions](#__Data loader functions__)
 - [Dataframe.load_csv](#Dataframe.load_csv)
 - [Dataframe.load_threadcsv](#Dataframe.load_threadcsv)
-- [Dataframe.load_bulkcsv](#Dataframe.load_bulkcsv)
+- [Dataframe.bulk_load_csv](#Dataframe.bulk_load_csv)
 - [Dataframe.load_table](#Dataframe.load_table)
 - [Dataframe.`_clean_columns`](#Dataframe._clean_columns)
 
@@ -47,11 +47,11 @@ Warning : line order is not respected.
 ```
 
 _Return value_: self
-	<a name="Dataframe.load_bulkcsv">
-### Dataframe.load_bulkcsv(self, path[, header][, schema][, separator][, skip][, verbose][, nthreads])
+	<a name="Dataframe.bulk_load_csv">
+### Dataframe.bulk_load_csv(self, path[, header][, schema][, separator][, skip][, verbose][, nthreads])
 
 Loads a CSV file into Dataframe using multithreading.
-Warning : this method does not do the same checks as load_csv would do.
+Warning : this method does not do the same checks as load_csv would do. It doesn't handle other format than torch.*Tensor and tds.Vec.
 
 ```
 ({
