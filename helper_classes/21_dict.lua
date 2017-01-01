@@ -20,7 +20,7 @@ function dict:__init(table_data)
 	local dict_data = {}
 	local dict_lengths = {}
 	local dict_keys = {}
-	local max_length_key = ""
+	local argmax = ""
 
 	for k,v in pairs(table_data) do
 		dict_lengths[k] = 0
@@ -36,9 +36,9 @@ function dict:__init(table_data)
 			dict_lengths[k] = 1
 		end
 
-		if (dict_lengths[max_length_key] == nil or
-			dict_lengths[k] > dict_lengths[max_length_key]) then
-			max_length_key = k
+		if (dict_lengths[argmax] == nil or
+			dict_lengths[k] > dict_lengths[argmax]) then
+			argmax = k
 		end
 
 
@@ -46,7 +46,7 @@ function dict:__init(table_data)
 		dict_data[k] = v
 	end
 
-	self.max_length_key = max_length_key
+	self.argmax = argmax
 	self.keys = dict_keys
 	self.length = dict_lengths
 	self.data = dict_data
