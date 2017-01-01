@@ -620,6 +620,7 @@ _Return value_: string
 	return ret
 end}
 
+-- TODO : use same logic as bulk_load_csv to extract a subset
 Dataseries.sub = argcheck{
 	doc = [[
 <a name="Dataseries.sub">

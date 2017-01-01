@@ -315,7 +315,7 @@ Dataframe.bulk_load_csv = argcheck{
 ### Dataframe.bulk_load_csv(@ARGP)
 
 Loads a CSV file into Dataframe using multithreading.
-Warning : this method does not do the same checks as load_csv would do. It doesn't handle other format than torch.*Tensor.
+Warning : this method does not do the same checks as load_csv would do. It doesn't handle other format than torch.*Tensor and tds.Vec.
 
 @ARGT
 
@@ -501,11 +501,16 @@ _Return value_: self
 			end,
 			function(data,threadn)
 				local s=chunks[threadn][1]
-        local e=chunks[threadn][-1]
+				local e=chunks[threadn][-1]
 				
 				for i=1,#column_order do
 					if (torch.type(data[column_order[i]]):match(("torch.*Tensor"))) then
 						chunk_data[column_order[i]]:sub(s,e):copy(data[column_order[i]])
+					elseif (torch.type(data[column_order[i]]) == "tds.Vec") then
+						-- copy row by row
+						for j=s,e do
+							chunk_data[column_order[i]][j] = data[column_order[i]][j]
+						end
 					end
 				end
 			end
