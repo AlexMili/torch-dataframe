@@ -118,3 +118,17 @@ describe("Df_Dict",function()
 		assert.are.same(#dic,4)
 	end)
 end)
+
+describe("Df_Tbl",function()
+	local simpleTable = {1,2,3,4}
+
+	it("can be init with a table",function()
+		local tbl = Df_Tbl(simpleTable)
+		assert.are.same(tbl.data,simpleTable)
+	end)
+
+	it("# returns its length",function()
+		local tbl = Df_Tbl(simpleTable)
+		assert.are.same(#tbl,4)
+	end)
+end)
