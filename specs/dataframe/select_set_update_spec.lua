@@ -1,20 +1,28 @@
 require 'lfs'
 
--- Make sure that directory structure is always the same
-if (string.match(lfs.currentdir(), "/specs$")) then
+-- Ensure the test is launched within the specs/ folder
+assert(string.match(lfs.currentdir(), "specs")~=nil, "You must run this test in specs folder")
+
+local initial_dir = lfs.currentdir()
+
+-- Go to specs folder
+while (not string.match(lfs.currentdir(), "/specs$")) do
   lfs.chdir("..")
 end
 
--- Include Dataframe lib
-dofile('init.lua')
+local specs_dir = lfs.currentdir()
+lfs.chdir("..")-- one more directory and it is lib root
 
--- Go into specs so that the loading of CSV:s is the same as always
-lfs.chdir("specs")
+-- Include Dataframe lib
+dofile("init.lua")
+
+-- Go back into initial dir
+lfs.chdir(initial_dir)
 
 describe("Data manipulationf incl. where, update etc.", function()
 
 	it("Retrieves a value in a column #where",function()
-		local a = Dataframe("./data/simple_short.csv")
+		local a = Dataframe(specs_dir.."/data/simple_short.csv")
 
 		local ret_val = a:where('Col A', 2)
 		assert.are.same(ret_val:get_column("Col A"), {2})
@@ -26,7 +34,7 @@ describe("Data manipulationf incl. where, update etc.", function()
 		assert.are.same(ret_val:shape(), {rows = 0, cols = 3})
 
 		a:__init()
-		a:load_csv{path = "./data/advanced_short.csv",
+		a:load_csv{path = specs_dir.."/data/advanced_short.csv",
 		verbose = false}
 		ret_val = a:where('Col B', 'B')
 		assert.are.same(ret_val:shape(), {rows = 2, cols = 3})
@@ -37,7 +45,7 @@ describe("Data manipulationf incl. where, update etc.", function()
 	end)
 
 	it("Updates multiple rows according to a custom condition", function()
-		local a = Dataframe("./data/simple_short.csv")
+		local a = Dataframe(specs_dir.."/data/simple_short.csv")
 
 		local start_val = a:get_column('Col B')
 		start_val[1] = start_val[1] * 2
@@ -49,7 +57,7 @@ describe("Data manipulationf incl. where, update etc.", function()
 		assert.are.same(a:get_column('Col B'), start_val)
 
 		-- Check a double match
-		local b = Dataframe("./data/advanced_short.csv")
+		local b = Dataframe(specs_dir.."/data/advanced_short.csv")
 
 		start_val = b:get_column('Col A')
 		start_val[2] = start_val[2] * 2
@@ -63,7 +71,7 @@ describe("Data manipulationf incl. where, update etc.", function()
 	end)
 
 	it("Updates a single cell given a column name and an value #set",function()
-		local a = Dataframe("./data/simple_short.csv")
+		local a = Dataframe(specs_dir.."/data/simple_short.csv")
 
 		a:set(1000, 'Col C', Df_Dict({['Col A']=99}))
 		assert.is.equal(a:get_column('Col A')[1], 99)
@@ -77,14 +85,14 @@ describe("Data manipulationf incl. where, update etc.", function()
 	end)
 
 	it("Updates a single cell given a an index",function()
-		local a = Dataframe("./data/simple_short.csv")
+		local a = Dataframe(specs_dir.."/data/simple_short.csv")
 
 		a:set(2, Df_Dict({['Col A']=99}))
 		assert.is.equal(a:get_column('Col A')[2], 99)
 	end)
 
 	it("Updates a unique row given an index",function()
-		local a = Dataframe("./data/simple_short.csv")
+		local a = Dataframe(specs_dir.."/data/simple_short.csv")
 
 		new = {
 		['Col A']=4,

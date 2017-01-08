@@ -23,6 +23,7 @@ Version: development
 * Added the possiblity to create empty Dataseries
 * Added Dataseries `load()` method to directly load a tensor or tds.Vec in memory without any check
 * Added iris dataset in `/specs/data`
+* New specs structure
 
 Version: 1.6.1
 --------------------

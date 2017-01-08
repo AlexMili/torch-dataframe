@@ -29,7 +29,7 @@ var=0
 count=0
 failed_scripts=()
 exclude_tags="skip_version_$VERSION"
-for f in *_spec.lua; do
+for f in `find . -name "*_spec*"`; do
 	echo "";
 	echo "********************************************";
 	echo "Running specs in $f";

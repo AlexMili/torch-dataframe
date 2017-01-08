@@ -1,22 +1,30 @@
 require 'lfs'
 
--- Make sure that directory structure is always the same
-if (string.match(lfs.currentdir(), "/specs$")) then
+-- Ensure the test is launched within the specs/ folder
+assert(string.match(lfs.currentdir(), "specs")~=nil, "You must run this test in specs folder")
+
+local initial_dir = lfs.currentdir()
+
+-- Go to specs folder
+while (not string.match(lfs.currentdir(), "/specs$")) do
   lfs.chdir("..")
 end
 
--- Include Dataframe lib
-dofile('init.lua')
+local specs_dir = lfs.currentdir()
+lfs.chdir("..")-- one more directory and it is lib root
 
--- Go into specs so that the loading of CSV:s is the same as always
-lfs.chdir("specs")
+-- Include Dataframe lib
+dofile("init.lua")
+
+-- Go back into initial dir
+lfs.chdir(initial_dir)
 
 describe("Column operations", function()
 
 	describe("Drop functionality",function()
 
 		it("Allows to remove an entire column", function()
-			local a = Dataframe("./data/simple_short.csv")
+			local a = Dataframe(specs_dir.."/data/simple_short.csv")
 
 			a:drop('Col A')
 			assert.is_true(not a:has_column('Col A'))
@@ -28,7 +36,7 @@ describe("Column operations", function()
 		end)
 
 		it("Allows to remove multiple columns", function()
-			local a = Dataframe("./data/simple_short.csv")
+			local a = Dataframe(specs_dir.."/data/simple_short.csv")
 
 			a:drop('Col A')
 			assert.is_true(not a:has_column('Col A'))
@@ -47,7 +55,7 @@ describe("Column operations", function()
 		end)
 
 		it("Resets the Dataframe when all columns are dropped",function()
-			local a = Dataframe("./data/simple_short.csv")
+			local a = Dataframe(specs_dir.."/data/simple_short.csv")
 			a:drop('Col A')
 			a:drop('Col B')
 			-- All are dropped
@@ -63,7 +71,7 @@ describe("Column operations", function()
 	end)
 
 	describe("Add functionality",function()
-		local a = Dataframe("./data/simple_short.csv")
+		local a = Dataframe(specs_dir.."/data/simple_short.csv")
 
 		it("Raises an error if the column is already existing",function()
 			assert.has_error(function() a:add_column('Col A') end)
@@ -108,7 +116,7 @@ describe("Column operations", function()
 	end)
 
 	describe("Get a column functionality",function()
-		local a = Dataframe("./data/full.csv")
+		local a = Dataframe(specs_dir.."/data/full.csv")
 
 		assert.are.same(a:get_column('Col A'), {1,2,3,4})
 
@@ -129,7 +137,7 @@ describe("Column operations", function()
 	end)
 
 	describe("Reset column functionality",function()
-		local a = Dataframe("./data/simple_short.csv")
+		local a = Dataframe(specs_dir.."/data/simple_short.csv")
 
 		it("Resets single column's values",function()
 			a:reset_column('Col C', 555)
@@ -144,7 +152,7 @@ describe("Column operations", function()
 	end)
 
 	describe("Rename column functionality",function()
-		local a = Dataframe("./data/simple_short.csv")
+		local a = Dataframe(specs_dir.."/data/simple_short.csv")
 		a:rename_column("Col C","Col V")
 		assert.is_true(a:has_column("Col V"))
 		assert.is_true(not a:has_column("Col C"))
@@ -171,7 +179,7 @@ describe("Column operations", function()
 	end)
 
 	describe("Search functionalities",function()
-		local a = Dataframe("./data/advanced_short.csv")
+		local a = Dataframe(specs_dir.."/data/advanced_short.csv")
 		it("Finds the value in Col B", function()
 			assert.are.same(a:which('Col B', 'A'), {1})
 			assert.are.same(a:which('Col B', 'B'), {2,3})
@@ -209,7 +217,7 @@ describe("Column operations", function()
 	end)
 
 	describe("Other functionalities",function()
-		local a = Dataframe("./data/advanced_short.csv")
+		local a = Dataframe(specs_dir.."/data/advanced_short.csv")
 
 		it("Returns all numerical columns names", function()
 			assert.are.same(a:get_numerical_colnames(), {'Col A', 'Col C'})
@@ -229,7 +237,7 @@ describe("Column operations", function()
 
 	describe("Bind columns",function()
 		it("Equal correct cbind and dataframe", function()
-			local a = Dataframe("./data/advanced_short.csv")
+			local a = Dataframe(specs_dir.."/data/advanced_short.csv")
 
 			local b = Dataframe()
 			b:load_table(Df_Dict({Test = {1,2,3}}))
@@ -240,7 +248,7 @@ describe("Column operations", function()
 		end)
 
 		it("Equal correct cbind with Df_Dict", function()
-			local a = Dataframe("./data/advanced_short.csv")
+			local a = Dataframe(specs_dir.."/data/advanced_short.csv")
 
 			a:cbind(Df_Dict({Test = {1,2,3}}))
 
@@ -249,7 +257,7 @@ describe("Column operations", function()
 		end)
 
 		it("Checks input", function()
-			local a = Dataframe("./data/advanced_short.csv")
+			local a = Dataframe(specs_dir.."/data/advanced_short.csv")
 
 			local b = Dataframe()
 			b:load_table(Df_Dict({Test = {1,2,3,4}}))

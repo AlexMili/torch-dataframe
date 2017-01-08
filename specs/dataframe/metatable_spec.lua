@@ -1,26 +1,34 @@
 require 'lfs'
 
--- Make sure that directory structure is always the same
-if (string.match(lfs.currentdir(), "/specs$")) then
+-- Ensure the test is launched within the specs/ folder
+assert(string.match(lfs.currentdir(), "specs")~=nil, "You must run this test in specs folder")
+
+local initial_dir = lfs.currentdir()
+
+-- Go to specs folder
+while (not string.match(lfs.currentdir(), "/specs$")) do
   lfs.chdir("..")
 end
 
--- Include Dataframe lib
-dofile('init.lua')
+local specs_dir = lfs.currentdir()
+lfs.chdir("..")-- one more directory and it is lib root
 
--- Go into specs so that the loading of CSV:s is the same as always
-lfs.chdir("specs")
+-- Include Dataframe lib
+dofile("init.lua")
+
+-- Go back into initial dir
+lfs.chdir(initial_dir)
 
 describe("Indexing the dataframe", function()
 
 	describe("Retrieving index",function()
-		local df = Dataframe("./data/simple_short.csv")
+		local df = Dataframe(specs_dir.."/data/simple_short.csv")
 		assert.are.same(df["$Col A"], df:get_column('Col A'))
 		assert.are.same(df["$Col C"], df:get_column('Col C'))
 	end)
 
 	describe("Retrieving index",function()
-		local df = Dataframe("./data/simple_short.csv")
+		local df = Dataframe(specs_dir.."/data/simple_short.csv")
 		-- Wait until https://github.com/torch/torch7/issues/693 is resolved
 		it("Retrieves a single row",function()
 			local subset = df[1]
@@ -45,7 +53,7 @@ describe("Indexing the dataframe", function()
 	end)
 
 	describe("Set row via the newindex",function()
-		local df = Dataframe("./data/simple_short.csv")
+		local df = Dataframe(specs_dir.."/data/simple_short.csv")
 
 		it("Set a single row",function()
 			df[1]= {["Col A"] = 3231}

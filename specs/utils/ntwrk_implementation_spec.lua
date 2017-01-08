@@ -1,15 +1,23 @@
 require 'lfs'
 
--- Make sure that directory structure is always the same
-if (string.match(lfs.currentdir(), "/specs$")) then
-	lfs.chdir("..")
+-- Ensure the test is launched within the specs/ folder
+assert(string.match(lfs.currentdir(), "specs")~=nil, "You must run this test in specs folder")
+
+local initial_dir = lfs.currentdir()
+
+-- Go to specs folder
+while (not string.match(lfs.currentdir(), "/specs$")) do
+  lfs.chdir("..")
 end
 
--- Include Dataframe lib
-dofile('init.lua')
+local specs_dir = lfs.currentdir()
+lfs.chdir("..")-- one more directory and it is lib root
 
--- Go into specs so that the loading of CSV:s is the same as always
-lfs.chdir("specs")
+-- Include Dataframe lib
+dofile("init.lua")
+
+-- Go back into initial dir
+lfs.chdir(initial_dir)
 
 describe([[
 	See if we can get #network and other tensor implementations
@@ -19,7 +27,7 @@ describe([[
 		Single target with a the Batchframe generated tensors
 	]], function()
 		it("A single input and classifier", function()
-			a = Dataframe("./data/realistic_29_row_data.csv")
+			a = Dataframe(specs_dir.."/data/realistic_29_row_data.csv")
 			a:create_subsets()
 			a:as_categorical("Gender")
 
@@ -50,7 +58,7 @@ describe([[
 		end)
 
 		it("A a tensor input and a #linear_regression", function()
-			a = Dataframe("./data/realistic_29_row_data.csv")
+			a = Dataframe(specs_dir.."/data/realistic_29_row_data.csv")
 			a:create_subsets()
 			torch.manualSeed(2313)
 
@@ -90,7 +98,7 @@ describe([[
 		#multiple
 	]], function()
 		it("Regression targets #multreg", function()
-			a = Dataframe("./data/realistic_29_row_data.csv")
+			a = Dataframe(specs_dir.."/data/realistic_29_row_data.csv")
 			a:create_subsets()
 			torch.manualSeed(9823719)
 
@@ -144,7 +152,7 @@ describe([[
 		end)
 
 		it("Classification targets #multclss", function()
-			a = Dataframe("./data/realistic_29_row_data.csv")
+			a = Dataframe(specs_dir.."/data/realistic_29_row_data.csv")
 			a:create_subsets()
 			a:as_categorical("Gender")
 			a:add_column{
@@ -235,7 +243,7 @@ describe([[
 		#skip_all
 	]], function()
 		it("Regression targets #multreg", function()
-			a = Dataframe("./data/realistic_29_row_data.csv")
+			a = Dataframe(specs_dir.."/data/realistic_29_row_data.csv")
 			a:create_subsets{
 				class_args = Df_Tbl{
 					batch_args = Df_Tbl{
@@ -297,7 +305,7 @@ describe([[
 		end)
 
 		it("Classification targets #multclss #1", function()
-			a = Dataframe("./data/realistic_29_row_data.csv")
+			a = Dataframe(specs_dir.."/data/realistic_29_row_data.csv")
 			a:create_subsets{
 				class_args = Df_Tbl{
 					batch_args = Df_Tbl{
@@ -379,7 +387,7 @@ describe([[
 		#iterator
 	]], function()
 		it("Regression targets #multreg", function()
-			a = Dataframe("./data/realistic_29_row_data.csv")
+			a = Dataframe(specs_dir.."/data/realistic_29_row_data.csv")
 			a:create_subsets{
 				class_args = Df_Tbl{
 					batch_args = Df_Tbl{
@@ -440,7 +448,7 @@ describe([[
 		end)
 
 		it("Classification targets #multclss", function()
-			a = Dataframe("./data/realistic_29_row_data.csv")
+			a = Dataframe(specs_dir.."/data/realistic_29_row_data.csv")
 			a:create_subsets{
 				class_args = Df_Tbl{
 					batch_args = Df_Tbl{

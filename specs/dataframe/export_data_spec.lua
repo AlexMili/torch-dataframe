@@ -1,23 +1,31 @@
 require 'lfs'
 
--- Make sure that directory structure is always the same
-if (string.match(lfs.currentdir(), "/specs$")) then
-	lfs.chdir("..")
+-- Ensure the test is launched within the specs/ folder
+assert(string.match(lfs.currentdir(), "specs")~=nil, "You must run this test in specs folder")
+
+local initial_dir = lfs.currentdir()
+
+-- Go to specs folder
+while (not string.match(lfs.currentdir(), "/specs$")) do
+  lfs.chdir("..")
 end
 
--- Include Dataframe lib
-dofile('init.lua')
+local specs_dir = lfs.currentdir()
+lfs.chdir("..")-- one more directory and it is lib root
 
--- Go into specs so that the loading of CSV:s is the same as always
-lfs.chdir("specs")
+-- Include Dataframe lib
+dofile("init.lua")
+
+-- Go back into initial dir
+lfs.chdir(initial_dir)
 
 describe("Exporting data process", function()
 
 	describe("for CSV files",function()
 		it("Exports the Dataframe to a CSV file",function()
-			local a = Dataframe("./data/full.csv")
+			local a = Dataframe(specs_dir.."/data/full.csv")
 
-			local file_name = "./data/copy_of_full.csv"
+			local file_name = specs_dir.."/data/copy_of_full.csv"
 			a:to_csv(file_name)
 			local b = Dataframe(file_name)
 
@@ -66,12 +74,12 @@ describe("Exporting data process", function()
 				}
 
 				a:load_table{data=Df_Dict(data), column_order=Df_Array(c_order)}
-				a:to_csv("./data/tricky_csv.csv")
-				a:load_csv("./data/tricky_csv.csv")
+				a:to_csv(specs_dir.."/data/tricky_csv.csv")
+				a:load_csv(specs_dir.."/data/tricky_csv.csv")
 
 				assert.are.same(a.column_order, c_order)
 
-				os.remove("./data/tricky_csv.csv")
+				os.remove(specs_dir.."/data/tricky_csv.csv")
 			end)
 		end)
 	end)
@@ -79,10 +87,10 @@ describe("Exporting data process", function()
 	describe("for torch tensors",function()
 
 		it("Exports the Dataframe to a tensor",function()
-			local a = Dataframe("./data/advanced_short.csv")
+			local a = Dataframe(specs_dir.."/data/advanced_short.csv")
 			-- Avoid NaN comparison (which always false)
 			a:fill_all_na(2)
-			a:to_tensor{filename="./data/tensor_test.th7"}
+			a:to_tensor{filename=specs_dir.."/data/tensor_test.th7"}
 
 			tnsr = a:to_tensor()
 			tnsr2 = torch.load('./data/tensor_test.th7')
@@ -100,7 +108,7 @@ describe("Exporting data process", function()
 			end
 
 			assert.near(0, sum, 10^-5)
-			os.remove("./data/tensor_test.th7")
+			os.remove(specs_dir.."/data/tensor_test.th7")
 		end)
 
 		it("Keeps the right order when saving to Tensor",function()
@@ -144,7 +152,7 @@ describe("Exporting data process", function()
 
 	describe("torchnet get compatibility",function()
 		it("The get should retrieve a single row in tensor format",function()
-			local a = Dataframe("./data/advanced_short.csv")
+			local a = Dataframe(specs_dir.."/data/advanced_short.csv")
 
 			tnsr = a:get(1)
 

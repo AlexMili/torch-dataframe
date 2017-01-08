@@ -1,19 +1,27 @@
 require 'lfs'
 
--- Make sure that directory structure is always the same
-if (string.match(lfs.currentdir(), "/specs$")) then
+-- Ensure the test is launched within the specs/ folder
+assert(string.match(lfs.currentdir(), "specs")~=nil, "You must run this test in specs folder")
+
+local initial_dir = lfs.currentdir()
+
+-- Go to specs folder
+while (not string.match(lfs.currentdir(), "/specs$")) do
   lfs.chdir("..")
 end
 
--- Include Dataframe lib
-dofile('init.lua')
+local specs_dir = lfs.currentdir()
+lfs.chdir("..")-- one more directory and it is lib root
 
--- Go into specs so that the loading of CSV:s is the same as always
-lfs.chdir("specs")
+-- Include Dataframe lib
+dofile("init.lua")
+
+-- Go back into initial dir
+lfs.chdir(initial_dir)
 
 describe("Loading dataframe and creaing adequate subsets", function()
 	it("Raises an error if create_subsets hasn't be called",function()
-		local a = Dataframe("./data/realistic_29_row_data.csv")
+		local a = Dataframe(specs_dir.."/data/realistic_29_row_data.csv")
 
 		assert.has.error(function() a:reset_subsets() end)
 	end)
@@ -21,7 +29,7 @@ describe("Loading dataframe and creaing adequate subsets", function()
 
 	it("Initializes with random order for training and linear for the other",
 		function()
-		local a = Dataframe("./data/realistic_29_row_data.csv")
+		local a = Dataframe(specs_dir.."/data/realistic_29_row_data.csv")
 		a:create_subsets()
 
 		assert.are.equal(a.subsets.samplers["train"], 'permutation', "Train init failed")
@@ -31,7 +39,7 @@ describe("Loading dataframe and creaing adequate subsets", function()
 
 	it("Check that the initialized subset sizes are correct for default subsets",
 		function()
-		local a = Dataframe("./data/realistic_29_row_data.csv")
+		local a = Dataframe(specs_dir.."/data/realistic_29_row_data.csv")
 		a:create_subsets()
 
 		assert.are.equal(a["/test"]:size(1) +
@@ -55,7 +63,7 @@ describe("Loading dataframe and creaing adequate subsets", function()
 
 	it("Check that the initialized subset is correct for a #single_subset",
 		function()
-		local a = Dataframe("./data/realistic_29_row_data.csv")
+		local a = Dataframe(specs_dir.."/data/realistic_29_row_data.csv")
 		a:create_subsets(Df_Dict({core = 1}))
 
 		assert.are.equal(a["/core"]:size(1), a:size(1), "Number of cases don't match")
@@ -67,7 +75,7 @@ describe("Loading dataframe and creaing adequate subsets", function()
 
 	it("Check selecting if #selecting_sampler works without label requirement",
 		function()
-		local a = Dataframe("./data/realistic_29_row_data.csv")
+		local a = Dataframe(specs_dir.."/data/realistic_29_row_data.csv")
 
 		a:create_subsets(Df_Dict({core = 1}), "uniform")
 		assert.are.equal(a.subsets.samplers["core"], 'uniform')
@@ -83,7 +91,7 @@ describe("Loading dataframe and creaing adequate subsets", function()
 
 	it("Check selecting if #selecting_sampler works with label requirement",
 		function()
-		local a = Dataframe("./data/realistic_29_row_data.csv")
+		local a = Dataframe(specs_dir.."/data/realistic_29_row_data.csv")
 
 		assert.has.error(function() a:create_subsets(Df_Dict({core = 1}), "label-uniform") end)
 
@@ -100,7 +108,7 @@ describe("Loading dataframe and creaing adequate subsets", function()
 
 	it("Check that the initialized subset sizes are correct for multiple #custom_subsets provided",
 		function()
-		local a = Dataframe("./data/realistic_29_row_data.csv")
+		local a = Dataframe(specs_dir.."/data/realistic_29_row_data.csv")
 		a:create_subsets()
 
 		assert.are.equal(a["/test"]:size(1), a["/test"]:size())
@@ -132,7 +140,7 @@ end)
 describe("Test if we can get a batch with data and labels.",function()
 	describe("Basic batch retrieving and resetting", function()
 		local fake_loader = function(row) return torch.Tensor({1, 2}) end
-		local a = Dataframe("./data/realistic_29_row_data.csv")
+		local a = Dataframe(specs_dir.."/data/realistic_29_row_data.csv")
 		a:create_subsets()
 
 		it("Check that we get reasonable formatted data back #12",function()
@@ -329,7 +337,7 @@ describe("Test if we can get a batch with data and labels.",function()
 	end)
 
 	describe("Test the alternative get_subset formats",function()
-		local a = Dataframe("./data/realistic_29_row_data.csv")
+		local a = Dataframe(specs_dir.."/data/realistic_29_row_data.csv")
 		a:create_subsets()
 
 		it("Should be a Dataframe #11", function()
@@ -345,7 +353,7 @@ describe("Test if we can get a batch with data and labels.",function()
 
 
 	describe("Investigate #labels",function()
-		local a = Dataframe("./data/realistic_29_row_data.csv")
+		local a = Dataframe(specs_dir.."/data/realistic_29_row_data.csv")
 		a:create_subsets{
 			subsets = Df_Dict{a = .5, b = .5},
 			samplers = Df_Dict{
@@ -371,7 +379,7 @@ describe("Test if we can get a batch with data and labels.",function()
 	end)
 
 	describe("The get_subset should forward the information in #class_args",function()
-		local a = Dataframe("./data/realistic_29_row_data.csv")
+		local a = Dataframe(specs_dir.."/data/realistic_29_row_data.csv")
 		local class_args = Df_Tbl({
 			batch_args = Df_Tbl({
 				data = Df_Array("Weight"),
@@ -413,7 +421,7 @@ describe("Test if we can get a batch with data and labels.",function()
 	end)
 
 	describe("The create_subsets should work wit #data_retriever and #label_retriever just as for class_args",function()
-		local a = Dataframe("./data/realistic_29_row_data.csv")
+		local a = Dataframe(specs_dir.."/data/realistic_29_row_data.csv")
 		a:create_subsets{
 			data_retriever = Df_Array("Weight"),
 			label_retriever = Df_Array("Gender")
@@ -452,7 +460,7 @@ describe("Test if we can get a batch with data and labels.",function()
 	end)
 
 	describe("The set #custom_retrievers for subsets",function()
-		local a = Dataframe("./data/realistic_29_row_data.csv")
+		local a = Dataframe(specs_dir.."/data/realistic_29_row_data.csv")
 		a:create_subsets{
 			data_retriever = Df_Array("Weight"),
 			label_retriever = Df_Array("Gender")

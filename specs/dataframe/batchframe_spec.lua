@@ -1,15 +1,23 @@
 require 'lfs'
 
--- Make sure that directory structure is always the same
-if (string.match(lfs.currentdir(), "/specs$")) then
+-- Ensure the test is launched within the specs/ folder
+assert(string.match(lfs.currentdir(), "specs")~=nil, "You must run this test in specs folder")
+
+local initial_dir = lfs.currentdir()
+
+-- Go to specs folder
+while (not string.match(lfs.currentdir(), "/specs$")) do
   lfs.chdir("..")
 end
 
--- Include Dataframe lib
-dofile('init.lua')
+local specs_dir = lfs.currentdir()
+lfs.chdir("..")-- one more directory and it is lib root
 
--- Go into specs so that the loading of CSV:s is the same as always
-lfs.chdir("specs")
+-- Include Dataframe lib
+dofile("init.lua")
+
+-- Go back into initial dir
+lfs.chdir(initial_dir)
 
 describe("Loading batch data", function()
 	before_each(function()
@@ -19,7 +27,7 @@ describe("Loading batch data", function()
 			{5, 6, 7, 8},
 			{9, 10, 11, 12}
 		}) end
-		a = Dataframe("./data/realistic_29_row_data.csv")
+		a = Dataframe(specs_dir.."/data/realistic_29_row_data.csv")
 		a:create_subsets()
 	end)
 
@@ -213,7 +221,7 @@ describe("#__init functionality", function()
 		default loader functions
 	]], function()
 		it("Both data and label retrievers using named arguments", function()
-			a = Dataframe("./data/realistic_29_row_data.csv")
+			a = Dataframe(specs_dir.."/data/realistic_29_row_data.csv")
 			a:create_subsets()
 
 			local batch = a["/train"]:get_batch(5, Df_Tbl({
@@ -232,7 +240,7 @@ describe("#__init functionality", function()
 		end)
 
 		it("Both data and label retrievers using unnamed arguments", function()
-			a = Dataframe("./data/realistic_29_row_data.csv")
+			a = Dataframe(specs_dir.."/data/realistic_29_row_data.csv")
 			a:create_subsets()
 
 			local batch = a["/train"]:get_batch(5, Df_Tbl({
@@ -251,7 +259,7 @@ describe("#__init functionality", function()
 		end)
 
 		it("Only data retriever is set and label is a column name", function()
-			a = Dataframe("./data/realistic_29_row_data.csv")
+			a = Dataframe(specs_dir.."/data/realistic_29_row_data.csv")
 			a:create_subsets()
 
 			local batch = a["/train"]:get_batch(5, Df_Tbl({
@@ -269,7 +277,7 @@ describe("#__init functionality", function()
 		end)
 
 		it("Only data retriever is set and label is a function #test", function()
-			b = Dataframe("./data/realistic_29_row_data.csv")
+			b = Dataframe(specs_dir.."/data/realistic_29_row_data.csv")
 			b:create_subsets()
 
 			local bbatch = b["/train"]:get_batch(5, Df_Tbl({
