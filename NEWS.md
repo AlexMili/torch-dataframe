@@ -24,6 +24,8 @@ Version: development
 * Added Dataseries `load()` method to directly load a tensor or tds.Vec in memory without any check
 * Added iris dataset in `/specs/data`
 * New specs structure
+* Fixed csv loading when no header and test case according to it
+* Changed `assert_is_index` return value to `true` on success instead of `self`
 
 Version: 1.6.1
 --------------------

@@ -100,7 +100,7 @@ as values. The column types are:
 		column_order = column_order.data
 		assert(#column_order == table.exact_length(schema),
 		       ("The schema (%d entries) doesn't match the number of columns (%d)"):
-		       format(#column_order, table.exact_length(schema)))
+		       format(table.exact_length(schema),#column_order))
 		for _,cn in ipairs(column_order) do
 			assert(schema[cn], "The schema doesn't have the column: " .. cn)
 		end
@@ -205,6 +205,7 @@ Dataframe._clean = argcheck{
 	self.column_order = {}
 	self.n_rows = 0
 	self:set_version()
+	collectgarbage()
 	return self
 end}
 
@@ -703,7 +704,7 @@ _Return value_: Dataframe
 	{name = "self", type = "Dataframe"},
 	{name = "index", type = "number", doc="The index to investigate"},
 	{name = "plus_one", type = "boolean", default = false,
-	 doc= "When adding rows, an index of size(1) + 1 is OK"},
+	 doc= "Count next non-existing index as good. When adding rows, an index of size(1) + 1 is OK"},
 	call = function(self, index, plus_one)
 	if (plus_one) then
 		if (not isint(index) or
@@ -721,7 +722,7 @@ _Return value_: Dataframe
 		end
 	end
 
-	return self
+	return true
 end}
 
 return Dataframe
