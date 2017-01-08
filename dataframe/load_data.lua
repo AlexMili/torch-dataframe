@@ -59,7 +59,7 @@ _Return value_: self
 	else
 		first_data_row = 1
 		column_order = {}
-		for i in 1,len(data_iterator[1]) do
+		for i=1,#data_iterator[1] do
 			column_order[i] = "Column no. " .. i
 		end
 	end
