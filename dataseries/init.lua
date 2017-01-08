@@ -323,7 +323,7 @@ _Return value_: self
 	{name="self", type="Dataseries"},
 	{name="index", type="number", doc="The index to check"},
 	{name = "plus_one", type = "boolean", default = false,
-	 doc= "When adding rows, an index of size(1) + 1 is OK"},
+	 doc= "Count next non-existing index as good. When adding rows, an index of size(1) + 1 is OK"},
 	call = function(self, index, plus_one)
 	if (plus_one) then
 		if (not isint(index) or
@@ -341,7 +341,7 @@ _Return value_: self
 		end
 	end
 
-	return self
+	return true
 end}
 
 Dataseries.is_tensor = argcheck{

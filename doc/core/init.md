@@ -169,7 +169,7 @@ Asserts that the number is a valid index.
 ({
    self     = Dataframe  -- 
    index    = number     -- The index to investigate
-  [plus_one = boolean]   -- When adding rows, an index of size(1) + 1 is OK [default=false]
+  [plus_one = boolean]   -- Count next non-existing index as good. When adding rows, an index of size(1) + 1 is OK [default=false]
 })
 ```
 
