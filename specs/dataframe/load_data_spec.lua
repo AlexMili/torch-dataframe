@@ -1,20 +1,28 @@
 require 'lfs'
 
--- Make sure that directory structure is always the same
-if (string.match(lfs.currentdir(), "/specs$")) then
+-- Ensure the test is launched within the specs/ folder
+assert(string.match(lfs.currentdir(), "specs")~=nil, "You must run this test in specs folder")
+
+local initial_dir = lfs.currentdir()
+
+-- Go to specs folder
+while (not string.match(lfs.currentdir(), "/specs$")) do
   lfs.chdir("..")
 end
 
--- Include Dataframe lib
-dofile('init.lua')
+local specs_dir = lfs.currentdir()
+lfs.chdir("..")-- one more directory and it is lib root
 
--- Go into specs so that the loading of CSV:s is the same as always
-lfs.chdir("specs")
+-- Include Dataframe lib
+dofile("init.lua")
+
+-- Go back into initial dir
+lfs.chdir(initial_dir)
 
 describe("Loading data process", function()
 
 	describe("for #CSV files",function()
-		local df = Dataframe("./data/full.csv")
+		local df = Dataframe(specs_dir.."/data/full.csv")
 
 		it("Loads the shape of the file",function()
 			assert.are.same(df:shape(),{rows=4, cols=4})
@@ -77,7 +85,7 @@ describe("Loading data process", function()
 		end)
 
 		it("Loads in bulk mode",function()
-			local csv_file = "./data/iris-label.csv"
+			local csv_file = specs_dir.."/data/iris-label.csv"
 			local df_bulk = Dataframe():bulk_load_csv{path=csv_file,nthreads=4}
 			local df_classic = Dataframe():load_csv{path=csv_file}
 			assert.is_true(df_bulk == df_classic)

@@ -1,15 +1,23 @@
 require 'lfs'
 
--- Make sure that directory structure is always the same
-if (string.match(lfs.currentdir(), "/specs$")) then
+-- Ensure the test is launched within the specs/ folder
+assert(string.match(lfs.currentdir(), "specs")~=nil, "You must run this test in specs folder")
+
+local initial_dir = lfs.currentdir()
+
+-- Go to specs folder
+while (not string.match(lfs.currentdir(), "/specs$")) do
   lfs.chdir("..")
 end
 
--- Include Dataframe lib
-dofile('init.lua')
+local specs_dir = lfs.currentdir()
+lfs.chdir("..")-- one more directory and it is lib root
 
--- Go into specs so that the loading of CSV:s is the same as always
-lfs.chdir("specs")
+-- Include Dataframe lib
+dofile("init.lua")
+
+-- Go back into initial dir
+lfs.chdir(initial_dir)
 
 describe("Dataframe class", function()
 
@@ -28,7 +36,7 @@ describe("Dataframe class", function()
 		end)
 
 		it("Loads a CSV file if passed in argument",function()
-			local df = Dataframe("./data/simple_short.csv")
+			local df = Dataframe(specs_dir.."/data/simple_short.csv")
 			assert.are.same(df:shape(),{rows=4, cols=3})
 		end)
 
@@ -76,7 +84,7 @@ describe("Dataframe class", function()
 		end)
 
 		it("Copy all meta variables to a new Dataframe object",function()
-			local df = Dataframe("./data/simple_short.csv")
+			local df = Dataframe(specs_dir.."/data/simple_short.csv")
 			local df2 = Dataframe()
 
 			df:_copy_meta(df2)
@@ -107,11 +115,11 @@ describe("Dataframe class", function()
 	end)
 
 	it("Returns the shape of the Dataframe",function()
-		local a = Dataframe("./data/simple_short.csv")
+		local a = Dataframe(specs_dir.."/data/simple_short.csv")
 
 		assert.are.same(a:shape(), {rows = 4, cols = 3})
 
-		a:load_csv{path = "./data/advanced_short.csv",
+		a:load_csv{path = specs_dir.."/data/advanced_short.csv",
 		verbose = false}
 		assert.are.same(a:shape(), {rows = 3, cols = 3})
 
@@ -123,7 +131,7 @@ describe("Dataframe class", function()
 	end)
 
 	it("Returns first elements of the dataframe",function()
-		local a = Dataframe("./data/simple_short.csv")
+		local a = Dataframe(specs_dir.."/data/simple_short.csv")
 
 		head = a:head(2)
 		assert.is.equal(head:size(1), 2)-- "Self the n_rows isn't updated, is " .. head:size(1) .. " instead of expected 2"
@@ -148,7 +156,7 @@ describe("Dataframe class", function()
 	end)
 
 	it("Returns last elements of the dataframe",function()
-		local a = Dataframe("./data/simple_short.csv")
+		local a = Dataframe(specs_dir.."/data/simple_short.csv")
 
 		tail = a:tail(2)
 		assert.is.equal(tail:size(1), 2)-- "Self the n_rows isn't updated, is " .. tail:size(1) .. " instead of expected 2"
@@ -171,7 +179,7 @@ describe("Dataframe class", function()
 	end)
 
 	it("Returns all unique #1 values in a column", function()
-		local a = Dataframe("./data/advanced_short.csv")
+		local a = Dataframe(specs_dir.."/data/advanced_short.csv")
 
 		assert.are.same(a:unique('Col A'), {1,2,3})-- "Failed to match Col A"
 		assert.are.same(a:unique('Col B', true), {A=1, B=2})-- "Failed to match Col B"
@@ -179,7 +187,7 @@ describe("Dataframe class", function()
 	end)
 
 	it("Get a single row given an index",function()
-		local a = Dataframe("./data/simple_short.csv")
+		local a = Dataframe(specs_dir.."/data/simple_short.csv")
 
 		assert.are.same(a:get_row(1),{
 		['Col A']=1,
@@ -190,7 +198,7 @@ describe("Dataframe class", function()
 
 	it("A column with boolean values should not be a numerical nor a string column",
 	function()
-		local a = Dataframe("./data/simple_short.csv")
+		local a = Dataframe(specs_dir.."/data/simple_short.csv")
 		a:add_column('bool', true)
 
 		assert.is_false(a:is_numerical('bool'), "A boolean column is not numerical")

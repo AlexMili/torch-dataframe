@@ -1,19 +1,27 @@
 require 'lfs'
 
--- Make sure that directory structure is always the same
-if (string.match(lfs.currentdir(), "/specs$")) then
+-- Ensure the test is launched within the specs/ folder
+assert(string.match(lfs.currentdir(), "specs")~=nil, "You must run this test in specs folder")
+
+local initial_dir = lfs.currentdir()
+
+-- Go to specs folder
+while (not string.match(lfs.currentdir(), "/specs$")) do
   lfs.chdir("..")
 end
 
--- Include Dataframe lib
-dofile('init.lua')
+local specs_dir = lfs.currentdir()
+lfs.chdir("..")-- one more directory and it is lib root
 
--- Go into specs so that the loading of CSV:s is the same as always
-lfs.chdir("specs")
+-- Include Dataframe lib
+dofile("init.lua")
+
+-- Go back into initial dir
+lfs.chdir(initial_dir)
 
 describe("Categorical column", function()
 	local a = Dataframe()
-	a:load_csv{path = "./data/advanced_short.csv", verbose = false}
+	a:load_csv{path = specs_dir.."/data/advanced_short.csv", verbose = false}
 
 	it("Should not be a numerical column",function()
 		assert.is_true(not a:is_numerical('Col B'), "Column should not be a numerical")
@@ -46,7 +54,7 @@ describe("Categorical column", function()
 
 
 	describe("Conversion",function()
-		local a = Dataframe("./data/advanced_short.csv")
+		local a = Dataframe(specs_dir.."/data/advanced_short.csv")
 		a:as_categorical('Col B')
 
 		it("Should handle integers and nan #1 input",function()
@@ -99,7 +107,7 @@ describe("Categorical column", function()
 	end)
 
 	it("Get #11 column",function()
-		local a = Dataframe("./data/advanced_short.csv")
+		local a = Dataframe(specs_dir.."/data/advanced_short.csv")
 
 		a:as_categorical('Col B')
 		assert.are.same(a:get_column('Col B'), {'A', 'B', 'B'})-- "Failed to retrieve categorical representations"
@@ -116,7 +124,7 @@ describe("Categorical column", function()
 	end)
 
 	it("Returns unique values",function()
-		local a = Dataframe("./data/advanced_short.csv")
+		local a = Dataframe(specs_dir.."/data/advanced_short.csv")
 
 		a:as_categorical('Col B')
 		assert.are.same(a:unique('Col B'), {'A', 'B'})-- "Failed to get categorical data"
@@ -179,7 +187,7 @@ describe("Categorical column", function()
 	end)
 
 	it("Insert new columns",function()
-		local a = Dataframe("./data/advanced_short.csv")
+		local a = Dataframe(specs_dir.."/data/advanced_short.csv")
 
 		a:as_categorical('Col B')
 		local new_data = {
@@ -192,7 +200,7 @@ describe("Categorical column", function()
 	end)
 
 	it("Updates rows according to custom function #1",function()
-		local a = Dataframe("./data/advanced_short.csv")
+		local a = Dataframe(specs_dir.."/data/advanced_short.csv")
 
 		a:as_categorical('Col B')
 
@@ -205,7 +213,7 @@ describe("Categorical column", function()
 		assert.are.same(a:get_column('Col B'), {'A', 'B', 'C'})-- "Should be A,B,C"
 		assert.are.same(a:get_cat_keys('Col B'), {A=1, B=2, C=3})-- "Expected 3 keys after changing the last key"
 
-		a:load_csv{path = "./data/advanced_short.csv"}
+		a:load_csv{path = specs_dir.."/data/advanced_short.csv"}
 		a:as_categorical('Col B')
 		a:update(
 			function(row) return row['Col B'] == 'B' end,
@@ -218,7 +226,7 @@ describe("Categorical column", function()
 		a:clean_categorical('Col B')
 		assert.are.same(a:get_cat_keys('Col B'), {A=1})-- "Keys should be removed after calling clean_categorical"
 
-		a:load_csv{path = "./data/advanced_short.csv"}
+		a:load_csv{path = specs_dir.."/data/advanced_short.csv"}
 		a:as_categorical('Col B')
 
 		a:update(
@@ -229,7 +237,7 @@ describe("Categorical column", function()
 		a:clean_categorical('Col B', true)
 		assert.are.same(a:get_cat_keys('Col B'), {A=1})-- "Keys should be removed after calling clean_categorical with resetting"
 
-		a:load_csv{path = "./data/advanced_short.csv"}
+		a:load_csv{path = specs_dir.."/data/advanced_short.csv"}
 		a:as_categorical('Col B')
 		a:as_categorical('Col C')
 
@@ -245,7 +253,7 @@ describe("Categorical column", function()
 
 	it("Set a new value given a column name #1", function()
 		local a = Dataframe()
-		a:load_csv{path = "./data/advanced_short.csv"}
+		a:load_csv{path = specs_dir.."/data/advanced_short.csv"}
 		a:as_categorical('Col B')
 
 		a:set('A', 'Col B', Df_Dict({['Col B'] = 'C'}))
@@ -262,9 +270,9 @@ describe("Categorical column", function()
 
 	it("Loads from a CSV or a table",function()
 		local a = Dataframe()
-		a:load_csv{path = "./data/advanced_short.csv"}
+		a:load_csv{path = specs_dir.."/data/advanced_short.csv"}
 		a:as_categorical('Col B')
-		a:load_csv{path = "./data/advanced_short.csv"}
+		a:load_csv{path = specs_dir.."/data/advanced_short.csv"}
 		assert.is_true(not a:is_categorical('Col B'))
 		a:as_categorical('Col B')
 		assert.is_true(a:is_categorical('Col B'))
@@ -276,7 +284,7 @@ describe("Categorical column", function()
 	end)
 
 	it("Renames column name",function()
-		local a = Dataframe("./data/advanced_short.csv")
+		local a = Dataframe(specs_dir.."/data/advanced_short.csv")
 
 		a:as_categorical('Col B')
 		assert.has.error(function() a:as_categorical(1) end)
@@ -287,7 +295,7 @@ describe("Categorical column", function()
 	end)
 
 	it("Finds rows in column with specific values #1", function()
-		local a = Dataframe("./data/advanced_short.csv")
+		local a = Dataframe(specs_dir.."/data/advanced_short.csv")
 
 		a:as_categorical('Col B')
 		local ret_val = a:where('Col B', 'A')
@@ -313,7 +321,7 @@ describe("Categorical column", function()
 	end)
 
 	it("Creates a subset", function()
-		local a = Dataframe("./data/advanced_short.csv")
+		local a = Dataframe(specs_dir.."/data/advanced_short.csv")
 
 		a:as_categorical('Col B')
 		local ret_val = a:sub(1,2)
@@ -326,7 +334,7 @@ describe("Categorical column", function()
 	end)
 
 	it("Counts values #1 frequencies", function()
-		local a = Dataframe("./data/advanced_short.csv")
+		local a = Dataframe(specs_dir.."/data/advanced_short.csv")
 
 		a:as_categorical('Col B')
 		local ret = a:value_counts('Col B')
@@ -350,7 +358,7 @@ describe("Categorical column", function()
 	end)
 
 	it("Exports to tensor",function()
-		local a = Dataframe("./data/advanced_short.csv")
+		local a = Dataframe(specs_dir.."/data/advanced_short.csv")
 		a:fill_all_na(0)
 
 		tnsr = a:to_tensor()

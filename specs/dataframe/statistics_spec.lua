@@ -1,19 +1,27 @@
 require 'lfs'
 
--- Make sure that directory structure is always the same
-if (string.match(lfs.currentdir(), "/specs$")) then
+-- Ensure the test is launched within the specs/ folder
+assert(string.match(lfs.currentdir(), "specs")~=nil, "You must run this test in specs folder")
+
+local initial_dir = lfs.currentdir()
+
+-- Go to specs folder
+while (not string.match(lfs.currentdir(), "/specs$")) do
   lfs.chdir("..")
 end
 
--- Include Dataframe lib
-dofile('init.lua')
+local specs_dir = lfs.currentdir()
+lfs.chdir("..")-- one more directory and it is lib root
 
--- Go into specs so that the loading of CSV:s is the same as always
-lfs.chdir("specs")
+-- Include Dataframe lib
+dofile("init.lua")
+
+-- Go back into initial dir
+lfs.chdir(initial_dir)
 
 describe("Usual statistics functions", function()
-	local dfs = Dataframe("./data/simple_short.csv")
-	local df = Dataframe("./data/advanced_short.csv")
+	local dfs = Dataframe(specs_dir.."/data/simple_short.csv")
+	local df = Dataframe(specs_dir.."/data/advanced_short.csv")
 
 	describe("Value counting",function()
 
@@ -71,7 +79,7 @@ describe("Usual statistics functions", function()
 
 		it("The missing value counts shouldn't be affected by categorical status",
 			function()
-			local df = Dataframe("./data/advanced_short.csv")
+			local df = Dataframe(specs_dir.."/data/advanced_short.csv")
 			df:as_categorical('Col C')
 			assert.are.same(df:value_counts{column_name='Col C', as_dataframe=false},
 			                {[8]=1, [9]=1})
@@ -91,13 +99,13 @@ describe("Usual statistics functions", function()
 	describe("Mode functionality",function()
 
 		it("Get the mode for a specific column",function()
-			local df = Dataframe("./data/advanced_short.csv")
+			local df = Dataframe(specs_dir.."/data/advanced_short.csv")
 			assert.are.same(df:get_mode{column_name ='Col A', normalize = false, as_dataframe = false},
 		                   {[1] = 1, [2] = 1, [3] = 1})
 		end)
 
 		it("Check that mode with dataframe",function()
-			local df = Dataframe("./data/advanced_short.csv")
+			local df = Dataframe(specs_dir.."/data/advanced_short.csv")
 			local mode_df = df:get_mode{column_name ='Col A', normalize = false, as_dataframe = true}
 			assert.are.same(mode_df:get_column('key'), {1, 2, 3})
 			assert.are.same(mode_df:get_column('value'), {1, 1, 1})
@@ -105,7 +113,7 @@ describe("Usual statistics functions", function()
 		end)
 
 		it("Get the mode for a specific column with 'normalize' option",function()
-			local df = Dataframe("./data/advanced_short.csv")
+			local df = Dataframe(specs_dir.."/data/advanced_short.csv")
 			assert.are.same(df:get_mode{column_name ='Col A', normalize = true, as_dataframe = false},
 			                   {[1] = 1/3, [2] = 1/3, [3] = 1/3})
 			assert.are.same(df:get_mode{column_name ='Col B', normalize = true, as_dataframe = false},
@@ -140,7 +148,7 @@ describe("Usual statistics functions", function()
 	end)
 
 	describe("Max value",function()
-		df = Dataframe("./data/advanced_short.csv")
+		df = Dataframe(specs_dir.."/data/advanced_short.csv")
 		it("Retrieves the which indices the max value of a specific column reside at",function()
       assert.are.same(df:which_max('Col A'), {3})
 			assert.are.same(df:which_max('Col C'), {3})
@@ -168,7 +176,7 @@ describe("Usual statistics functions", function()
 	end)
 
 	describe("Min value",function()
-		df = Dataframe("./data/advanced_short.csv")
+		df = Dataframe(specs_dir.."/data/advanced_short.csv")
 		it("Retrieves the which indices the min value of a specific column reside at",function()
       assert.are.same(df:which_min('Col A'), {1})
 			assert.are.same(df:which_min('Col C'), {1})

@@ -1,20 +1,28 @@
 require 'lfs'
 
--- Make sure that directory structure is always the same
-if (string.match(lfs.currentdir(), "/specs$")) then
+-- Ensure the test is launched within the specs/ folder
+assert(string.match(lfs.currentdir(), "specs")~=nil, "You must run this test in specs folder")
+
+local initial_dir = lfs.currentdir()
+
+-- Go to specs folder
+while (not string.match(lfs.currentdir(), "/specs$")) do
   lfs.chdir("..")
 end
 
--- Include Dataframe lib
-dofile('init.lua')
+local specs_dir = lfs.currentdir()
+lfs.chdir("..")-- one more directory and it is lib root
 
--- Go into specs so that the loading of CSV:s is the same as always
-lfs.chdir("specs")
+-- Include Dataframe lib
+dofile("init.lua")
+
+-- Go back into initial dir
+lfs.chdir(initial_dir)
 
 describe("Column order functionality", function()
 
 	it("Keeps the right order when loading a CSV",function()
-		local a = Dataframe("./data/simple_short.csv")
+		local a = Dataframe(specs_dir.."/data/simple_short.csv")
 		assert.are.same(a.column_order,
 			{[1] = "Col A",
 			[2] = "Col B",
@@ -121,7 +129,7 @@ describe("Column order functionality", function()
 
 
 	it("Check that orders can be swapped",function()
-		local a = Dataframe("./data/simple_short.csv")
+		local a = Dataframe(specs_dir.."/data/simple_short.csv")
 		a:swap_column_order("Col A", "Col B")
 		assert.are.same(a.column_order,
 			{[1] = "Col B",
@@ -130,7 +138,7 @@ describe("Column order functionality", function()
 	end)
 
 	it("Check that orders can set using pos_column_order",function()
-		local a = Dataframe("./data/simple_short.csv")
+		local a = Dataframe(specs_dir.."/data/simple_short.csv")
 		a:pos_column_order("Col B", 2)
 		assert.are.same(a.column_order,
 			{[1] = "Col A",
