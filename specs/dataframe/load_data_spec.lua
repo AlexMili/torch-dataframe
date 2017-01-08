@@ -84,6 +84,18 @@ describe("Loading data process", function()
 				 [4] = "Col D"})
 		end)
 
+		it("Loads a CSV without header",function()
+			local df_iris = Dataframe()
+			df_iris:load_csv{path=specs_dir.."/data/iris-no-header.csv",header=false}
+			assert.are.same(df_iris:shape(),{rows=150,cols=5})
+			assert.are.same(df_iris.column_order,
+				{[1] = "Column no. 1",
+				 [2] = "Column no. 2",
+				 [3] = "Column no. 3",
+				 [4] = "Column no. 4",
+				 [5] = "Column no. 5"})
+		end)
+
 		it("Loads in bulk mode",function()
 			local csv_file = specs_dir.."/data/iris-label.csv"
 			local df_bulk = Dataframe():bulk_load_csv{path=csv_file,nthreads=4}
