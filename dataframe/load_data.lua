@@ -42,7 +42,8 @@ _Return value_: self
 	 doc="The maximum number of rows to traverse when trying to identify schema",
 	 opt = true},
 	call=function(self, path, header, schema, separator, skip, verbose, rows2explore)
-	-- Remove previous data
+
+	-- Remove previous data (reset init variables)
 	self:_clean()
 
 	local data_iterator = csvigo.load{path = path,
@@ -53,10 +54,14 @@ _Return value_: self
 		            column_order = true,
 		            mode = "large"}
 
-	local first_data_row = 2
+	local column_order = {}
+	local first_data_row = 2 -- In large mode first row is always the header (if there is one)
+
 	if (header) then
 		column_order = data_iterator[1]
 	else
+		-- If there is no header, first row to explore is set to the initial first row
+		-- and column names are automatically generated
 		first_data_row = 1
 		column_order = {}
 		for i=1,#data_iterator[1] do
@@ -70,16 +75,15 @@ _Return value_: self
 		end
 	end
 
-	if (schema) then
-		schema = schema.data
-	else
-		schema = self:_infer_schema{
+	if (not schema) then
+		schema = Df_Dict(self:_infer_schema{
 			iterator = data_iterator,
 			first_data_row = first_data_row,
 			column_order = Df_Array(column_order),
 			rows2explore = rows2explore
-		}
+		})
 	end
+
 	if (verbose) then
 		print("Inferred schema: ")
 		for i=1,#column_order do
@@ -90,7 +94,7 @@ _Return value_: self
 
 	self:__init{
 		-- Call the init with schema + no_rows
-		schema = Df_Dict(schema),
+		schema = schema,
 		no_rows = #data_iterator - first_data_row + 1,
 		column_order = Df_Array(column_order),
 		set_missing = false
@@ -110,7 +114,7 @@ _Return value_: self
 				val = 0/0
 			else
 				val = self._convert_val2_schema{
-					schema_type = schema[self.column_order[col_idx]],
+					schema_type = schema["$"..self.column_order[col_idx]],
 					val = val
 				}
 			end
@@ -184,7 +188,7 @@ Dataframe.load_threadcsv = argcheck{
 		-- and column names are automatically generated
 		first_data_row = 1
 
-		for i in 1,len(data_iterator[1]) do
+		for i=1,#data_iterator[1] do
 			column_order[i] = "Column no. " .. i
 		end
 	end
@@ -357,7 +361,7 @@ _Return value_: self
 		-- and column names are automatically generated
 		first_data_row = 1
 
-		for i in 1,len(data_iterator[1]) do
+		for i=1,#data_iterator[1] do
 			column_order[i] = "Column no. " .. i
 		end
 	end
@@ -493,7 +497,7 @@ _Return value_: self
 	end
 
 	if (verbose) then
-		print("Finished cleaning columns")
+		print("Finished loading data")
 	end
 
 	return self
