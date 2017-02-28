@@ -21,6 +21,7 @@ Creates and initializes a Dataframe class. Envoked through `local my_dataframe =
 })
 ```
 
+_Return value_: Dataframe
 Read in an csv-file
 
 ```
@@ -62,6 +63,7 @@ as values. The column types are:
 })
 ```
 
+_Return value_: Dataframe
 No updates is performed on already inserted data. The purpose of this method
 is to prepare a Dataframe object.
 

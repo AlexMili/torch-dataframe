@@ -23,6 +23,7 @@ Creates and initializes a Dataframe class. Envoked through `local my_dataframe =
 
 @ARGT
 
+_Return value_: Dataframe
 ]],
 	{name="self", type="Dataframe"},
 	call=function(self)
@@ -30,6 +31,8 @@ Creates and initializes a Dataframe class. Envoked through `local my_dataframe =
 
 	self:_clean()
 	self.tostring_defaults = self:_get_init_tostring_dflts()
+
+	return self
 end}
 
 Dataframe.__init = argcheck{
@@ -80,6 +83,7 @@ as values. The column types are:
 
 @ARGT
 
+_Return value_: Dataframe
 ]],
 	overload=Dataframe.__init,
 	{name="self", type="Dataframe"},
@@ -194,6 +198,8 @@ Dataframe._init_with_schema = argcheck{
 		for _,col_name in pairs(self.column_order) do
 			self.dataset[col_name] = Dataseries(schema.data[col_name])
 		end
+
+		return self
 	end
 }
 
@@ -561,7 +567,7 @@ _Return value_: self
 ]],
 	{name="self", type="Dataframe"},
 	call=function(self)
-	self.__version = "1.6.1"
+	self.__version = "1.7"
 	return self
 end}
 
