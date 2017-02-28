@@ -3,6 +3,10 @@ News file for torch-dataframe
 
 Version: development
 --------------------
+* Nothing for the moment
+
+Version: 1.7
+--------------------
 * Added faster torch.Tensor functions to fill/stat functions for speed
 * Added mutate function to Dataseries
 * `__index__` access for Df_Array

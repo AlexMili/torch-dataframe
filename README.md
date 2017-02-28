@@ -80,11 +80,31 @@ luarocks install torch-dataframe
 
 ## Changelog
 
-Version: 1.6.1
+Version: 1.7
 --------------------
-* The get_max_value/get_min_value use torch.max/min when no missing data is present in the column
-* Fixed upgrade_frame bug
-* Fixed bug with saving CSV-files when they contain boolean values
+* Added faster torch.Tensor functions to fill/stat functions for speed
+* Added mutate function to Dataseries
+* `__index__` access for Df_Array
+* More complete documentation for Df_Array and specs
+* Df_Dict elements can be accessed using `myDict[index]` or `myDict["$colname"]`
+* Df_Dict `key` property available. It list the Df_Dict's keys
+* Df_Dict `length` property available. It list by key, the length of its content
+* Df_Dict `check_length()` checks if all elements have the same length
+* Df_Dict `set_keys(table)` replaces every keys by the given table (must be the same size)
+* More complete documentation for Df_Dict and specs
+* More complete documentation for Df_Tbl and specs
+* Internal methods `_infer_csvigo_schema()` and `_infer_data_schema()` renamed to `_infer_schema()`
+* Type inference is now based on type frequences but if it encounter a single double/float in a integer column it will consider the column as double/float
+* it is now possible to directly set a schema for a Dataframe without any checks with `set_schema()`. Use it wisely
+* Possibility to init a Dataframe with a schema, a column order and a number of rows with internal method `_init_with_schema()`
+* Added `bulk_load_csv()` method wich loads large CSVs files using threads but without checking missing values or data integrity. To use with caution. See #28
+* Added `load_threadcsv()`
+* Added the possiblity to create empty Dataseries
+* Added Dataseries `load()` method to directly load a tensor or tds.Vec in memory without any check
+* Added iris dataset in `/specs/data`
+* New specs structure
+* Fixed csv loading when no header and test case according to it
+* Changed `assert_is_index` return value to `true` on success instead of `self`
 
 See `NEWS.md` file for previous changes.
 
